@@ -212,29 +212,33 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
 
     # Deductions Math
     absent_cut = round(absent_days * daily_wage, 2)
-    
-    # Late Penalty Rule: Every 3 late marks = 0.5 Day Wage deduction
-    late_penalties_count = late_count // 3
-    late_cut = round(late_penalties_count * (daily_wage * 0.5), 2)
 
-    # Half day cut: 0.5 day wage cut per half day
-    half_day_cut = round(half_days * (daily_wage * 0.5), 2)
+    # Feature 7 & 8: 2 Paid Leaves per Month Quota
+    leaves_count = len(leave_dates)
+    extra_leaves = max(0, leaves_count - 2)
+    extra_leave_cut = round(extra_leaves * daily_wage, 2)
 
-    # Overtime Math: 8 hours shift assumed
-    hourly_rate = daily_wage / 8.0
-    overtime_pay = round((total_overtime_mins / 60.0) * hourly_rate, 2)
+    # Feature 9 & 10: 4 Half-Days per Month Allowance
+    extra_half_days = max(0, half_days - 4)
+    extra_half_day_cut = round(extra_half_days * (0.5 * daily_wage), 2)
+    half_day_cut = round(half_days * (0.5 * daily_wage), 2) # For tracking total half day fraction if needed
 
-    # 4. Fetch unsettled advances taken by staff
+    # Client Scope Check: Late Penalties & Overtime are strictly EXCLUDED from automatic wage cuts/additions
+    late_cut = 0.0
+    overtime_pay = 0.0
+
+    # 4. Fetch unsettled advances and medicine credits taken by staff
     cursor.execute("""
-        SELECT id, amount, date, reason FROM advance_salaries
+        SELECT id, amount, date, reason, entry_type FROM advance_salaries
         WHERE staff_id = ? AND is_settled = 0 AND date <= ?
     """, (staff_id, end_date_str))
     advances = cursor.fetchall()
     advances_total = sum(adv["amount"] for adv in advances)
 
-    # Final Net Payable
+    # Final Net Payable Formula (Feature 15):
+    # Basic Salary - Absent Cuts - Extra Leave Cuts - Extra Half-Day Cuts - Advance Deductions
     net_payable = round(
-        basic_salary - absent_cut - late_cut - half_day_cut - advances_total + overtime_pay, 
+        basic_salary - absent_cut - extra_leave_cut - extra_half_day_cut - advances_total,
         2
     )
     if net_payable < 0:
@@ -245,9 +249,11 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
         INSERT INTO payroll_records 
         (staff_id, month, year, days_in_month, basic_salary, daily_wage,
          present_days, absent_days, absent_cut, late_count, late_cut,
-         half_days, half_day_cut, overtime_minutes, overtime_pay,
+         half_days, extra_half_days, half_day_cut, extra_half_day_cut,
+         leaves_count, extra_leaves, extra_leave_cut,
+         overtime_minutes, overtime_pay,
          advances_deducted, net_payable)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(staff_id, month, year) DO UPDATE SET
             days_in_month = excluded.days_in_month,
             basic_salary = excluded.basic_salary,
@@ -258,14 +264,21 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
             late_count = excluded.late_count,
             late_cut = excluded.late_cut,
             half_days = excluded.half_days,
+            extra_half_days = excluded.extra_half_days,
             half_day_cut = excluded.half_day_cut,
+            extra_half_day_cut = excluded.extra_half_day_cut,
+            leaves_count = excluded.leaves_count,
+            extra_leaves = excluded.extra_leaves,
+            extra_leave_cut = excluded.extra_leave_cut,
             overtime_minutes = excluded.overtime_minutes,
             overtime_pay = excluded.overtime_pay,
             advances_deducted = excluded.advances_deducted,
             net_payable = excluded.net_payable
     """, (staff_id, month, year, days_in_month, basic_salary, daily_wage,
           present_days, absent_days, absent_cut, late_count, late_cut,
-          half_days, half_day_cut, total_overtime_mins, overtime_pay,
+          half_days, extra_half_days, half_day_cut, extra_half_day_cut,
+          leaves_count, extra_leaves, extra_leave_cut,
+          total_overtime_mins, overtime_pay,
           advances_total, net_payable))
 
     conn.commit()
@@ -275,6 +288,7 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
         "staff_id": staff_id,
         "staff_name": staff["name"],
         "role": staff["role"],
+        "designation": staff["designation"] if "designation" in staff.keys() and staff["designation"] else staff["role"],
         "month": month,
         "year": year,
         "days_in_month": days_in_month,
@@ -284,12 +298,14 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
         "absent_days": absent_days,
         "absent_cut": absent_cut,
         "late_count": late_count,
-        "late_penalties_applied": late_penalties_count,
-        "late_cut": late_cut,
+        "late_cut": 0.0,
         "half_days": half_days,
-        "half_day_cut": half_day_cut,
-        "overtime_minutes": total_overtime_mins,
-        "overtime_pay": overtime_pay,
+        "extra_half_days": extra_half_days,
+        "half_day_cut": extra_half_day_cut,
+        "extra_half_day_cut": extra_half_day_cut,
+        "leaves_count": leaves_count,
+        "extra_leaves": extra_leaves,
+        "extra_leave_cut": extra_leave_cut,
         "advances_deducted": advances_total,
         "net_payable": net_payable
     }

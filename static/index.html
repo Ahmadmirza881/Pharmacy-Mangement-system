@@ -36,8 +36,8 @@
     }
     @media print {
       body * { visibility: hidden; }
-      #printable-slip, #printable-slip * { visibility: visible; }
-      #printable-slip { position: absolute; left: 0; top: 0; width: 100%; }
+      #printable-slip, #printable-slip *, #printable-report, #printable-report * { visibility: visible; }
+      #printable-slip, #printable-report { position: absolute; left: 0; top: 0; width: 100%; }
     }
   </style>
 </head>
@@ -94,6 +94,10 @@
         <button onclick="switchTab('staff')" id="tab-staff" class="py-3 px-4 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-2">
           <i data-lucide="users" class="w-4 h-4"></i>
           Staff Directory
+        </button>
+        <button onclick="switchTab('reports')" id="tab-reports" class="py-3 px-4 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-2">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+          Monthly Reports &amp; Matrix
         </button>
       </div>
     </div>
@@ -172,44 +176,54 @@
     <!-- ================================================================= -->
     <section id="view-live" class="space-y-6 hidden">
       <!-- PULSE CARDS -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Staff</p>
-            <h3 id="pulse-total" class="text-3xl font-black text-[#232272] mt-1">3</h3>
+            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Staff</p>
+            <h3 id="pulse-total" class="text-2xl font-black text-[#232272] mt-1">6</h3>
           </div>
-          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-[#232272] flex items-center justify-center">
-            <i data-lucide="users" class="w-6 h-6"></i>
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-[#232272] flex items-center justify-center">
+            <i data-lucide="users" class="w-5 h-5"></i>
           </div>
         </div>
 
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Present Today</p>
-            <h3 id="pulse-present" class="text-3xl font-black text-[#156D38] mt-1">0</h3>
+            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Present Today</p>
+            <h3 id="pulse-present" class="text-2xl font-black text-[#156D38] mt-1">0</h3>
           </div>
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center">
-            <i data-lucide="user-check" class="w-6 h-6"></i>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center">
+            <i data-lucide="user-check" class="w-5 h-5"></i>
           </div>
         </div>
 
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Late Arrivals</p>
-            <h3 id="pulse-late" class="text-3xl font-black text-amber-600 mt-1">0</h3>
+            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Late Arrivals</p>
+            <h3 id="pulse-late" class="text-2xl font-black text-amber-600 mt-1">0</h3>
           </div>
-          <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-            <i data-lucide="clock-alert" class="w-6 h-6"></i>
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <i data-lucide="clock-alert" class="w-5 h-5"></i>
           </div>
         </div>
 
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
-            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Absent Today</p>
-            <h3 id="pulse-absent" class="text-3xl font-black text-rose-600 mt-1">0</h3>
+            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">On Leave</p>
+            <h3 id="pulse-leave" class="text-2xl font-black text-blue-600 mt-1">0</h3>
           </div>
-          <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-            <i data-lucide="user-x" class="w-6 h-6"></i>
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <i data-lucide="calendar" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Absent Today</p>
+            <h3 id="pulse-absent" class="text-2xl font-black text-rose-600 mt-1">0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <i data-lucide="user-x" class="w-5 h-5"></i>
           </div>
         </div>
       </div>
@@ -306,11 +320,11 @@
                 <th class="py-3 px-4">Basic Salary</th>
                 <th class="py-3 px-4">Daily Wage</th>
                 <th class="py-3 px-4">Absent Cuts</th>
-                <th class="py-3 px-4">Late Penalties</th>
-                <th class="py-3 px-4">Advance Taken</th>
-                <th class="py-3 px-4">Overtime Pay</th>
+                <th class="py-3 px-4">Extra Leaves (>2 Free)</th>
+                <th class="py-3 px-4">Extra Half-Days (>4 Free)</th>
+                <th class="py-3 px-4">Khata Deductions</th>
                 <th class="py-3 px-4">Net Payable</th>
-                <th class="py-3 px-4">Slip</th>
+                <th class="py-3 px-4 text-center">Slip</th>
               </tr>
             </thead>
             <tbody id="payroll-tbody" class="divide-y divide-slate-100">
@@ -333,36 +347,45 @@
         <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <h3 class="font-bold text-[#232272] text-base mb-1 flex items-center gap-2">
             <i data-lucide="hand-coins" class="w-5 h-5 text-[#156D38]"></i>
-            Counter Drawer Advance Entry
+            Staff Khata Outflow Entry
           </h3>
-          <p class="text-xs text-slate-500 mb-4">Larkay ko counter daraz se advance diye gaye paise enter karein. Yeh month-end par salary se khud minus hon ge.</p>
+          <p class="text-xs text-slate-500 mb-4">Counter daraz cash advance ya pharmacy medicine credit purchase enter karein. Month-end salary se khud minus hon ge.</p>
 
           <form onsubmit="submitAdvance(event)" class="space-y-3">
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Select Staff</label>
-              <select id="advance-staff" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold">
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Select Staff *</label>
+              <select id="advance-staff" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800">
                 <!-- Populated via JS -->
               </select>
             </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Advance Amount (PKR)</label>
-              <input type="number" id="advance-amount" required placeholder="e.g. 2000" min="100" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Khata Type *</label>
+                <select id="advance-type" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+                  <option value="ADVANCE">Cash Advance (Counter)</option>
+                  <option value="MEDICINE_CREDIT">Medicine Credit (Store)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Amount (PKR) *</label>
+                <input type="number" id="advance-amount" required placeholder="e.g. 2000" min="10" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800">
+              </div>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Reason / Note</label>
-              <input type="text" id="advance-reason" placeholder="e.g. Family Emergency / Home Expense" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold">
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Reason / Medicine Description</label>
+              <input type="text" id="advance-reason" placeholder="e.g. Family Emergency or Panadol + Surbex Z" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800">
             </div>
             <button type="submit" class="w-full bg-[#156D38] hover:bg-emerald-800 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 shadow">
               <i data-lucide="plus-circle" class="w-4 h-4"></i>
-              Record Advance Outflow
+              Record Khata Entry
             </button>
           </form>
         </div>
 
         <!-- ADVANCE LEDGER TABLE -->
         <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 class="font-bold text-slate-800 text-base mb-1">Advance Cash Ledger</h3>
-          <p class="text-xs text-slate-500 mb-4">Unsettled advances pending deduction in next payroll</p>
+          <h3 class="font-bold text-slate-800 text-base mb-1">Staff Khata &amp; Advance Ledger</h3>
+          <p class="text-xs text-slate-500 mb-4">Cash advances &amp; medicine credits pending auto-deduction in monthly payroll</p>
 
           <div class="overflow-x-auto">
             <table class="w-full text-left text-sm border-collapse">
@@ -370,6 +393,7 @@
                 <tr>
                   <th class="py-2.5 px-3">Date</th>
                   <th class="py-2.5 px-3">Staff</th>
+                  <th class="py-2.5 px-3">Type</th>
                   <th class="py-2.5 px-3">Amount</th>
                   <th class="py-2.5 px-3">Reason</th>
                   <th class="py-2.5 px-3">Status</th>
@@ -388,33 +412,128 @@
     <!-- ================================================================= -->
     <!-- TAB 5: STAFF DIRECTORY & REGISTRATION -->
     <!-- ================================================================= -->
+    <!-- TAB 5: STAFF DIRECTORY & REGISTRATION -->
+    <!-- ================================================================= -->
     <section id="view-staff" class="space-y-6 hidden">
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
+        <!-- HEADER & ACTIONS -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
           <div>
-            <h3 class="font-bold text-slate-800 text-base">Mumtaz Pharmacy Staff Directory</h3>
-            <p class="text-xs text-slate-500">Registered staff, assigned shift timings, and monthly basic pay</p>
+            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+              <i data-lucide="users" class="w-5 h-5 text-[#232272]"></i>
+              Mumtaz Pharmacy Staff Management
+            </h3>
+            <p class="text-xs text-slate-500">Staff profiling, duty shifts, basic pay, and comprehensive employee dossiers</p>
           </div>
-          <button onclick="openStaffModal()" class="bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-2 shadow">
-            <i data-lucide="user-plus" class="w-4 h-4"></i> Add New Staff
-          </button>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <!-- LIVE SEARCH BAR -->
+            <div class="relative min-w-[260px]">
+              <input type="text" id="staff-search-input" oninput="handleStaffSearch()" placeholder="Search Name, CNIC, Role, Phone..." class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-4 py-2 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+            </div>
+
+            <button onclick="openStaffModal()" class="bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2 px-4 rounded-lg text-xs flex items-center gap-2 shadow">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> Add New Staff
+            </button>
+          </div>
         </div>
 
+        <!-- STAFF DIRECTORY TABLE -->
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-sm">
             <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
               <tr>
                 <th class="py-3 px-4">Staff ID</th>
-                <th class="py-3 px-4">Name</th>
-                <th class="py-3 px-4">Role</th>
-                <th class="py-3 px-4">Phone</th>
+                <th class="py-3 px-4">Employee Details</th>
+                <th class="py-3 px-4">Designation</th>
+                <th class="py-3 px-4">Address</th>
                 <th class="py-3 px-4">Assigned Shift</th>
-                <th class="py-3 px-4">Monthly Salary</th>
-                <th class="py-3 px-4">Fingerprint</th>
+                <th class="py-3 px-4">Basic Salary</th>
+                <th class="py-3 px-4">Joining Date</th>
+                <th class="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody id="staff-directory-tbody" class="divide-y divide-slate-100">
               <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB 6: MONTHLY ATTENDANCE MATRIX & REPORTS (Feature 6 & 17) -->
+    <!-- ================================================================= -->
+    <section id="view-reports" class="space-y-6 hidden">
+      <!-- HEADER CONTROLLER -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+            <i data-lucide="calendar-range" class="w-5 h-5 text-[#232272]"></i>
+            Monthly Attendance Register &amp; Matrix
+          </h3>
+          <p class="text-xs text-slate-500">Day-by-day attendance status across all staff with printable official register</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <select id="report-month" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-800">
+            <option value="7">July 2026</option>
+            <option value="8">August 2026</option>
+            <option value="9" selected>September 2026 (Current)</option>
+            <option value="10">October 2026</option>
+          </select>
+          <select id="report-year" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-800">
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+          <button onclick="loadMonthlyReport()" class="bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-2 shadow">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+            Load Register
+          </button>
+          <button onclick="printMonthlyReport()" class="bg-[#156D38] hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-2 shadow">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            Print Report
+          </button>
+        </div>
+      </div>
+
+      <!-- LEGEND / BADGE EXPLANATION -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+        <span class="font-bold text-slate-600">Register Key:</span>
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="inline-flex items-center gap-1.5"><span class="w-5 h-5 rounded bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-[10px]">P</span> Present / On Time</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-5 h-5 rounded bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-[10px]">L</span> Late Arrival</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-5 h-5 rounded bg-purple-100 text-purple-800 font-bold flex items-center justify-center text-[10px]">HD</span> Half-Day</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-5 h-5 rounded bg-blue-100 text-blue-800 font-bold flex items-center justify-center text-[10px]">LV</span> Approved Leave</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-5 h-5 rounded bg-rose-100 text-rose-800 font-bold flex items-center justify-center text-[10px]">A</span> Absent</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-5 h-5 rounded bg-slate-100 text-slate-400 font-bold flex items-center justify-center text-[10px]">—</span> Rest / Future</span>
+        </div>
+      </div>
+
+      <!-- MONTHLY MATRIX GRID -->
+      <div id="printable-report" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-5">
+        <div class="mb-4 pb-3 border-b border-slate-200 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img src="/logo.jpg" alt="Mumtaz Pharmacy" class="h-9 w-auto">
+            <div>
+              <h4 class="font-black text-[#232272] text-base leading-tight">MUMTAZ PHARMACY — MONTHLY ATTENDANCE REGISTER</h4>
+              <p id="report-period-label" class="text-xs text-slate-500 font-medium">Month: September 2026 • Official Master Record</p>
+            </div>
+          </div>
+          <div class="text-right text-xs text-slate-400">
+            <div>Verified Biometric Engine</div>
+            <div id="report-generated-on" class="font-mono text-[10px]"></div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-center border-collapse text-xs">
+            <thead id="report-thead" class="bg-slate-100 text-slate-700 font-bold border-b border-slate-300">
+              <!-- Dynamically rendered days 1..30/31 -->
+            </thead>
+            <tbody id="report-tbody" class="divide-y divide-slate-200">
+              <!-- Dynamically rendered staff rows -->
             </tbody>
           </table>
         </div>
@@ -472,17 +591,17 @@
               <td class="py-1.5" id="slip-absent-desc">Absent Deduction (0 days)</td>
               <td id="slip-absent" class="py-1.5 text-right">- Rs. 0.00</td>
             </tr>
-            <tr class="text-amber-600">
-              <td class="py-1.5" id="slip-late-desc">Late Penalty (0 lates)</td>
-              <td id="slip-late" class="py-1.5 text-right">- Rs. 0.00</td>
+            <tr class="text-rose-600">
+              <td class="py-1.5" id="slip-leave-desc">Extra Leaves Cut (>2 Allowed)</td>
+              <td id="slip-leave" class="py-1.5 text-right">- Rs. 0.00</td>
+            </tr>
+            <tr class="text-purple-700">
+              <td class="py-1.5" id="slip-halfday-desc">Extra Half-Days Cut (>4 Allowed)</td>
+              <td id="slip-halfday" class="py-1.5 text-right">- Rs. 0.00</td>
             </tr>
             <tr class="text-rose-600">
-              <td class="py-1.5">Advance Taken from Counter Till</td>
+              <td class="py-1.5">Staff Khata &amp; Advance Deductions</td>
               <td id="slip-advance" class="py-1.5 text-right">- Rs. 0.00</td>
-            </tr>
-            <tr class="text-emerald-700">
-              <td class="py-1.5" id="slip-overtime-desc">Overtime Pay (0 mins)</td>
-              <td id="slip-overtime" class="py-1.5 text-right">+ Rs. 0.00</td>
             </tr>
             <tr class="border-t-2 border-[#232272] font-black text-sm bg-indigo-50/70">
               <td class="py-2 text-[#232272]">NET PAYABLE SALARY</td>
@@ -512,6 +631,279 @@
     </div>
   </div>
 
+  <!-- ================================================================= -->
+  <!-- MODAL: ADD / EDIT STAFF -->
+  <!-- ================================================================= -->
+  <div id="staff-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200">
+      <button onclick="closeStaffModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-[#232272] flex items-center justify-center">
+          <i data-lucide="user-check" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 id="staff-modal-title" class="text-base font-bold text-slate-800">Add New Staff Member</h3>
+          <p class="text-xs text-slate-500">Employee dossier profiling &amp; shift assignment</p>
+        </div>
+      </div>
+
+      <form onsubmit="submitStaffForm(event)" class="space-y-3">
+        <input type="hidden" id="staff-form-id" value="">
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name *</label>
+          <input type="text" id="staff-form-name" required placeholder="e.g. Muhammad Kashif" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">CNIC Number *</label>
+            <input type="text" id="staff-form-cnic" required placeholder="35202-XXXXXXX-X" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number</label>
+            <input type="text" id="staff-form-phone" placeholder="0300-XXXXXXX" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Home Address</label>
+          <input type="text" id="staff-form-address" placeholder="e.g. House 12, St 4, Model Town, Lahore" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Designation / Role *</label>
+            <input type="text" id="staff-form-designation" required placeholder="e.g. Senior Pharmacist" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Monthly Basic Salary (PKR) *</label>
+            <input type="number" id="staff-form-salary" required min="1000" placeholder="e.g. 40000" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Assigned Shift *</label>
+            <select id="staff-form-shift" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+              <option value="1">Morning Shift (09:00 - 17:00)</option>
+              <option value="2">Evening / Night Shift (17:00 - 01:00)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Joining Date *</label>
+            <input type="date" id="staff-form-joining" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-3">
+          <button type="submit" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 shadow">
+            <i data-lucide="check" class="w-4 h-4"></i> Save Staff Member
+          </button>
+          <button type="button" onclick="closeStaffModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: COMPLETE STAFF HISTORY & DOSSIER (Feature 19) -->
+  <!-- ================================================================= -->
+  <div id="staff-history-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative border border-slate-200 max-h-[90vh] flex flex-col">
+      <button onclick="closeStaffHistoryModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <!-- DOSSIER HEADER -->
+      <div class="flex items-center gap-4 pb-4 border-b border-slate-200">
+        <div class="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#232272] font-black text-xl">
+          <span id="dossier-avatar">MR</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 id="dossier-name" class="text-lg font-black text-[#232272]">Staff Name</h3>
+            <span id="dossier-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">Active</span>
+          </div>
+          <p id="dossier-sub" class="text-xs text-slate-500">Designation • CNIC: 35202-XXXXXXX-X</p>
+        </div>
+      </div>
+
+      <!-- BIO SUMMARY METRICS -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <span class="text-[10px] uppercase font-bold text-slate-400">Monthly Salary</span>
+          <div id="dossier-salary" class="text-sm font-black text-[#156D38]">Rs. 0</div>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <span class="text-[10px] uppercase font-bold text-slate-400">Joining Date</span>
+          <div id="dossier-joining" class="text-sm font-bold text-slate-700">YYYY-MM-DD</div>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <span class="text-[10px] uppercase font-bold text-slate-400">Total Present Days</span>
+          <div id="dossier-present-days" class="text-sm font-black text-indigo-700">0 Days</div>
+        </div>
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <span class="text-[10px] uppercase font-bold text-slate-400">Khata Balance</span>
+          <div id="dossier-advance-bal" class="text-sm font-black text-rose-600">Rs. 0</div>
+        </div>
+      </div>
+
+      <!-- BIO ADDRESS & PHONE -->
+      <div class="bg-indigo-50/50 p-3 rounded-xl text-xs text-slate-600 mb-4 flex flex-col sm:flex-row justify-between gap-2 border border-indigo-100">
+        <div><strong>Address:</strong> <span id="dossier-address">—</span></div>
+        <div><strong>Phone:</strong> <span id="dossier-phone">—</span></div>
+        <div><strong>Shift:</strong> <span id="dossier-shift">—</span></div>
+      </div>
+
+      <!-- DOSSIER TABS -->
+      <div class="flex border-b border-slate-200 text-xs font-bold gap-4 mb-3">
+        <button onclick="switchDossierTab('att')" id="dossier-tab-att" class="pb-2 border-b-2 border-[#232272] text-[#232272] flex items-center gap-1.5">
+          <i data-lucide="clock" class="w-3.5 h-3.5"></i> Attendance History
+        </button>
+        <button onclick="switchDossierTab('leaves')" id="dossier-tab-leaves" class="pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
+          <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Leaves Taken
+        </button>
+        <button onclick="switchDossierTab('adv')" id="dossier-tab-adv" class="pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
+          <i data-lucide="banknote" class="w-3.5 h-3.5"></i> Khata &amp; Advances
+        </button>
+      </div>
+
+      <!-- TAB 1: ATTENDANCE HISTORY -->
+      <div id="dossier-content-att" class="flex-1 overflow-y-auto max-h-[260px]">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="bg-slate-50 text-slate-500 font-bold sticky top-0">
+            <tr>
+              <th class="py-2 px-3">Date</th>
+              <th class="py-2 px-3">Time-IN</th>
+              <th class="py-2 px-3">Time-OUT</th>
+              <th class="py-2 px-3">Status</th>
+              <th class="py-2 px-3">Hours Worked</th>
+            </tr>
+          </thead>
+          <tbody id="dossier-att-tbody" class="divide-y divide-slate-100">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TAB 2: LEAVES HISTORY -->
+      <div id="dossier-content-leaves" class="flex-1 overflow-y-auto max-h-[260px] hidden">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="bg-slate-50 text-slate-500 font-bold sticky top-0">
+            <tr>
+              <th class="py-2 px-3">Date</th>
+              <th class="py-2 px-3">Reason</th>
+              <th class="py-2 px-3">Status</th>
+            </tr>
+          </thead>
+          <tbody id="dossier-leaves-tbody" class="divide-y divide-slate-100">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TAB 3: ADVANCE KHATA HISTORY -->
+      <div id="dossier-content-adv" class="flex-1 overflow-y-auto max-h-[260px] hidden">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="bg-slate-50 text-slate-500 font-bold sticky top-0">
+            <tr>
+              <th class="py-2 px-3">Date</th>
+              <th class="py-2 px-3">Type</th>
+              <th class="py-2 px-3">Amount</th>
+              <th class="py-2 px-3">Reason</th>
+              <th class="py-2 px-3">Status</th>
+            </tr>
+          </thead>
+          <tbody id="dossier-adv-tbody" class="divide-y divide-slate-100">
+            <!-- Rendered via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pt-4 mt-2 border-t border-slate-100 text-right">
+        <button onclick="closeStaffHistoryModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-5 rounded-lg text-xs">
+          Close Dossier
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: MANUAL ATTENDANCE OVERRIDE (Feature 18) -->
+  <!-- ================================================================= -->
+  <div id="attendance-override-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200">
+      <button onclick="closeManualAttendanceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+          <i data-lucide="edit" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800">Admin Attendance Adjustment</h3>
+          <p class="text-xs text-slate-500">Manual timestamp &amp; status override</p>
+        </div>
+      </div>
+
+      <form onsubmit="submitAttendanceOverride(event)" class="space-y-3">
+        <input type="hidden" id="override-staff-id" value="">
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Staff Member</label>
+          <input type="text" id="override-staff-name" disabled class="w-full bg-slate-100 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-700">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Attendance Date</label>
+          <input type="date" id="override-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#232272]">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Time-IN (HH:MM:SS)</label>
+            <input type="text" id="override-time-in" placeholder="09:00:00" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-mono font-semibold text-slate-800">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Time-OUT (HH:MM:SS)</label>
+            <input type="text" id="override-time-out" placeholder="17:00:00" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-mono font-semibold text-slate-800">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Duty Status *</label>
+          <select id="override-status" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+            <option value="ON_TIME">ON TIME (Present)</option>
+            <option value="LATE">LATE</option>
+            <option value="HALF_DAY">HALF DAY</option>
+            <option value="ABSENT">ABSENT</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Adjustment Reason / Notes</label>
+          <input type="text" id="override-notes" placeholder="e.g. Scanner power issue / Counter rush" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+        </div>
+
+        <div class="flex gap-3 pt-3">
+          <button type="submit" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow">
+            <i data-lucide="check" class="w-4 h-4"></i> Save Adjustment
+          </button>
+          <button type="button" onclick="closeManualAttendanceModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- JAVASCRIPT LOGIC -->
   <script>
     let staffList = [];
@@ -536,7 +928,7 @@
 
     // 2. Navigation Tabs
     function switchTab(tabId) {
-      ['kiosk', 'live', 'payroll', 'advances', 'staff'].forEach(t => {
+      ['kiosk', 'live', 'payroll', 'advances', 'staff', 'reports'].forEach(t => {
         document.getElementById(`view-${t}`).classList.add('hidden');
         document.getElementById(`tab-${t}`).classList.remove('border-[#156D38]', 'text-white');
         document.getElementById(`tab-${t}`).classList.add('border-transparent', 'text-indigo-200');
@@ -548,6 +940,7 @@
       if (tabId === 'live') loadTodayAttendance();
       if (tabId === 'advances') loadAdvances();
       if (tabId === 'staff') renderStaffDirectory();
+      if (tabId === 'reports') loadMonthlyReport();
       lucide.createIcons();
     }
 
@@ -678,6 +1071,7 @@
         document.getElementById('pulse-total').innerText = data.total_staff;
         document.getElementById('pulse-present').innerText = data.present_count;
         document.getElementById('pulse-late').innerText = data.late_count;
+        document.getElementById('pulse-leave').innerText = data.leave_count || 0;
         document.getElementById('pulse-absent').innerText = data.absent_count;
 
         const tbody = document.getElementById('live-roster-tbody');
@@ -687,6 +1081,10 @@
             badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">ON TIME</span>';
           } else if (item.status === 'LATE') {
             badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">LATE (${item.late_minutes}m)</span>`;
+          } else if (item.status === 'HALF_DAY') {
+            badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">HALF DAY</span>';
+          } else if (item.status === 'LEAVE') {
+            badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800" title="${item.leave_reason || 'Approved Leave'}">ON LEAVE</span>`;
           } else if (item.status === 'ABSENT') {
             badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">ABSENT</span>';
           } else {
@@ -696,21 +1094,78 @@
           return `
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="py-3 px-4 font-bold text-slate-800">${item.name}</td>
-              <td class="py-3 px-4 text-slate-600">${item.role}</td>
+              <td class="py-3 px-4 text-slate-600">${item.designation || item.role}</td>
               <td class="py-3 px-4 text-xs font-mono text-slate-500">${item.shift_name} (${item.start_time} - ${item.end_time})</td>
               <td class="py-3 px-4 font-mono font-semibold text-emerald-700">${item.time_in || '—'}</td>
               <td class="py-3 px-4 font-mono font-semibold text-slate-600">${item.time_out || '—'}</td>
               <td class="py-3 px-4">${badge}</td>
               <td class="py-3 px-4">
-                <button onclick="markApprovedLeave(${item.id})" class="text-xs text-indigo-700 hover:text-indigo-900 font-semibold underline">
-                  Approve Leave
-                </button>
+                <div class="flex items-center gap-1.5">
+                  <button onclick="openManualAttendanceModal(${item.id}, '${item.name}', '${item.time_in || ''}', '${item.time_out || ''}', '${item.status || 'ON_TIME'}')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-[#232272] px-2.5 py-1 rounded-md font-bold transition-colors">
+                    Edit
+                  </button>
+                  <button onclick="markApprovedLeave(${item.id})" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-[#156D38] px-2.5 py-1 rounded-md font-bold transition-colors">
+                    Leave
+                  </button>
+                </div>
               </td>
             </tr>
           `;
         }).join('');
       } catch (err) {
         console.error("Failed to load today attendance", err);
+      }
+    }
+
+    // Manual Attendance Override Functions (Feature 18)
+    function openManualAttendanceModal(staffId, staffName, timeIn, timeOut, status) {
+      document.getElementById('override-staff-id').value = staffId;
+      document.getElementById('override-staff-name').value = staffName;
+      document.getElementById('override-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('override-time-in').value = timeIn || '09:00:00';
+      document.getElementById('override-time-out').value = timeOut || '17:00:00';
+      document.getElementById('override-status').value = status && status !== 'PENDING' ? status : 'ON_TIME';
+      document.getElementById('override-notes').value = 'Manual Admin Correction';
+      document.getElementById('attendance-override-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeManualAttendanceModal() {
+      document.getElementById('attendance-override-modal').classList.add('hidden');
+    }
+
+    async function submitAttendanceOverride(e) {
+      e.preventDefault();
+      const staffId = parseInt(document.getElementById('override-staff-id').value);
+      const dt = document.getElementById('override-date').value;
+      const timeIn = document.getElementById('override-time-in').value.trim();
+      const timeOut = document.getElementById('override-time-out').value.trim();
+      const status = document.getElementById('override-status').value;
+      const notes = document.getElementById('override-notes').value.trim();
+
+      try {
+        const res = await fetch('/api/attendance/override', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            staff_id: staffId,
+            date: dt,
+            time_in: timeIn,
+            time_out: timeOut,
+            status: status,
+            notes: notes
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeManualAttendanceModal();
+          loadTodayAttendance();
+          alert("Attendance record updated successfully!");
+        } else {
+          alert(data.detail || "Error updating attendance");
+        }
+      } catch (err) {
+        console.error("Override error", err);
       }
     }
 
@@ -743,16 +1198,20 @@
         const tbody = document.getElementById('payroll-tbody');
         tbody.innerHTML = data.sheet.map(p => `
           <tr class="hover:bg-slate-50 font-medium">
-            <td class="py-3 px-4 font-bold text-slate-800">${p.staff_name} <br><span class="text-[11px] font-normal text-slate-400">${p.role}</span></td>
+            <td class="py-3 px-4 font-bold text-slate-800">${p.staff_name} <br><span class="text-[11px] font-normal text-slate-400">${p.designation || p.role}</span></td>
             <td class="py-3 px-4">Rs. ${p.basic_salary.toLocaleString()}</td>
             <td class="py-3 px-4 text-xs font-mono text-slate-500">Rs. ${p.daily_wage.toFixed(2)}</td>
             <td class="py-3 px-4 text-rose-600 font-semibold">- Rs. ${p.absent_cut.toLocaleString()} <span class="text-[11px] font-normal block text-slate-400">(${p.absent_days} days)</span></td>
-            <td class="py-3 px-4 text-amber-600 font-semibold">- Rs. ${p.late_cut.toLocaleString()} <span class="text-[11px] font-normal block text-slate-400">(${p.late_count} lates)</span></td>
+            <td class="py-3 px-4 ${p.extra_leaves > 0 ? 'text-rose-600' : 'text-slate-500'} font-semibold">
+              ${p.extra_leaves > 0 ? `- Rs. ${p.extra_leave_cut.toLocaleString()} <span class="text-[11px] font-normal block text-rose-500">(${p.extra_leaves} unpaid)</span>` : '<span class="text-xs text-emerald-700">Within Quota (0 cut)</span>'}
+            </td>
+            <td class="py-3 px-4 ${p.extra_half_days > 0 ? 'text-purple-700' : 'text-slate-500'} font-semibold">
+              ${p.extra_half_days > 0 ? `- Rs. ${p.extra_half_day_cut.toLocaleString()} <span class="text-[11px] font-normal block text-purple-600">(${p.extra_half_days} excess)</span>` : '<span class="text-xs text-emerald-700">Within Quota (0 cut)</span>'}
+            </td>
             <td class="py-3 px-4 text-rose-600 font-semibold">- Rs. ${p.advances_deducted.toLocaleString()}</td>
-            <td class="py-3 px-4 text-emerald-600 font-semibold">+ Rs. ${p.overtime_pay.toLocaleString()}</td>
             <td class="py-3 px-4 font-black text-[#156D38] text-base">Rs. ${p.net_payable.toLocaleString()}</td>
-            <td class="py-3 px-4">
-              <button onclick="openSlipModal(${p.staff_id})" class="bg-[#232272] hover:bg-indigo-900 text-white text-xs px-2.5 py-1.5 rounded font-bold flex items-center gap-1 shadow">
+            <td class="py-3 px-4 text-center">
+              <button onclick="openSlipModal(${p.staff_id})" class="bg-[#232272] hover:bg-indigo-900 text-white text-xs px-2.5 py-1.5 rounded font-bold flex items-center gap-1 shadow mx-auto">
                 <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Payslip
               </button>
             </td>
@@ -770,20 +1229,22 @@
       const p = currentPayrollData.find(x => x.staff_id === staffId);
       if (!p) return;
 
-      document.getElementById('slip-month-label').innerText = `September 2026`;
+      const monthName = document.getElementById('payroll-month').selectedOptions[0].text.split(' ')[0];
+      const yearVal = document.getElementById('payroll-year').value;
+      document.getElementById('slip-month-label').innerText = `${monthName} ${yearVal}`;
       document.getElementById('slip-name').innerText = p.staff_name;
-      document.getElementById('slip-role').innerText = p.role;
+      document.getElementById('slip-role').innerText = p.designation || p.role;
       document.getElementById('slip-daily').innerText = `Rs. ${p.daily_wage.toFixed(2)}`;
       document.getElementById('slip-days').innerText = `${p.days_in_month} Days`;
 
       document.getElementById('slip-basic').innerText = `Rs. ${p.basic_salary.toLocaleString()}`;
       document.getElementById('slip-absent-desc').innerText = `Absent Deduction (${p.absent_days} days)`;
       document.getElementById('slip-absent').innerText = `- Rs. ${p.absent_cut.toLocaleString()}`;
-      document.getElementById('slip-late-desc').innerText = `Late Penalties (${p.late_count} lates)`;
-      document.getElementById('slip-late').innerText = `- Rs. ${p.late_cut.toLocaleString()}`;
+      document.getElementById('slip-leave-desc').innerText = `Extra Leaves Cut (${p.extra_leaves} beyond 2 free)`;
+      document.getElementById('slip-leave').innerText = `- Rs. ${p.extra_leave_cut.toLocaleString()}`;
+      document.getElementById('slip-halfday-desc').innerText = `Extra Half-Days Cut (${p.extra_half_days} beyond 4 free)`;
+      document.getElementById('slip-halfday').innerText = `- Rs. ${p.extra_half_day_cut.toLocaleString()}`;
       document.getElementById('slip-advance').innerText = `- Rs. ${p.advances_deducted.toLocaleString()}`;
-      document.getElementById('slip-overtime-desc').innerText = `Overtime Pay (${p.overtime_minutes} mins)`;
-      document.getElementById('slip-overtime').innerText = `+ Rs. ${p.overtime_pay.toLocaleString()}`;
       document.getElementById('slip-net').innerText = `Rs. ${p.net_payable.toLocaleString()}`;
 
       document.getElementById('slip-modal').classList.remove('hidden');
@@ -794,29 +1255,35 @@
       document.getElementById('slip-modal').classList.add('hidden');
     }
 
-    // 8. Staff Advances
+    // 8. Staff Advances & Medicine Credits
     async function loadAdvances() {
       try {
         const res = await fetch('/api/advances');
         const advances = await res.json();
         const tbody = document.getElementById('advances-tbody');
         if (advances.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-400">Koi advance record mojood nahi.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">Koi advance ya medicine credit record mojood nahi.</td></tr>';
           return;
         }
-        tbody.innerHTML = advances.map(a => `
+        tbody.innerHTML = advances.map(a => {
+          const typeBadge = a.entry_type === 'MEDICINE_CREDIT' 
+            ? '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">Medicine Credit</span>'
+            : '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">Cash Advance</span>';
+          return `
           <tr>
             <td class="py-2.5 px-3 font-mono text-xs text-slate-500">${a.date}</td>
             <td class="py-2.5 px-3 font-bold text-slate-800">${a.staff_name}</td>
+            <td class="py-2.5 px-3">${typeBadge}</td>
             <td class="py-2.5 px-3 font-black text-rose-600">Rs. ${a.amount.toLocaleString()}</td>
-            <td class="py-2.5 px-3 text-xs text-slate-600">${a.reason || 'Till Cash Advance'}</td>
+            <td class="py-2.5 px-3 text-xs text-slate-600">${a.reason || '—'}</td>
             <td class="py-2.5 px-3">
-              <span class="text-[11px] font-bold px-2 py-0.5 rounded ${a.is_settled ? 'bg-slate-100 text-slate-600' : 'bg-amber-100 text-amber-800'}">
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded ${a.is_settled ? 'bg-slate-100 text-slate-600' : 'bg-rose-100 text-rose-800'}">
                 ${a.is_settled ? 'Settled' : 'Pending Deduction'}
               </span>
             </td>
           </tr>
-        `).join('');
+        `;
+        }).join('');
       } catch (err) {
         console.error("Failed to load advances", err);
       }
@@ -825,6 +1292,7 @@
     async function submitAdvance(e) {
       e.preventDefault();
       const staffId = document.getElementById('advance-staff').value;
+      const type = document.getElementById('advance-type').value;
       const amount = document.getElementById('advance-amount').value;
       const reason = document.getElementById('advance-reason').value;
 
@@ -833,6 +1301,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           staff_id: parseInt(staffId),
+          entry_type: type,
           amount: parseFloat(amount),
           reason: reason
         })
@@ -841,28 +1310,377 @@
       document.getElementById('advance-amount').value = '';
       document.getElementById('advance-reason').value = '';
       loadAdvances();
-      alert("Cash Advance recorded successfully!");
+      alert(type === 'MEDICINE_CREDIT' ? "Medicine Credit entry recorded successfully!" : "Cash Advance recorded successfully!");
+    }
+    // 9. Staff Directory & Management
+    function renderStaffDirectory(list = null) {
+      const data = list !== null ? list : staffList;
+      const tbody = document.getElementById('staff-directory-tbody');
+      
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-slate-400">Koi staff member nahi mila.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map(s => {
+        const designation = s.designation || s.role || 'Staff';
+        const address = s.address || '—';
+        const joining = s.joining_date || '—';
+        const cnic = s.cnic || '—';
+        const phone = s.phone || '—';
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-3 px-4 font-mono font-bold text-slate-400">#${s.id}</td>
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-800 text-sm">${s.name}</div>
+              <div class="text-[11px] font-mono text-slate-400 mt-0.5">CNIC: ${cnic} • ${phone}</div>
+            </td>
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-50 text-[#232272] border border-indigo-100">
+                ${designation}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-xs text-slate-600 max-w-[180px] truncate" title="${address}">
+              ${address}
+            </td>
+            <td class="py-3 px-4 text-xs font-mono text-indigo-900">
+              <span class="font-semibold">${s.shift_name}</span>
+              <div class="text-[10px] text-slate-400">(${s.start_time} - ${s.end_time})</div>
+            </td>
+            <td class="py-3 px-4 font-black text-[#156D38] text-sm">
+              Rs. ${s.monthly_salary.toLocaleString()}
+            </td>
+            <td class="py-3 px-4 text-xs font-mono text-slate-500">
+              ${joining}
+            </td>
+            <td class="py-3 px-4 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="openStaffHistoryModal(${s.id})" title="View Complete History & Dossier" class="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-[#232272] transition-colors">
+                  <i data-lucide="file-text" class="w-4 h-4"></i>
+                </button>
+                <button onclick="openStaffModal(${s.id})" title="Edit Staff Profile" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deleteStaff(${s.id}, '${s.name}')" title="Deactivate Staff" class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
     }
 
-    // 9. Staff Directory Table
-    function renderStaffDirectory() {
-      const tbody = document.getElementById('staff-directory-tbody');
-      tbody.innerHTML = staffList.map(s => `
-        <tr class="hover:bg-slate-50 font-medium">
-          <td class="py-3 px-4 font-mono font-bold text-slate-400">#${s.id}</td>
-          <td class="py-3 px-4 font-bold text-slate-800">${s.name}</td>
-          <td class="py-3 px-4 text-slate-600">${s.role}</td>
-          <td class="py-3 px-4 font-mono text-xs text-slate-500">${s.phone || '—'}</td>
-          <td class="py-3 px-4 text-xs font-mono text-indigo-900">${s.shift_name} (${s.start_time} - ${s.end_time})</td>
-          <td class="py-3 px-4 font-bold text-[#156D38]">Rs. ${s.monthly_salary.toLocaleString()}</td>
-          <td class="py-3 px-4">
-            <span class="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold">
-              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Enrolled
-            </span>
-          </td>
-        </tr>
-      `).join('');
+    // Live Instant Search Filter
+    function handleStaffSearch() {
+      const q = document.getElementById('staff-search-input').value.toLowerCase().trim();
+      if (!q) {
+        renderStaffDirectory(staffList);
+        return;
+      }
+      const filtered = staffList.filter(s => {
+        const nameMatch = (s.name || '').toLowerCase().includes(q);
+        const cnicMatch = (s.cnic || '').toLowerCase().includes(q);
+        const phoneMatch = (s.phone || '').toLowerCase().includes(q);
+        const desigMatch = ((s.designation || s.role) || '').toLowerCase().includes(q);
+        const addressMatch = (s.address || '').toLowerCase().includes(q);
+        return nameMatch || cnicMatch || phoneMatch || desigMatch || addressMatch;
+      });
+      renderStaffDirectory(filtered);
+    }
+
+    // Modal: Open Add / Edit Staff
+    function openStaffModal(staffId = null) {
+      const modal = document.getElementById('staff-modal');
+      const title = document.getElementById('staff-modal-title');
+      const formId = document.getElementById('staff-form-id');
+
+      if (staffId) {
+        const staff = staffList.find(s => s.id === staffId);
+        if (!staff) return;
+        title.innerText = `Edit Staff Member (#${staff.id})`;
+        formId.value = staff.id;
+        document.getElementById('staff-form-name').value = staff.name || '';
+        document.getElementById('staff-form-cnic').value = staff.cnic || '';
+        document.getElementById('staff-form-phone').value = staff.phone || '';
+        document.getElementById('staff-form-address').value = staff.address || '';
+        document.getElementById('staff-form-designation').value = staff.designation || staff.role || '';
+        document.getElementById('staff-form-salary').value = staff.monthly_salary || '';
+        document.getElementById('staff-form-shift').value = staff.shift_id || 1;
+        document.getElementById('staff-form-joining').value = staff.joining_date || '';
+      } else {
+        title.innerText = 'Add New Staff Member';
+        formId.value = '';
+        document.getElementById('staff-form-name').value = '';
+        document.getElementById('staff-form-cnic').value = '';
+        document.getElementById('staff-form-phone').value = '';
+        document.getElementById('staff-form-address').value = '';
+        document.getElementById('staff-form-designation').value = '';
+        document.getElementById('staff-form-salary').value = '';
+        document.getElementById('staff-form-shift').value = '1';
+        document.getElementById('staff-form-joining').value = new Date().toISOString().split('T')[0];
+      }
+
+      modal.classList.remove('hidden');
       lucide.createIcons();
+    }
+
+    function closeStaffModal() {
+      document.getElementById('staff-modal').classList.add('hidden');
+    }
+
+    // Submit Add / Edit Staff Form
+    async function submitStaffForm(e) {
+      e.preventDefault();
+      const formId = document.getElementById('staff-form-id').value;
+      const payload = {
+        name: document.getElementById('staff-form-name').value.trim(),
+        cnic: document.getElementById('staff-form-cnic').value.trim(),
+        phone: document.getElementById('staff-form-phone').value.trim(),
+        address: document.getElementById('staff-form-address').value.trim(),
+        designation: document.getElementById('staff-form-designation').value.trim(),
+        monthly_salary: parseFloat(document.getElementById('staff-form-salary').value),
+        shift_id: parseInt(document.getElementById('staff-form-shift').value),
+        joining_date: document.getElementById('staff-form-joining').value
+      };
+
+      try {
+        let res;
+        if (formId) {
+          // Update
+          res = await fetch(`/api/staff/${formId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          // Create
+          res = await fetch('/api/staff', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
+
+        const data = await res.json();
+        if (data.success) {
+          closeStaffModal();
+          await loadStaff();
+          renderStaffDirectory();
+          alert(formId ? "Staff member profile updated successfully!" : "New staff member registered successfully!");
+        } else {
+          alert(data.detail || "Error saving staff member");
+        }
+      } catch (err) {
+        console.error("Save staff error", err);
+        alert("Server error occurred while saving staff member");
+      }
+    }
+
+    // Delete / Deactivate Staff
+    async function deleteStaff(staffId, staffName) {
+      if (!confirm(`Are you sure you want to deactivate ${staffName}?`)) return;
+
+      try {
+        const res = await fetch(`/api/staff/${staffId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          await loadStaff();
+          renderStaffDirectory();
+        } else {
+          alert(data.detail || "Error deactivating staff");
+        }
+      } catch (err) {
+        console.error("Delete error", err);
+      }
+    }
+
+    // Feature 19: Complete Staff History & Dossier Modal
+    async function openStaffHistoryModal(staffId) {
+      try {
+        const res = await fetch(`/api/staff/${staffId}/history`);
+        if (!res.ok) {
+          alert("Unable to fetch staff history");
+          return;
+        }
+        const data = await res.json();
+        const p = data.profile;
+
+        // Avatar initials
+        const initials = (p.name || 'S').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('dossier-avatar').innerText = initials;
+        document.getElementById('dossier-name').innerText = p.name;
+        document.getElementById('dossier-sub').innerText = `${p.designation || p.role} • CNIC: ${p.cnic || '—'}`;
+        document.getElementById('dossier-salary').innerText = `Rs. ${p.monthly_salary.toLocaleString()}`;
+        document.getElementById('dossier-joining').innerText = p.joining_date || '—';
+        document.getElementById('dossier-present-days').innerText = `${data.total_present_days} Days`;
+        document.getElementById('dossier-advance-bal').innerText = `Rs. ${data.unsettled_advances.toLocaleString()}`;
+        document.getElementById('dossier-address').innerText = p.address || '—';
+        document.getElementById('dossier-phone').innerText = p.phone || '—';
+        document.getElementById('dossier-shift').innerText = `${p.shift_name} (${p.start_time} - ${p.end_time})`;
+
+        // Render Attendance Logs
+        const attTbody = document.getElementById('dossier-att-tbody');
+        if (data.attendance.length === 0) {
+          attTbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400">Koi attendance record nahi mila.</td></tr>';
+        } else {
+          attTbody.innerHTML = data.attendance.map(a => `
+            <tr>
+              <td class="py-2 px-3 font-mono font-bold text-slate-700">${a.date}</td>
+              <td class="py-2 px-3 font-mono text-emerald-700">${a.time_in || '—'}</td>
+              <td class="py-2 px-3 font-mono text-slate-600">${a.time_out || '—'}</td>
+              <td class="py-2 px-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+                  a.status === 'ON_TIME' || a.status === 'PRESENT' ? 'bg-emerald-100 text-emerald-800' :
+                  a.status === 'LATE' ? 'bg-amber-100 text-amber-800' :
+                  a.status === 'HALF_DAY' ? 'bg-purple-100 text-purple-800' :
+                  'bg-rose-100 text-rose-800'
+                }">${a.status}</span>
+              </td>
+              <td class="py-2 px-3 text-slate-500 font-mono">${Math.floor((a.worked_minutes || 0) / 60)}h ${(a.worked_minutes || 0) % 60}m</td>
+            </tr>
+          `).join('');
+        }
+
+        // Render Leaves
+        const leavesTbody = document.getElementById('dossier-leaves-tbody');
+        if (data.leaves.length === 0) {
+          leavesTbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-400">Koi leave record nahi mila.</td></tr>';
+        } else {
+          leavesTbody.innerHTML = data.leaves.map(l => `
+            <tr>
+              <td class="py-2 px-3 font-mono font-bold text-slate-700">${l.date}</td>
+              <td class="py-2 px-3 text-slate-700">${l.reason || 'Medical / Personal Leave'}</td>
+              <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Approved</span></td>
+            </tr>
+          `).join('');
+        }
+
+        // Render Advances
+        const advTbody = document.getElementById('dossier-adv-tbody');
+        if (data.advances.length === 0) {
+          advTbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400">Koi advance khata record nahi mila.</td></tr>';
+        } else {
+          advTbody.innerHTML = data.advances.map(ad => `
+            <tr>
+              <td class="py-2 px-3 font-mono text-slate-500">${ad.date}</td>
+              <td class="py-2 px-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${ad.entry_type === 'MEDICINE_CREDIT' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}">
+                  ${ad.entry_type === 'MEDICINE_CREDIT' ? 'Medicine Credit' : 'Cash Advance'}
+                </span>
+              </td>
+              <td class="py-2 px-3 font-black text-rose-600">Rs. ${ad.amount.toLocaleString()}</td>
+              <td class="py-2 px-3 text-slate-600">${ad.reason || '—'}</td>
+              <td class="py-2 px-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${ad.is_settled ? 'bg-slate-100 text-slate-600' : 'bg-rose-100 text-rose-800'}">
+                  ${ad.is_settled ? 'Settled' : 'Pending'}
+                </span>
+              </td>
+            </tr>
+          `).join('');
+        }
+
+        switchDossierTab('att');
+        document.getElementById('staff-history-modal').classList.remove('hidden');
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Dossier error", err);
+      }
+    }
+
+    function closeStaffHistoryModal() {
+      document.getElementById('staff-history-modal').classList.add('hidden');
+    }
+
+    function switchDossierTab(tab) {
+      ['att', 'leaves', 'adv'].forEach(t => {
+        document.getElementById(`dossier-content-${t}`).classList.add('hidden');
+        document.getElementById(`dossier-tab-${t}`).classList.remove('border-[#232272]', 'text-[#232272]');
+        document.getElementById(`dossier-tab-${t}`).classList.add('border-transparent', 'text-slate-400');
+      });
+      document.getElementById(`dossier-content-${tab}`).classList.remove('hidden');
+      document.getElementById(`dossier-tab-${tab}`).classList.remove('border-transparent', 'text-slate-400');
+      document.getElementById(`dossier-tab-${tab}`).classList.add('border-[#232272]', 'text-[#232272]');
+    }
+
+    // 10. Monthly Attendance Register & Matrix (Feature 6 & 17)
+    function printMonthlyReport() {
+      window.print();
+    }
+
+    async function loadMonthlyReport() {
+      const month = document.getElementById('report-month').value;
+      const year = document.getElementById('report-year').value;
+      const monthNames = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      document.getElementById('report-period-label').innerText = `Month: ${monthNames[parseInt(month)]} ${year} • Official Master Record`;
+      document.getElementById('report-generated-on').innerText = `Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
+
+      try {
+        const res = await fetch(`/api/attendance/monthly?month=${month}&year=${year}`);
+        const data = await res.json();
+        const daysCount = data.days_in_month;
+
+        // Render header
+        let theadHtml = `
+          <tr>
+            <th class="py-2.5 px-3 text-left min-w-[140px] sticky left-0 bg-slate-100 z-10">Staff Member</th>
+            <th class="py-2.5 px-2 text-left min-w-[110px]">Designation</th>
+        `;
+        for (let d = 1; d <= daysCount; d++) {
+          theadHtml += `<th class="py-2.5 px-1 min-w-[24px] font-mono text-[11px]">${d}</th>`;
+        }
+        theadHtml += `
+            <th class="py-2.5 px-2 bg-emerald-50 text-[#156D38] font-bold">P</th>
+            <th class="py-2.5 px-2 bg-amber-50 text-amber-800 font-bold">L</th>
+            <th class="py-2.5 px-2 bg-purple-50 text-purple-800 font-bold">HD</th>
+            <th class="py-2.5 px-2 bg-blue-50 text-blue-800 font-bold">LV</th>
+            <th class="py-2.5 px-2 bg-rose-50 text-rose-800 font-bold">A</th>
+          </tr>
+        `;
+        document.getElementById('report-thead').innerHTML = theadHtml;
+
+        // Render body
+        const tbody = document.getElementById('report-tbody');
+        tbody.innerHTML = data.matrix.map(row => {
+          let rowHtml = `
+            <tr class="hover:bg-slate-50">
+              <td class="py-2 px-3 text-left font-bold text-slate-800 sticky left-0 bg-white z-10">${row.name}</td>
+              <td class="py-2 px-2 text-left text-slate-500 text-[11px]">${row.designation || 'Staff'}</td>
+          `;
+
+          for (let d = 1; d <= daysCount; d++) {
+            const st = row.days[d] || row.days[String(d)] || '—';
+            let badge = `<span class="text-slate-300 font-mono">—</span>`;
+            if (st === 'ON_TIME' || st === 'PRESENT') {
+              badge = `<span class="inline-block w-5 h-5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px] leading-5">P</span>`;
+            } else if (st === 'LATE') {
+              badge = `<span class="inline-block w-5 h-5 rounded bg-amber-100 text-amber-800 font-bold text-[10px] leading-5">L</span>`;
+            } else if (st === 'HALF_DAY') {
+              badge = `<span class="inline-block w-5 h-5 rounded bg-purple-100 text-purple-800 font-bold text-[10px] leading-5">HD</span>`;
+            } else if (st === 'LEAVE') {
+              badge = `<span class="inline-block w-5 h-5 rounded bg-blue-100 text-blue-800 font-bold text-[10px] leading-5">LV</span>`;
+            } else if (st === 'ABSENT') {
+              badge = `<span class="inline-block w-5 h-5 rounded bg-rose-100 text-rose-800 font-bold text-[10px] leading-5">A</span>`;
+            }
+            rowHtml += `<td class="py-1 px-0.5">${badge}</td>`;
+          }
+
+          rowHtml += `
+              <td class="py-2 px-2 font-bold text-[#156D38] bg-emerald-50/50">${row.present_count}</td>
+              <td class="py-2 px-2 font-bold text-amber-700 bg-amber-50/50">${row.late_count}</td>
+              <td class="py-2 px-2 font-bold text-purple-700 bg-purple-50/50">${row.half_day_count}</td>
+              <td class="py-2 px-2 font-bold text-blue-700 bg-blue-50/50">${row.leave_count}</td>
+              <td class="py-2 px-2 font-bold text-rose-700 bg-rose-50/50">${row.absent_count}</td>
+            </tr>
+          `;
+          return rowHtml;
+        }).join('');
+
+      } catch (err) {
+        console.error("Failed to load monthly report", err);
+      }
     }
   </script>
 </body>

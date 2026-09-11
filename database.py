@@ -42,8 +42,11 @@ def init_db():
         name TEXT NOT NULL,
         phone TEXT,
         cnic TEXT,
+        address TEXT DEFAULT '',
         role TEXT NOT NULL,            -- "Pharmacist", "Counter Sales", "Runner"
+        designation TEXT DEFAULT '',
         monthly_salary REAL NOT NULL,
+        joining_date TEXT DEFAULT '',
         shift_id INTEGER NOT NULL,
         fingerprint_id TEXT,           -- Template or registered token
         is_active INTEGER DEFAULT 1,
@@ -51,6 +54,17 @@ def init_db():
         FOREIGN KEY (shift_id) REFERENCES shifts (id)
     );
     """)
+
+    # Safe dynamic column migrations for existing databases
+    cursor.execute("PRAGMA table_info(staff)")
+    existing_staff_cols = {row[1] for row in cursor.fetchall()}
+    if "address" not in existing_staff_cols:
+        cursor.execute("ALTER TABLE staff ADD COLUMN address TEXT DEFAULT ''")
+    if "designation" not in existing_staff_cols:
+        cursor.execute("ALTER TABLE staff ADD COLUMN designation TEXT DEFAULT ''")
+        cursor.execute("UPDATE staff SET designation = role WHERE designation IS NULL OR designation = ''")
+    if "joining_date" not in existing_staff_cols:
+        cursor.execute("ALTER TABLE staff ADD COLUMN joining_date TEXT DEFAULT '2026-01-01'")
 
     # 3. Attendance Logs Table
     cursor.execute("""
@@ -77,6 +91,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS advance_salaries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         staff_id INTEGER NOT NULL,
+        entry_type TEXT DEFAULT 'ADVANCE', -- 'ADVANCE' or 'MEDICINE_CREDIT'
         amount REAL NOT NULL,
         date TEXT NOT NULL,            -- "YYYY-MM-DD"
         reason TEXT,
@@ -86,6 +101,19 @@ def init_db():
         FOREIGN KEY (staff_id) REFERENCES staff (id)
     );
     """)
+
+    cursor.execute("PRAGMA table_info(advance_salaries)")
+    existing_adv_cols = {row[1] for row in cursor.fetchall()}
+    if "entry_type" not in existing_adv_cols:
+        cursor.execute("ALTER TABLE advance_salaries ADD COLUMN entry_type TEXT DEFAULT 'ADVANCE'")
+    if "settled_at" not in existing_adv_cols:
+        cursor.execute("ALTER TABLE advance_salaries ADD COLUMN settled_at TEXT DEFAULT ''")
+    if "settlement_type" not in existing_adv_cols:
+        cursor.execute("ALTER TABLE advance_salaries ADD COLUMN settlement_type TEXT DEFAULT ''")
+    if "settled_payroll_month" not in existing_adv_cols:
+        cursor.execute("ALTER TABLE advance_salaries ADD COLUMN settled_payroll_month INTEGER DEFAULT 0")
+    if "settled_payroll_year" not in existing_adv_cols:
+        cursor.execute("ALTER TABLE advance_salaries ADD COLUMN settled_payroll_year INTEGER DEFAULT 0")
 
     # 5. Leave Approvals Table
     cursor.execute("""
@@ -117,7 +145,12 @@ def init_db():
         late_count INTEGER DEFAULT 0,
         late_cut REAL DEFAULT 0,
         half_days INTEGER DEFAULT 0,
+        extra_half_days INTEGER DEFAULT 0,
         half_day_cut REAL DEFAULT 0,
+        extra_half_day_cut REAL DEFAULT 0,
+        leaves_count INTEGER DEFAULT 0,
+        extra_leaves INTEGER DEFAULT 0,
+        extra_leave_cut REAL DEFAULT 0,
         overtime_minutes INTEGER DEFAULT 0,
         overtime_pay REAL DEFAULT 0,
         advances_deducted REAL DEFAULT 0,
@@ -129,6 +162,19 @@ def init_db():
         FOREIGN KEY (staff_id) REFERENCES staff (id)
     );
     """)
+
+    cursor.execute("PRAGMA table_info(payroll_records)")
+    existing_pr_cols = {row[1] for row in cursor.fetchall()}
+    if "leaves_count" not in existing_pr_cols:
+        cursor.execute("ALTER TABLE payroll_records ADD COLUMN leaves_count INTEGER DEFAULT 0")
+    if "extra_leaves" not in existing_pr_cols:
+        cursor.execute("ALTER TABLE payroll_records ADD COLUMN extra_leaves INTEGER DEFAULT 0")
+    if "extra_leave_cut" not in existing_pr_cols:
+        cursor.execute("ALTER TABLE payroll_records ADD COLUMN extra_leave_cut REAL DEFAULT 0")
+    if "extra_half_days" not in existing_pr_cols:
+        cursor.execute("ALTER TABLE payroll_records ADD COLUMN extra_half_days INTEGER DEFAULT 0")
+    if "extra_half_day_cut" not in existing_pr_cols:
+        cursor.execute("ALTER TABLE payroll_records ADD COLUMN extra_half_day_cut REAL DEFAULT 0")
 
     # Populate Default Shifts if empty
     cursor.execute("SELECT COUNT(*) FROM shifts")
@@ -143,10 +189,21 @@ def init_db():
     cursor.execute("SELECT COUNT(*) FROM staff")
     if cursor.fetchone()[0] == 0:
         cursor.execute("""
-        INSERT INTO staff (name, phone, cnic, role, monthly_salary, shift_id, fingerprint_id) VALUES
-        ('Ali Raza', '0300-1234567', '35202-1234567-1', 'Senior Pharmacist', 45000, 1, 'FP_ALI_001'),
-        ('Bilal Ahmed', '0321-7654321', '35202-7654321-3', 'Counter Sales & Billing', 32000, 1, 'FP_BILAL_002'),
-        ('Usman Tariq', '0333-9876543', '35202-9876543-5', 'Store Runner & Dispenser', 25000, 2, 'FP_USMAN_003')
+        INSERT INTO staff (name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id) VALUES
+        ('Ali Raza', '0300-1234567', '35202-1234567-1', 'House 14, St 3, Model Town, Lahore', 'Senior Pharmacist', 'Senior Pharmacist', 45000, '2025-01-15', 1, 'FP_ALI_001'),
+        ('Bilal Ahmed', '0321-7654321', '35202-7654321-3', 'Plot 88, Block B, Faisal Town, Lahore', 'Counter Sales & Billing', 'Counter Sales & Billing', 32000, '2025-06-01', 1, 'FP_BILAL_002'),
+        ('Usman Tariq', '0333-9876543', '35202-9876543-5', 'Main Bazar, Kot Lakhpat, Lahore', 'Store Runner & Dispenser', 'Store Runner & Dispenser', 25000, '2025-11-20', 2, 'FP_USMAN_003')
+        """)
+    else:
+        # Ensure existing staff rows have populated designation and address if blank
+        cursor.execute("""
+            UPDATE staff SET designation = role WHERE designation IS NULL OR designation = ''
+        """)
+        cursor.execute("""
+            UPDATE staff SET joining_date = '2025-01-01' WHERE joining_date IS NULL OR joining_date = ''
+        """)
+        cursor.execute("""
+            UPDATE staff SET address = 'Lahore, Pakistan' WHERE address IS NULL OR address = ''
         """)
 
     conn.commit()
