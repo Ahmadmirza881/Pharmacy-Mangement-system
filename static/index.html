@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mumtaz Pharmacy — Biometric Attendance &amp; Payroll System</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            mumtaz: {
+              indigo: '#232272',
+              green: '#156D38',
+              lightgreen: '#F0FDF4',
+              lightindigo: '#EEF2FF',
+              dark: '#0F172A'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.08); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .scanner-pulse {
+      animation: pulse-ring 2.5s infinite ease-in-out;
+    }
+    @media print {
+      body * { visibility: hidden; }
+      #printable-slip, #printable-slip * { visibility: visible; }
+      #printable-slip { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
+
+  <!-- TOP HEADER WITH MUMTAZ BRANDING -->
+  <header class="bg-[#232272] text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="bg-white p-1 rounded-lg shadow">
+          <img src="/logo.jpg" alt="Mumtaz Pharmacy" class="h-10 w-auto object-contain">
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            MUMTAZ PHARMACY
+            <span class="bg-[#156D38] text-xs px-2 py-0.5 rounded-full font-semibold">ATTENDANCE &amp; PAYROLL</span>
+          </h1>
+          <p class="text-xs text-indigo-200">Biometric Staff Management &amp; Automated Salary Engine</p>
+        </div>
+      </div>
+
+      <!-- DIGITAL LIVE CLOCK -->
+      <div class="flex items-center space-x-4">
+        <div class="text-right hidden sm:block">
+          <div id="live-time" class="text-xl font-black font-mono tracking-wider text-emerald-400">00:00:00 AM</div>
+          <div id="live-date" class="text-xs text-indigo-200">Wednesday, 10 Sept 2026</div>
+        </div>
+        <div class="bg-[#156D38] text-white p-2 rounded-lg flex items-center gap-2 text-xs font-semibold shadow">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+          <span>Biometric Connected</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- NAVIGATION TABS -->
+    <div class="bg-[#1a1854] border-t border-indigo-900/50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 flex space-x-1 sm:space-x-4 overflow-x-auto text-sm font-medium">
+        <button onclick="switchTab('kiosk')" id="tab-kiosk" class="py-3 px-4 border-b-2 border-[#156D38] text-white flex items-center gap-2">
+          <i data-lucide="fingerprint" class="w-4 h-4"></i>
+          Biometric Punch Terminal
+        </button>
+        <button onclick="switchTab('live')" id="tab-live" class="py-3 px-4 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-2">
+          <i data-lucide="activity" class="w-4 h-4"></i>
+          Today's Live Roster
+        </button>
+        <button onclick="switchTab('payroll')" id="tab-payroll" class="py-3 px-4 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-2">
+          <i data-lucide="calculator" class="w-4 h-4"></i>
+          1-Click Payroll &amp; Slips
+        </button>
+        <button onclick="switchTab('advances')" id="tab-advances" class="py-3 px-4 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-2">
+          <i data-lucide="banknote" class="w-4 h-4"></i>
+          Staff Advance Khata
+        </button>
+        <button onclick="switchTab('staff')" id="tab-staff" class="py-3 px-4 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-2">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          Staff Directory
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
+
+    <!-- ================================================================= -->
+    <!-- TAB 1: BIOMETRIC PUNCH TERMINAL -->
+    <!-- ================================================================= -->
+    <section id="view-kiosk" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- PUNCH INTERACTIVE TERMINAL -->
+        <div class="lg:col-span-7 bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col items-center text-center">
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 text-[#156D38] border border-emerald-200 rounded-full text-xs font-bold mb-4">
+            <span class="w-2 h-2 rounded-full bg-[#156D38] animate-ping"></span>
+            SCANNER ACTIVE • READY FOR PUNCH
+          </div>
+
+          <h2 class="text-2xl font-black text-[#232272]">Place Your Thumb on Scanner</h2>
+          <p class="text-sm text-slate-500 max-w-md mt-1">Subah aate waqt (Time-IN) aur shift khatam hone par (Time-OUT) apna angootha lagayein.</p>
+
+          <!-- SCANNER VISUAL BUTTON -->
+          <div class="my-8 relative group cursor-pointer" onclick="simulatePunch()">
+            <div class="w-40 h-40 rounded-full bg-indigo-50 border-4 border-[#232272] flex items-center justify-center shadow-inner relative z-10 transition-transform transform active:scale-95">
+              <i data-lucide="fingerprint" class="w-24 h-24 text-[#232272] group-hover:text-[#156D38] transition-colors"></i>
+            </div>
+            <div class="absolute inset-0 rounded-full bg-indigo-200 scanner-pulse -z-0"></div>
+          </div>
+
+          <!-- STAFF SELECTION FOR DEMO / USB PUNCH -->
+          <div class="w-full max-w-md bg-slate-50 p-4 rounded-xl border border-slate-200 text-left">
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Select Staff Member (Scanner Identification)</label>
+            <select id="kiosk-staff-select" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+              <!-- Populated via API -->
+            </select>
+
+            <div class="grid grid-cols-2 gap-2 mt-4">
+              <button onclick="simulatePunch()" class="bg-[#156D38] hover:bg-emerald-800 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 shadow">
+                <i data-lucide="scan-line" class="w-4 h-4"></i>
+                Punch Now (Auto In/Out)
+              </button>
+              <button onclick="simulatePunch(true)" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 shadow">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+                Simulate Late Punch
+              </button>
+            </div>
+          </div>
+
+          <!-- PUNCH RESULT TOAST / BANNER -->
+          <div id="punch-result" class="w-full max-w-md mt-4 hidden p-4 rounded-xl text-left border"></div>
+        </div>
+
+        <!-- RECENT PUNCHES STREAM -->
+        <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+              <i data-lucide="history" class="w-5 h-5 text-[#232272]"></i>
+              Today's Punches Stream
+            </h3>
+            <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded font-medium">Live Activity</span>
+          </div>
+
+          <div id="punches-stream" class="flex-1 divide-y divide-slate-100 overflow-y-auto max-h-[420px] mt-2">
+            <div class="p-8 text-center text-slate-400 text-sm">Punches load ho rahi hain...</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB 2: TODAY'S LIVE ROSTER (OWNER PULSE) -->
+    <!-- ================================================================= -->
+    <section id="view-live" class="space-y-6 hidden">
+      <!-- PULSE CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Staff</p>
+            <h3 id="pulse-total" class="text-3xl font-black text-[#232272] mt-1">3</h3>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-[#232272] flex items-center justify-center">
+            <i data-lucide="users" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Present Today</p>
+            <h3 id="pulse-present" class="text-3xl font-black text-[#156D38] mt-1">0</h3>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center">
+            <i data-lucide="user-check" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Late Arrivals</p>
+            <h3 id="pulse-late" class="text-3xl font-black text-amber-600 mt-1">0</h3>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <i data-lucide="clock-alert" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Absent Today</p>
+            <h3 id="pulse-absent" class="text-3xl font-black text-rose-600 mt-1">0</h3>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <i data-lucide="user-x" class="w-6 h-6"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE ROSTER TABLE -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h3 class="font-bold text-slate-800 text-base">Live Staff Shift Duty Table</h3>
+            <p class="text-xs text-slate-500">Subah aane aur sham jane ke live timestamps</p>
+          </div>
+          <button onclick="loadTodayAttendance()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-3 rounded-lg font-semibold flex items-center gap-1.5">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Staff Member</th>
+                <th class="py-3 px-4">Role</th>
+                <th class="py-3 px-4">Shift Timings</th>
+                <th class="py-3 px-4">Time-IN</th>
+                <th class="py-3 px-4">Time-OUT</th>
+                <th class="py-3 px-4">Duty Status</th>
+                <th class="py-3 px-4">Action</th>
+              </tr>
+            </thead>
+            <tbody id="live-roster-tbody" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB 3: 1-CLICK PAYROLL & DIGITAL PAYSLIPS -->
+    <!-- ================================================================= -->
+    <section id="view-payroll" class="space-y-6 hidden">
+      <!-- HEADER CONTROLLER -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+            <i data-lucide="calculator" class="w-5 h-5 text-[#232272]"></i>
+            Month-End Automated Payroll Calculator
+          </h3>
+          <p class="text-xs text-slate-500">Auto-deducts absent days, late penalties, and advances taken from counter till.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <select id="payroll-month" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold">
+            <option value="9" selected>September (Current)</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+          <select id="payroll-year" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold">
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+          </select>
+          <button onclick="generatePayroll()" class="bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-2 shadow">
+            <i data-lucide="zap" class="w-4 h-4"></i>
+            Calculate Payroll
+          </button>
+        </div>
+      </div>
+
+      <!-- PAYROLL SUMMARY CARDS -->
+      <div id="payroll-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-4 hidden">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-xs text-slate-500 font-bold uppercase">Total Net Salary Payable</span>
+          <h4 id="summary-net" class="text-2xl font-black text-[#156D38] mt-1">Rs. 0</h4>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-xs text-slate-500 font-bold uppercase">Total Deduction Savings</span>
+          <h4 id="summary-deductions" class="text-2xl font-black text-rose-600 mt-1">Rs. 0</h4>
+          <span class="text-[11px] text-slate-400">Absents, Lates &amp; Advance deductions</span>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <span class="text-xs text-slate-500 font-bold uppercase">Payroll Status</span>
+          <h4 class="text-2xl font-black text-slate-700 mt-1">Calculated ✅</h4>
+        </div>
+      </div>
+
+      <!-- PAYROLL BREAKDOWN TABLE -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Staff Member</th>
+                <th class="py-3 px-4">Basic Salary</th>
+                <th class="py-3 px-4">Daily Wage</th>
+                <th class="py-3 px-4">Absent Cuts</th>
+                <th class="py-3 px-4">Late Penalties</th>
+                <th class="py-3 px-4">Advance Taken</th>
+                <th class="py-3 px-4">Overtime Pay</th>
+                <th class="py-3 px-4">Net Payable</th>
+                <th class="py-3 px-4">Slip</th>
+              </tr>
+            </thead>
+            <tbody id="payroll-tbody" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="9" class="p-8 text-center text-slate-400">Pehle month select kar ke "Calculate Payroll" dabayein.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB 4: ADVANCE SALARY KHATA -->
+    <!-- ================================================================= -->
+    <section id="view-advances" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- RECORD NEW ADVANCE FORM -->
+        <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-[#232272] text-base mb-1 flex items-center gap-2">
+            <i data-lucide="hand-coins" class="w-5 h-5 text-[#156D38]"></i>
+            Counter Drawer Advance Entry
+          </h3>
+          <p class="text-xs text-slate-500 mb-4">Larkay ko counter daraz se advance diye gaye paise enter karein. Yeh month-end par salary se khud minus hon ge.</p>
+
+          <form onsubmit="submitAdvance(event)" class="space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Select Staff</label>
+              <select id="advance-staff" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold">
+                <!-- Populated via JS -->
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Advance Amount (PKR)</label>
+              <input type="number" id="advance-amount" required placeholder="e.g. 2000" min="100" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Reason / Note</label>
+              <input type="text" id="advance-reason" placeholder="e.g. Family Emergency / Home Expense" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold">
+            </div>
+            <button type="submit" class="w-full bg-[#156D38] hover:bg-emerald-800 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 shadow">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              Record Advance Outflow
+            </button>
+          </form>
+        </div>
+
+        <!-- ADVANCE LEDGER TABLE -->
+        <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <h3 class="font-bold text-slate-800 text-base mb-1">Advance Cash Ledger</h3>
+          <p class="text-xs text-slate-500 mb-4">Unsettled advances pending deduction in next payroll</p>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm border-collapse">
+              <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
+                <tr>
+                  <th class="py-2.5 px-3">Date</th>
+                  <th class="py-2.5 px-3">Staff</th>
+                  <th class="py-2.5 px-3">Amount</th>
+                  <th class="py-2.5 px-3">Reason</th>
+                  <th class="py-2.5 px-3">Status</th>
+                </tr>
+              </thead>
+              <tbody id="advances-tbody" class="divide-y divide-slate-100">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- TAB 5: STAFF DIRECTORY & REGISTRATION -->
+    <!-- ================================================================= -->
+    <section id="view-staff" class="space-y-6 hidden">
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-bold text-slate-800 text-base">Mumtaz Pharmacy Staff Directory</h3>
+            <p class="text-xs text-slate-500">Registered staff, assigned shift timings, and monthly basic pay</p>
+          </div>
+          <button onclick="openStaffModal()" class="bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-2 shadow">
+            <i data-lucide="user-plus" class="w-4 h-4"></i> Add New Staff
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Staff ID</th>
+                <th class="py-3 px-4">Name</th>
+                <th class="py-3 px-4">Role</th>
+                <th class="py-3 px-4">Phone</th>
+                <th class="py-3 px-4">Assigned Shift</th>
+                <th class="py-3 px-4">Monthly Salary</th>
+                <th class="py-3 px-4">Fingerprint</th>
+              </tr>
+            </thead>
+            <tbody id="staff-directory-tbody" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: DIGITAL PAYSLIP PRINTABLE VIEW -->
+  <!-- ================================================================= -->
+  <div id="slip-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200">
+      <button onclick="closeSlipModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <!-- PRINTABLE CONTENT -->
+      <div id="printable-slip" class="p-4">
+        <div class="flex items-center justify-between pb-4 border-b-2 border-[#232272]">
+          <div class="flex items-center space-x-2">
+            <img src="/logo.jpg" alt="Mumtaz Pharmacy" class="h-10 w-auto">
+            <div>
+              <h2 class="text-base font-black text-[#232272]">MUMTAZ PHARMACY</h2>
+              <p class="text-[10px] text-slate-500 font-semibold">Official Biometric Salary Payslip</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">VERIFIED</span>
+            <div id="slip-month-label" class="text-xs font-bold text-slate-700 mt-1">September 2026</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 my-3 text-xs bg-slate-50 p-3 rounded-lg border border-slate-100">
+          <div><span class="text-slate-400">Employee:</span> <strong id="slip-name" class="text-slate-800">Ali Raza</strong></div>
+          <div><span class="text-slate-400">Role:</span> <strong id="slip-role" class="text-slate-800">Pharmacist</strong></div>
+          <div><span class="text-slate-400">Daily Wage:</span> <strong id="slip-daily" class="text-slate-800">Rs. 1,500.00</strong></div>
+          <div><span class="text-slate-400">Days in Month:</span> <strong id="slip-days" class="text-slate-800">30 Days</strong></div>
+        </div>
+
+        <!-- BREAKDOWN TABLE -->
+        <table class="w-full text-xs mb-3 border-collapse">
+          <thead>
+            <tr class="border-b border-slate-200 text-slate-500">
+              <th class="py-1.5 text-left">Description</th>
+              <th class="py-1.5 text-right">Amount (PKR)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+            <tr>
+              <td class="py-1.5 font-bold">Basic Monthly Salary</td>
+              <td id="slip-basic" class="py-1.5 text-right font-bold">Rs. 45,000.00</td>
+            </tr>
+            <tr class="text-rose-600">
+              <td class="py-1.5" id="slip-absent-desc">Absent Deduction (0 days)</td>
+              <td id="slip-absent" class="py-1.5 text-right">- Rs. 0.00</td>
+            </tr>
+            <tr class="text-amber-600">
+              <td class="py-1.5" id="slip-late-desc">Late Penalty (0 lates)</td>
+              <td id="slip-late" class="py-1.5 text-right">- Rs. 0.00</td>
+            </tr>
+            <tr class="text-rose-600">
+              <td class="py-1.5">Advance Taken from Counter Till</td>
+              <td id="slip-advance" class="py-1.5 text-right">- Rs. 0.00</td>
+            </tr>
+            <tr class="text-emerald-700">
+              <td class="py-1.5" id="slip-overtime-desc">Overtime Pay (0 mins)</td>
+              <td id="slip-overtime" class="py-1.5 text-right">+ Rs. 0.00</td>
+            </tr>
+            <tr class="border-t-2 border-[#232272] font-black text-sm bg-indigo-50/70">
+              <td class="py-2 text-[#232272]">NET PAYABLE SALARY</td>
+              <td id="slip-net" class="py-2 text-right text-[#156D38] text-base">Rs. 45,000.00</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="flex justify-between items-end pt-4 border-t border-dashed border-slate-300 text-[10px] text-slate-400">
+          <div>System Generated via Mumtaz Core Engine</div>
+          <div class="text-center">
+            <div class="h-6"></div>
+            <div class="border-t border-slate-400 px-4">Owner Signature &amp; Stamp</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="flex gap-3 mt-4">
+        <button onclick="window.print()" class="flex-1 bg-[#232272] text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+          <i data-lucide="printer" class="w-4 h-4"></i> Print Payslip
+        </button>
+        <button onclick="closeSlipModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-sm">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    let staffList = [];
+    let recentPunches = [];
+
+    // Initialize Page
+    document.addEventListener("DOMContentLoaded", () => {
+      lucide.createIcons();
+      startLiveClock();
+      loadStaff();
+      loadTodayAttendance();
+    });
+
+    // 1. Live Clock
+    function startLiveClock() {
+      setInterval(() => {
+        const now = new Date();
+        document.getElementById('live-time').innerText = now.toLocaleTimeString();
+        document.getElementById('live-date').innerText = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+      }, 1000);
+    }
+
+    // 2. Navigation Tabs
+    function switchTab(tabId) {
+      ['kiosk', 'live', 'payroll', 'advances', 'staff'].forEach(t => {
+        document.getElementById(`view-${t}`).classList.add('hidden');
+        document.getElementById(`tab-${t}`).classList.remove('border-[#156D38]', 'text-white');
+        document.getElementById(`tab-${t}`).classList.add('border-transparent', 'text-indigo-200');
+      });
+      document.getElementById(`view-${tabId}`).classList.remove('hidden');
+      document.getElementById(`tab-${tabId}`).classList.remove('border-transparent', 'text-indigo-200');
+      document.getElementById(`tab-${tabId}`).classList.add('border-[#156D38]', 'text-white');
+
+      if (tabId === 'live') loadTodayAttendance();
+      if (tabId === 'advances') loadAdvances();
+      if (tabId === 'staff') renderStaffDirectory();
+      lucide.createIcons();
+    }
+
+    // 3. Load Staff
+    async function loadStaff() {
+      try {
+        const res = await fetch('/api/staff');
+        staffList = await res.json();
+        
+        // Populate kiosk select
+        const select = document.getElementById('kiosk-staff-select');
+        select.innerHTML = '';
+        staffList.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.id;
+          opt.innerText = `${s.name} (${s.role}) - ${s.shift_name}`;
+          select.appendChild(opt);
+        });
+
+        // Populate advance select
+        const advSelect = document.getElementById('advance-staff');
+        if (advSelect) {
+          advSelect.innerHTML = '';
+          staffList.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.innerText = `${s.name} (${s.role})`;
+            advSelect.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load staff", err);
+      }
+    }
+
+    // 4. Biometric Punch Simulation
+    async function simulatePunch(forceLate = false) {
+      const staffId = document.getElementById('kiosk-staff-select').value;
+      if (!staffId) return;
+
+      let customTime = null;
+      if (forceLate) {
+        // 09:45 AM (Late)
+        const d = new Date();
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        customTime = `${year}-${month}-${day} 09:45:00`;
+      }
+
+      try {
+        const res = await fetch('/api/punch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ staff_id: parseInt(staffId), custom_time: customTime })
+        });
+        const data = await res.json();
+
+        const toast = document.getElementById('punch-result');
+        toast.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-200', 'text-emerald-900', 'bg-amber-50', 'border-amber-200', 'text-amber-900', 'bg-indigo-50', 'border-indigo-200', 'text-indigo-900');
+
+        if (data.success) {
+          if (data.punch_type === 'IN') {
+            if (data.status === 'LATE') {
+              toast.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-900');
+            } else {
+              toast.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-900');
+            }
+          } else {
+            toast.classList.add('bg-indigo-50', 'border-indigo-200', 'text-indigo-900');
+          }
+
+          toast.innerHTML = `
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">${data.punch_type === 'IN' ? '🟢' : '🔵'}</span>
+              <div>
+                <h4 class="font-bold text-sm">${data.message}</h4>
+                <p class="text-xs opacity-80 mt-0.5">Fingerprint verified with 99.9% accuracy</p>
+              </div>
+            </div>
+          `;
+
+          // Add to stream
+          recentPunches.unshift({
+            name: data.staff_name,
+            type: data.punch_type,
+            time: data.time,
+            status: data.status,
+            message: data.message
+          });
+          renderPunchesStream();
+          loadTodayAttendance();
+        } else {
+          toast.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-900');
+          toast.innerHTML = `<p class="font-bold text-sm">${data.detail || "Punch error"}</p>`;
+        }
+      } catch (err) {
+        console.error("Punch error", err);
+      }
+    }
+
+    function renderPunchesStream() {
+      const container = document.getElementById('punches-stream');
+      if (recentPunches.length === 0) return;
+
+      container.innerHTML = recentPunches.map(p => `
+        <div class="py-3 flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full ${p.type === 'IN' ? 'bg-emerald-100 text-[#156D38]' : 'bg-indigo-100 text-[#232272]'} flex items-center justify-center font-bold text-xs">
+              ${p.type}
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-800">${p.name}</p>
+              <p class="text-[11px] text-slate-500">${p.type === 'IN' ? (p.status === 'LATE' ? '⚠️ Late Arrival' : '✅ On-Time') : 'Shift Complete'}</p>
+            </div>
+          </div>
+          <span class="text-xs font-mono font-bold text-slate-600">${p.time}</span>
+        </div>
+      `).join('');
+    }
+
+    // 5. Today's Attendance (Owner Pulse)
+    async function loadTodayAttendance() {
+      try {
+        const res = await fetch('/api/attendance/today');
+        const data = await res.json();
+
+        document.getElementById('pulse-total').innerText = data.total_staff;
+        document.getElementById('pulse-present').innerText = data.present_count;
+        document.getElementById('pulse-late').innerText = data.late_count;
+        document.getElementById('pulse-absent').innerText = data.absent_count;
+
+        const tbody = document.getElementById('live-roster-tbody');
+        tbody.innerHTML = data.roster.map(item => {
+          let badge = '';
+          if (item.status === 'ON_TIME') {
+            badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">ON TIME</span>';
+          } else if (item.status === 'LATE') {
+            badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">LATE (${item.late_minutes}m)</span>`;
+          } else if (item.status === 'ABSENT') {
+            badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">ABSENT</span>';
+          } else {
+            badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">NOT CHECKED IN</span>';
+          }
+
+          return `
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="py-3 px-4 font-bold text-slate-800">${item.name}</td>
+              <td class="py-3 px-4 text-slate-600">${item.role}</td>
+              <td class="py-3 px-4 text-xs font-mono text-slate-500">${item.shift_name} (${item.start_time} - ${item.end_time})</td>
+              <td class="py-3 px-4 font-mono font-semibold text-emerald-700">${item.time_in || '—'}</td>
+              <td class="py-3 px-4 font-mono font-semibold text-slate-600">${item.time_out || '—'}</td>
+              <td class="py-3 px-4">${badge}</td>
+              <td class="py-3 px-4">
+                <button onclick="markApprovedLeave(${item.id})" class="text-xs text-indigo-700 hover:text-indigo-900 font-semibold underline">
+                  Approve Leave
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error("Failed to load today attendance", err);
+      }
+    }
+
+    async function markApprovedLeave(staffId) {
+      const today = new Date().toISOString().split('T')[0];
+      if (!confirm(`Mark approved medical/emergency leave for today?`)) return;
+      await fetch('/api/leaves', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ staff_id: staffId, date: today, reason: 'Approved Personal/Medical Leave' })
+      });
+      loadTodayAttendance();
+    }
+
+    // 6. 1-Click Payroll Calculation
+    let currentPayrollData = [];
+    async function generatePayroll() {
+      const month = document.getElementById('payroll-month').value;
+      const year = document.getElementById('payroll-year').value;
+
+      try {
+        const res = await fetch(`/api/payroll/calculate?month=${month}&year=${year}`);
+        const data = await res.json();
+        currentPayrollData = data.sheet;
+
+        document.getElementById('payroll-summary').classList.remove('hidden');
+        document.getElementById('summary-net').innerText = `Rs. ${data.total_payout.toLocaleString()}`;
+        document.getElementById('summary-deductions').innerText = `Rs. ${data.total_deductions.toLocaleString()}`;
+
+        const tbody = document.getElementById('payroll-tbody');
+        tbody.innerHTML = data.sheet.map(p => `
+          <tr class="hover:bg-slate-50 font-medium">
+            <td class="py-3 px-4 font-bold text-slate-800">${p.staff_name} <br><span class="text-[11px] font-normal text-slate-400">${p.role}</span></td>
+            <td class="py-3 px-4">Rs. ${p.basic_salary.toLocaleString()}</td>
+            <td class="py-3 px-4 text-xs font-mono text-slate-500">Rs. ${p.daily_wage.toFixed(2)}</td>
+            <td class="py-3 px-4 text-rose-600 font-semibold">- Rs. ${p.absent_cut.toLocaleString()} <span class="text-[11px] font-normal block text-slate-400">(${p.absent_days} days)</span></td>
+            <td class="py-3 px-4 text-amber-600 font-semibold">- Rs. ${p.late_cut.toLocaleString()} <span class="text-[11px] font-normal block text-slate-400">(${p.late_count} lates)</span></td>
+            <td class="py-3 px-4 text-rose-600 font-semibold">- Rs. ${p.advances_deducted.toLocaleString()}</td>
+            <td class="py-3 px-4 text-emerald-600 font-semibold">+ Rs. ${p.overtime_pay.toLocaleString()}</td>
+            <td class="py-3 px-4 font-black text-[#156D38] text-base">Rs. ${p.net_payable.toLocaleString()}</td>
+            <td class="py-3 px-4">
+              <button onclick="openSlipModal(${p.staff_id})" class="bg-[#232272] hover:bg-indigo-900 text-white text-xs px-2.5 py-1.5 rounded font-bold flex items-center gap-1 shadow">
+                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Payslip
+              </button>
+            </td>
+          </tr>
+        `).join('');
+
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Payroll calculation error", err);
+      }
+    }
+
+    // 7. Payslip Modal
+    function openSlipModal(staffId) {
+      const p = currentPayrollData.find(x => x.staff_id === staffId);
+      if (!p) return;
+
+      document.getElementById('slip-month-label').innerText = `September 2026`;
+      document.getElementById('slip-name').innerText = p.staff_name;
+      document.getElementById('slip-role').innerText = p.role;
+      document.getElementById('slip-daily').innerText = `Rs. ${p.daily_wage.toFixed(2)}`;
+      document.getElementById('slip-days').innerText = `${p.days_in_month} Days`;
+
+      document.getElementById('slip-basic').innerText = `Rs. ${p.basic_salary.toLocaleString()}`;
+      document.getElementById('slip-absent-desc').innerText = `Absent Deduction (${p.absent_days} days)`;
+      document.getElementById('slip-absent').innerText = `- Rs. ${p.absent_cut.toLocaleString()}`;
+      document.getElementById('slip-late-desc').innerText = `Late Penalties (${p.late_count} lates)`;
+      document.getElementById('slip-late').innerText = `- Rs. ${p.late_cut.toLocaleString()}`;
+      document.getElementById('slip-advance').innerText = `- Rs. ${p.advances_deducted.toLocaleString()}`;
+      document.getElementById('slip-overtime-desc').innerText = `Overtime Pay (${p.overtime_minutes} mins)`;
+      document.getElementById('slip-overtime').innerText = `+ Rs. ${p.overtime_pay.toLocaleString()}`;
+      document.getElementById('slip-net').innerText = `Rs. ${p.net_payable.toLocaleString()}`;
+
+      document.getElementById('slip-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeSlipModal() {
+      document.getElementById('slip-modal').classList.add('hidden');
+    }
+
+    // 8. Staff Advances
+    async function loadAdvances() {
+      try {
+        const res = await fetch('/api/advances');
+        const advances = await res.json();
+        const tbody = document.getElementById('advances-tbody');
+        if (advances.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="py-6 text-center text-slate-400">Koi advance record mojood nahi.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = advances.map(a => `
+          <tr>
+            <td class="py-2.5 px-3 font-mono text-xs text-slate-500">${a.date}</td>
+            <td class="py-2.5 px-3 font-bold text-slate-800">${a.staff_name}</td>
+            <td class="py-2.5 px-3 font-black text-rose-600">Rs. ${a.amount.toLocaleString()}</td>
+            <td class="py-2.5 px-3 text-xs text-slate-600">${a.reason || 'Till Cash Advance'}</td>
+            <td class="py-2.5 px-3">
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded ${a.is_settled ? 'bg-slate-100 text-slate-600' : 'bg-amber-100 text-amber-800'}">
+                ${a.is_settled ? 'Settled' : 'Pending Deduction'}
+              </span>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error("Failed to load advances", err);
+      }
+    }
+
+    async function submitAdvance(e) {
+      e.preventDefault();
+      const staffId = document.getElementById('advance-staff').value;
+      const amount = document.getElementById('advance-amount').value;
+      const reason = document.getElementById('advance-reason').value;
+
+      await fetch('/api/advances', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          staff_id: parseInt(staffId),
+          amount: parseFloat(amount),
+          reason: reason
+        })
+      });
+
+      document.getElementById('advance-amount').value = '';
+      document.getElementById('advance-reason').value = '';
+      loadAdvances();
+      alert("Cash Advance recorded successfully!");
+    }
+
+    // 9. Staff Directory Table
+    function renderStaffDirectory() {
+      const tbody = document.getElementById('staff-directory-tbody');
+      tbody.innerHTML = staffList.map(s => `
+        <tr class="hover:bg-slate-50 font-medium">
+          <td class="py-3 px-4 font-mono font-bold text-slate-400">#${s.id}</td>
+          <td class="py-3 px-4 font-bold text-slate-800">${s.name}</td>
+          <td class="py-3 px-4 text-slate-600">${s.role}</td>
+          <td class="py-3 px-4 font-mono text-xs text-slate-500">${s.phone || '—'}</td>
+          <td class="py-3 px-4 text-xs font-mono text-indigo-900">${s.shift_name} (${s.start_time} - ${s.end_time})</td>
+          <td class="py-3 px-4 font-bold text-[#156D38]">Rs. ${s.monthly_salary.toLocaleString()}</td>
+          <td class="py-3 px-4">
+            <span class="inline-flex items-center gap-1 text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold">
+              <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Enrolled
+            </span>
+          </td>
+        </tr>
+      `).join('');
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>
