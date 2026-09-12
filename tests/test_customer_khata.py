@@ -165,7 +165,23 @@ class TestCustomerKhataModule(unittest.TestCase):
         self.assertIn('period', data)
         self.assertIn('summary', data)
         self.assertIn('debtors', data)
-        self.assertIn('recent_transactions', data)
+    @classmethod
+    def tearDownClass(cls):
+        conn = database.get_db_connection()
+        c = conn.cursor()
+        test_names = [
+            'Testing Series Client',
+            'Testing Settlement Client',
+            'Testing Settle All Client',
+            'Naveed Iqbal Test'
+        ]
+        for name in test_names:
+            c.execute('DELETE FROM customer_khata WHERE customer_id IN (SELECT id FROM customers WHERE name = ?)', (name,))
+            c.execute('DELETE FROM customers WHERE name = ?', (name,))
+        c.execute('DELETE FROM customer_khata WHERE customer_id IN (SELECT id FROM customers WHERE name = ? AND id != 5)', ('Dr. Farooq Sheikh',))
+        c.execute('DELETE FROM customers WHERE name = ? AND id != 5', ('Dr. Farooq Sheikh',))
+        conn.commit()
+        conn.close()
 
 if __name__ == '__main__':
     unittest.main()

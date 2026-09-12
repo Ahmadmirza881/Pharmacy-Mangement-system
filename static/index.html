@@ -1922,6 +1922,93 @@
   </div>
 
   <!-- ================================================================= -->
+  <!-- MODAL: QUICK FULL SETTLEMENT (CLEAR BAQAYA) -->
+  <!-- ================================================================= -->
+  <div id="quick-settle-all-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200">
+      <button onclick="closeQuickSettleModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center">
+          <i data-lucide="check-check" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800">Clear Full Baqaya (Settle Balance)</h3>
+          <p class="text-xs text-slate-500">Mukammal series khata balance settlement</p>
+        </div>
+      </div>
+
+      <form onsubmit="submitQuickSettleModal(event)" class="space-y-4">
+        <input type="hidden" id="quick-settle-customer-id" value="">
+        <input type="hidden" id="quick-settle-from-ledger" value="0">
+
+        <!-- CUSTOMER & BALANCE CARD -->
+        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <div class="text-xs text-slate-400 font-medium">Customer:</div>
+              <div id="quick-settle-customer-name" class="text-base font-bold text-slate-800 mt-0.5">Haji Abdul Rehman</div>
+              <div id="quick-settle-customer-phone" class="text-xs font-mono text-slate-500 mt-0.5">0300-1234567</div>
+            </div>
+            <div class="text-right">
+              <div class="text-[10px] uppercase font-bold text-rose-600 tracking-wider">Due Baqaya</div>
+              <div id="quick-settle-balance-amount" class="text-xl font-black text-rose-600 mt-0.5">Rs. 0.00</div>
+              <div id="quick-settle-invoices-count" class="text-[10px] text-slate-400 mt-0.5">1 pending invoice</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAYMENT METHOD PILLS (QUICK 1-CLICK SELECT, NO TYPING NEEDED) -->
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-2">Select Payment Method *</label>
+          <input type="hidden" id="quick-settle-payment-method" value="Cash">
+          
+          <div class="grid grid-cols-3 gap-2" id="quick-settle-method-pills">
+            <button type="button" onclick="selectQuickSettleMethod('Cash')" id="pill-method-Cash" class="flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-xs font-bold border-2 border-emerald-600 bg-emerald-50 text-emerald-800 shadow-xs transition-all cursor-pointer">
+              <span>💵 Cash</span>
+            </button>
+            <button type="button" onclick="selectQuickSettleMethod('EasyPaisa')" id="pill-method-EasyPaisa" class="flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-300 shadow-xs transition-all cursor-pointer">
+              <span>📱 EasyPaisa</span>
+            </button>
+            <button type="button" onclick="selectQuickSettleMethod('JazzCash')" id="pill-method-JazzCash" class="flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-300 shadow-xs transition-all cursor-pointer">
+              <span>📲 JazzCash</span>
+            </button>
+            <button type="button" onclick="selectQuickSettleMethod('Bank Transfer')" id="pill-method-Bank Transfer" class="flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-300 shadow-xs transition-all cursor-pointer col-span-2">
+              <span>🏦 Bank Transfer</span>
+            </button>
+            <button type="button" onclick="selectQuickSettleMethod('Cheque')" id="pill-method-Cheque" class="flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-300 shadow-xs transition-all cursor-pointer">
+              <span>🧾 Cheque</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Settlement Date *</label>
+            <input type="date" id="quick-settle-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Receipt / Note (Optional)</label>
+            <input type="text" id="quick-settle-notes" placeholder="e.g. Counter till paid" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="submit" id="quick-settle-submit-btn" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+            <i data-lucide="check-check" class="w-4 h-4"></i>
+            <span id="quick-settle-btn-text">Confirm &amp; Clear Rs. 0</span>
+          </button>
+          <button type="button" onclick="closeQuickSettleModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
   <!-- MODAL: BATCH WHATSAPP REMINDERS LAUNCHER -->
   <!-- ================================================================= -->
   <div id="batch-whatsapp-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
@@ -4005,74 +4092,101 @@
       }
     }
 
-    // Settle All Balance in 1 Click from Ledger
-    async function settleAllBalanceForCurrentCustomer() {
-      if (!currentOpenLedgerCustomerId) return;
-      const c = allCustomers.find(x => x.id === currentOpenLedgerCustomerId);
-      if (!c || c.current_balance <= 0) {
-        alert("Iss customer ka koi pending balance nahi hai.");
-        return;
-      }
-
-      const confirmMsg = `Kya aap waqai ${c.name} ka mukammal baqaya Rs. ${c.current_balance.toLocaleString()} settle karna chahte hain?`;
-      if (!confirm(confirmMsg)) return;
-
-      const method = prompt("Payment Method darj karein (Cash / EasyPaisa / JazzCash / Bank):", "Cash") || "Cash";
-      const settleDate = new Date().toISOString().split('T')[0];
-
-      try {
-        const res = await fetch(`/api/customers/${c.id}/settle-all`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            settled_at: settleDate,
-            payment_method: method,
-            notes: "Full series khata settlement"
-          })
-        });
-        const data = await res.json();
-        if (data.success) {
-          await loadCustomers();
-          await loadCustomerKpis();
-          await openCustomerLedgerModal(c.id);
-          alert(data.message || "Mukammal balance settle ho gaya!");
-        } else {
-          alert(data.detail || "Settle All failed.");
+    // =================================================================
+    // Quick Full Settlement Modal Handlers (No native prompt / confirm!)
+    // =================================================================
+    function selectQuickSettleMethod(method) {
+      const input = document.getElementById('quick-settle-payment-method');
+      if (input) input.value = method;
+      const methods = ['Cash', 'EasyPaisa', 'JazzCash', 'Bank Transfer', 'Cheque'];
+      methods.forEach(m => {
+        const btn = document.getElementById(`pill-method-${m}`);
+        if (btn) {
+          if (m === method) {
+            btn.className = 'flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-xs font-bold border-2 border-emerald-600 bg-emerald-50 text-emerald-800 shadow-xs transition-all cursor-pointer' + (m === 'Bank Transfer' ? ' col-span-2' : '');
+          } else {
+            btn.className = 'flex items-center justify-center gap-1 py-2 px-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-300 shadow-xs transition-all cursor-pointer' + (m === 'Bank Transfer' ? ' col-span-2' : '');
+          }
         }
-      } catch (err) {
-        console.error("Error settling all balance", err);
-        alert("Server error.");
-      }
+      });
     }
 
-    // Quick 1-Click Clear Baqaya directly from Customer Master Table
-    async function quickSettleCustomerMaster(customerId) {
+    function openQuickSettleModal(customerId, fromLedger = false) {
       const c = (allCustomers || []).find(x => x.id === customerId);
       if (!c || c.current_balance <= 0) {
         alert("Iss customer ka koi pending balance nahi hai.");
         return;
       }
 
-      const confirmMsg = `Kya aap waqai ${c.name} ka mukammal baqaya Rs. ${c.current_balance.toLocaleString()} clear karna chahte hain?`;
-      if (!confirm(confirmMsg)) return;
+      if (fromLedger) {
+        returnToLedgerCustomerId = customerId;
+        document.getElementById('customer-ledger-modal').classList.add('hidden');
+        document.getElementById('quick-settle-from-ledger').value = '1';
+      } else {
+        returnToLedgerCustomerId = null;
+        document.getElementById('quick-settle-from-ledger').value = '0';
+      }
 
-      const method = prompt("Payment Method darj karein (Cash / EasyPaisa / JazzCash / Bank):", "Cash") || "Cash";
-      const settleDate = new Date().toISOString().split('T')[0];
+      document.getElementById('quick-settle-customer-id').value = c.id;
+      document.getElementById('quick-settle-customer-name').innerText = c.name;
+      document.getElementById('quick-settle-customer-phone').innerText = c.phone || '—';
+      document.getElementById('quick-settle-balance-amount').innerText = `Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('quick-settle-invoices-count').innerText = `${c.pending_invoices_count || 1} pending invoice(s)`;
+      document.getElementById('quick-settle-btn-text').innerText = `Confirm & Clear Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('quick-settle-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('quick-settle-notes').value = '';
+
+      selectQuickSettleMethod('Cash');
+
+      document.getElementById('quick-settle-all-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeQuickSettleModal() {
+      document.getElementById('quick-settle-all-modal').classList.add('hidden');
+      const fromLedger = document.getElementById('quick-settle-from-ledger').value === '1';
+      if (fromLedger && returnToLedgerCustomerId) {
+        const cid = returnToLedgerCustomerId;
+        returnToLedgerCustomerId = null;
+        openCustomerLedgerModal(cid);
+      }
+    }
+
+    async function submitQuickSettleModal(e) {
+      e.preventDefault();
+      const customerId = parseInt(document.getElementById('quick-settle-customer-id').value);
+      const settleDate = document.getElementById('quick-settle-date').value;
+      const method = document.getElementById('quick-settle-payment-method').value;
+      const notes = (document.getElementById('quick-settle-notes').value || '').trim() || 'Full balance clearance';
+      const fromLedger = document.getElementById('quick-settle-from-ledger').value === '1';
+      const submitBtn = document.getElementById('quick-settle-submit-btn');
+
+      if (submitBtn) submitBtn.disabled = true;
 
       try {
-        const res = await fetch(`/api/customers/${c.id}/settle-all`, {
+        const res = await fetch(`/api/customers/${customerId}/settle-all`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             settled_at: settleDate,
             payment_method: method,
-            notes: "Quick 1-click counter settlement"
+            notes: notes
           })
         });
         const data = await res.json();
         if (data.success) {
+          const hadReturnLedgerId = returnToLedgerCustomerId;
+          returnToLedgerCustomerId = null;
+          document.getElementById('quick-settle-all-modal').classList.add('hidden');
+
           await loadCustomers();
           await loadCustomerKpis();
+
+          if (fromLedger && hadReturnLedgerId) {
+            await openCustomerLedgerModal(hadReturnLedgerId);
+          } else if (currentOpenLedgerCustomerId === customerId) {
+            await openCustomerLedgerModal(customerId);
+          }
           alert(data.message || "Mukammal balance settle ho gaya!");
         } else {
           alert(data.detail || "Settlement failed.");
@@ -4080,7 +4194,20 @@
       } catch (err) {
         console.error("Error settling customer balance", err);
         alert("Server error.");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
       }
+    }
+
+    // Settle All Balance in 1 Click from Ledger
+    function settleAllBalanceForCurrentCustomer() {
+      if (!currentOpenLedgerCustomerId) return;
+      openQuickSettleModal(currentOpenLedgerCustomerId, true);
+    }
+
+    // Quick 1-Click Clear Baqaya directly from Customer Master Table
+    function quickSettleCustomerMaster(customerId) {
+      openQuickSettleModal(customerId, false);
     }
 
     // Batch WhatsApp Reminders Modal
@@ -4221,6 +4348,7 @@
     // Universal backdrop click dismissal for modals
     document.addEventListener('click', function(e) {
       const modalList = [
+        { id: 'quick-settle-all-modal', close: closeQuickSettleModal },
         { id: 'add-customer-khata-modal', close: closeAddCustomerKhataModal },
         { id: 'customer-ledger-modal', close: closeCustomerLedgerModal },
         { id: 'customer-modal', close: closeCustomerModal },
@@ -4241,6 +4369,7 @@
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         const priorityModals = [
+          { id: 'quick-settle-all-modal', close: closeQuickSettleModal },
           { id: 'add-customer-khata-modal', close: closeAddCustomerKhataModal },
           { id: 'settle-customer-khata-modal', close: closeSettleCustomerKhataModal },
           { id: 'customer-parchi-modal', close: closeCustomerParchiModal },
