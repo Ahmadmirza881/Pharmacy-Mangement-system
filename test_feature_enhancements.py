@@ -26,11 +26,11 @@ class TestMumtazFeatureEnhancements(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         data = res.json()
 
-        self.assertEqual(data["total_staff"], 6)
+        self.assertEqual(data["total_staff"], 7)
         self.assertEqual(data["present_count"], 5)
         self.assertEqual(data["late_count"], 1)
         self.assertEqual(data["leave_count"], 1)
-        self.assertEqual(data["absent_count"], 0)
+        self.assertEqual(data["absent_count"], 1)
 
         # Check Bilal is Late
         bilal = next(s for s in data["roster"] if s["id"] == 2)
@@ -41,6 +41,10 @@ class TestMumtazFeatureEnhancements(unittest.TestCase):
         tariq = next(s for s in data["roster"] if s["id"] == 6)
         self.assertEqual(tariq["status"], "LEAVE")
         self.assertIn("flu", tariq["leave_reason"].lower())
+
+        # Check Kashif is Absent
+        kashif = next(s for s in data["roster"] if s["id"] == 7)
+        self.assertEqual(kashif["status"], "ABSENT")
 
     def test_2_august_2026_payroll_and_itemized_advances(self):
         """Feature 2: Past month (August 2026) payroll calculation with itemized deductions."""
@@ -128,7 +132,7 @@ class TestMumtazFeatureEnhancements(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         data = res.json()
         self.assertEqual(data["days_in_month"], 31)
-        self.assertEqual(len(data["matrix"]), 6)
+        self.assertEqual(len(data["matrix"]), 7)
         for staff_row in data["matrix"]:
             self.assertIn("days", staff_row)
             self.assertEqual(len(staff_row["days"]), 31)

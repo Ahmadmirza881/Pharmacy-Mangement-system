@@ -36,7 +36,8 @@ def seed():
         (3, 'Usman Tariq', '0333-9876543', '35202-9876543-5', 'Main Bazar, Kot Lakhpat, Lahore', 'Store Runner & Dispenser', 'Store Runner & Dispenser', 26000.0, '2025-11-20', 2, 'FP_USMAN_003', 0, 1),
         (4, 'Hamza Farooq', '0312-4455667', '35201-4455667-7', 'St 8, Gulberg III, Lahore', 'Assistant Pharmacist', 'Assistant Pharmacist', 40000.0, '2025-08-01', 1, 'FP_HAMZA_004', 1, 1),
         (5, 'Zainab Bibi', '0345-8899001', '35202-8899001-2', 'Allama Iqbal Town, Lahore', 'Cashier & Inventory', 'Cashier & Inventory', 30000.0, '2026-02-15', 1, 'FP_ZAINAB_005', 1, 1),
-        (6, 'Tariq Mehmood', '0308-3344556', '35202-3344556-9', 'Sector B, Township, Lahore', 'Night Shift Dispenser', 'Night Shift Dispenser', 28000.0, '2026-04-01', 2, 'FP_TARIQ_006', 0, 1)
+        (6, 'Tariq Mehmood', '0308-3344556', '35202-3344556-9', 'Sector B, Township, Lahore', 'Night Shift Dispenser', 'Night Shift Dispenser', 28000.0, '2026-04-01', 2, 'FP_TARIQ_006', 0, 1),
+        (7, 'Muhammad Kashif', '0302-5566778', '35202-5566778-4', 'St 5, Samanabad, Lahore', 'Helper & Delivery Boy', 'Helper & Delivery Boy', 22000.0, '2026-05-01', 1, 'FP_KASHIF_007', 1, 1)
     ]
 
     cursor.executemany("""
@@ -142,7 +143,7 @@ def seed():
             dt_obj = datetime(y, m, d)
             is_sunday = dt_obj.weekday() == 6
 
-            for s_id in range(1, 7):
+            for s_id in range(1, 8):
                 # If on approved leave, skip attendance log (leaves table handles it)
                 if (s_id, date_str) in leave_dates_set:
                     continue
@@ -214,6 +215,13 @@ def seed():
                     elif s_id == 6:
                         # Tariq: Night shift, on approved medical leave today (handled by leaves table)
                         continue
+                    elif s_id == 7:
+                        # Kashif: Helper & Delivery Boy, Morning Shift, UNEXCUSED ABSENT TODAY!
+                        status = "ABSENT"
+                        time_in = None
+                        time_out = None
+                        worked_minutes = 0
+                        late_minutes = 0
 
                 logs_to_insert.append((
                     s_id, date_str, time_in, time_out, status, worked_minutes, late_minutes, "FINGERPRINT"
@@ -230,11 +238,11 @@ def seed():
 
     print("[6/6] Pre-calculating historical Payroll sheets for July 2026 & August 2026...")
     # Calculate July 2026 payroll for all staff
-    for s_id in range(1, 7):
+    for s_id in range(1, 8):
         calculate_monthly_payroll(s_id, 7, 2026)
 
     # Calculate August 2026 payroll for all staff
-    for s_id in range(1, 7):
+    for s_id in range(1, 8):
         calculate_monthly_payroll(s_id, 8, 2026)
 
     print("SUCCESS! Mumtaz Pharmacy database seeded with realistic 3-month operational data.")
