@@ -199,6 +199,48 @@ def init_db():
     if "short_minutes" not in existing_pr_cols:
         cursor.execute("ALTER TABLE payroll_records ADD COLUMN short_minutes INTEGER DEFAULT 0")
 
+    # 7. Customers Master Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS customers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        address TEXT DEFAULT '',
+        credit_limit REAL DEFAULT 15000.0,
+        is_active INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    # 8. Customer Khata Series Ledger Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS customer_khata (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        customer_id INTEGER NOT NULL,
+        invoice_no TEXT NOT NULL,
+        date TEXT NOT NULL,
+        item_description TEXT NOT NULL,
+        amount REAL NOT NULL,
+        is_settled INTEGER DEFAULT 0,
+        settled_at TEXT DEFAULT '',
+        payment_method TEXT DEFAULT '',
+        notes TEXT DEFAULT '',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (customer_id) REFERENCES customers (id)
+    );
+    """)
+
+    cursor.execute("PRAGMA table_info(customer_khata)")
+    existing_ck_cols = {row[1] for row in cursor.fetchall()}
+    if "invoice_no" not in existing_ck_cols:
+        cursor.execute("ALTER TABLE customer_khata ADD COLUMN invoice_no TEXT DEFAULT ''")
+    if "settled_at" not in existing_ck_cols:
+        cursor.execute("ALTER TABLE customer_khata ADD COLUMN settled_at TEXT DEFAULT ''")
+    if "payment_method" not in existing_ck_cols:
+        cursor.execute("ALTER TABLE customer_khata ADD COLUMN payment_method TEXT DEFAULT ''")
+    if "notes" not in existing_ck_cols:
+        cursor.execute("ALTER TABLE customer_khata ADD COLUMN notes TEXT DEFAULT ''")
+
     # Populate Default Shifts if empty
     cursor.execute("SELECT COUNT(*) FROM shifts")
     if cursor.fetchone()[0] == 0:
@@ -227,6 +269,28 @@ def init_db():
         """)
         cursor.execute("""
             UPDATE staff SET address = 'Lahore, Pakistan' WHERE address IS NULL OR address = ''
+        """)
+
+    # Populate Sample Regular Customers and Khata Ledger if empty
+    cursor.execute("SELECT COUNT(*) FROM customers")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute("""
+        INSERT INTO customers (id, name, phone, address, credit_limit) VALUES
+        (1, 'Haji Abdul Rehman', '0300-1234567', 'House 22, Model Town, Lahore', 25000.0),
+        (2, 'Chaudhry Akram', '0321-7654321', 'Al-Madina Chowk, Faisal Town, Lahore', 20000.0),
+        (3, 'Malik Tariq', '0333-9876543', 'Plot 15, Kot Lakhpat, Lahore', 15000.0),
+        (4, 'Mian Shahid', '0345-1122334', 'Main Market, Peco Road, Lahore', 10000.0)
+        """)
+
+        cursor.execute("""
+        INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, settled_at, payment_method, notes) VALUES
+        (1, 'INV-1001', '2026-09-02', 'Augmentin 625mg (2 packs), Panadol Extend', 2450.0, 1, '2026-09-05', 'Cash', 'Counter cash settlement'),
+        (1, 'INV-1045', '2026-09-08', 'Getryl 2mg (3 boxes), Lipiget 20mg', 3800.0, 0, '', '', 'Monthly chronic prescription'),
+        (2, 'INV-1032', '2026-09-06', 'Insulin Mixtard 30, Syringes 100u, Glucometer Strips', 5200.0, 0, '', '', 'Diabetic supplies for father'),
+        (2, 'INV-1067', '2026-09-10', 'Nexum 40mg, Concor 5mg', 2850.0, 0, '', '', 'Regular cardiac & stomach dose'),
+        (3, 'INV-1054', '2026-09-09', 'Surbex Z (2 bottles), CaC 1000 Plus (2 tubes)', 1650.0, 0, '', '', 'Vitamins & immunity boost'),
+        (4, 'INV-1018', '2026-09-04', 'Brufen 400mg, Flagyl 400mg, ORS 10 sachets', 1100.0, 1, '2026-09-07', 'EasyPaisa', 'Paid via EasyPaisa TID: 871923'),
+        (4, 'INV-1078', '2026-09-11', 'Panadol CF, Arinac Forte, Lofnac Gel', 1450.0, 0, '', '', 'Flu & muscle ache medicine')
         """)
 
     conn.commit()

@@ -179,6 +179,71 @@
         visibility: hidden !important;
       }
 
+      /* 3. CUSTOMER KHATA PARCHI PRINTING (A4 Portrait / Thermal Slip) */
+      body.printing-parchi > header,
+      body.printing-parchi > nav,
+      body.printing-parchi main,
+      body.printing-parchi .fixed:not(#customer-parchi-modal) {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      body.printing-parchi #customer-parchi-modal {
+        display: block !important;
+        position: static !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+      }
+
+      body.printing-parchi #printable-parchi {
+        margin: 0 auto !important;
+        max-width: 175mm !important;
+        width: 100% !important;
+        padding: 16px 20px !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      body.printing-parchi button {
+        display: none !important;
+      }
+
+      /* 4. WEEKLY KHATA REPORT PRINTING */
+      body.printing-weekly-khata > header,
+      body.printing-weekly-khata > nav,
+      body.printing-weekly-khata main,
+      body.printing-weekly-khata .fixed:not(#weekly-khata-modal) {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      body.printing-weekly-khata #weekly-khata-modal {
+        display: block !important;
+        position: static !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+      }
+
+      body.printing-weekly-khata #printable-weekly-khata {
+        margin: 0 auto !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 10px !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      body.printing-weekly-khata button {
+        display: none !important;
+      }
+
       body.printing-report main {
         padding: 0 !important;
         margin: 0 !important;
@@ -345,6 +410,10 @@
         <button onclick="switchTab('advances')" id="tab-advances" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
           <i data-lucide="banknote" class="w-4 h-4"></i>
           <span>Advance Khata</span>
+        </button>
+        <button onclick="switchTab('customer-khata')" id="tab-customer-khata" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
+          <i data-lucide="book-open-check" class="w-4 h-4"></i>
+          <span>Customer Khata</span>
         </button>
         <button onclick="switchTab('staff')" id="tab-staff" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
           <i data-lucide="users" class="w-4 h-4"></i>
@@ -683,7 +752,146 @@
     </section>
 
     <!-- ================================================================= -->
-    <!-- TAB 5: STAFF DIRECTORY & REGISTRATION -->
+    <!-- TAB: CUSTOMER UDHAR & SERIES KHATA LEDGER -->
+    <!-- ================================================================= -->
+    <section id="view-customer-khata" class="space-y-6 hidden">
+      <!-- 4 TOP KPI METRIC PULSE CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- KPI 1: TOTAL OUTSTANDING KHATA -->
+        <div class="bg-white rounded-2xl p-5 border border-rose-200 shadow-sm relative overflow-hidden flex items-center justify-between">
+          <div class="space-y-1">
+            <span class="text-[11px] font-bold text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></span>
+              کل بقایا ادھار (Outstanding)
+            </span>
+            <div id="cust-kpi-outstanding" class="text-2xl font-black text-rose-600">Rs. 0.00</div>
+            <p class="text-[11px] text-slate-500 font-medium">Regular customers pending balance</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
+            <i data-lucide="wallet" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <!-- KPI 2: THIS WEEK'S CREDIT GIVEN -->
+        <div class="bg-white rounded-2xl p-5 border border-amber-200 shadow-sm relative overflow-hidden flex items-center justify-between">
+          <div class="space-y-1">
+            <span class="text-[11px] font-bold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+              اس ہفتے دیا گیا ادھار
+            </span>
+            <div id="cust-kpi-week-credit" class="text-2xl font-black text-amber-700">Rs. 0.00</div>
+            <p class="text-[11px] text-slate-500 font-medium">Credit medicines (Past 7 days)</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100">
+            <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <!-- KPI 3: THIS WEEK'S RECOVERED -->
+        <div class="bg-white rounded-2xl p-5 border border-emerald-200 shadow-sm relative overflow-hidden flex items-center justify-between">
+          <div class="space-y-1">
+            <span class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="badge-check" class="w-3.5 h-3.5"></i>
+              اس ہفتے کی وصولی (Recovered)
+            </span>
+            <div id="cust-kpi-week-recovered" class="text-2xl font-black text-[#156D38]">Rs. 0.00</div>
+            <p class="text-[11px] text-slate-500 font-medium">Cash / Digital payments (Past 7 days)</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center border border-emerald-100">
+            <i data-lucide="arrow-down-left" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <!-- KPI 4: ACTIVE DEBTORS -->
+        <div class="bg-white rounded-2xl p-5 border border-indigo-200 shadow-sm relative overflow-hidden flex items-center justify-between">
+          <div class="space-y-1">
+            <span class="text-[11px] font-bold text-[#232272] uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="users" class="w-3.5 h-3.5"></i>
+              مقروض گاہک (Active Debtors)
+            </span>
+            <div id="cust-kpi-debtors-count" class="text-2xl font-black text-[#232272]">0 Customers</div>
+            <p class="text-[11px] text-slate-500 font-medium">With active unpaid credit balance</p>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-[#232272] flex items-center justify-center border border-indigo-100">
+            <i data-lucide="user-minus" class="w-6 h-6"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN CUSTOMERS MASTER CARD -->
+      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <!-- HEADER, SEARCH & ACTION BUTTONS -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+          <div>
+            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+              <i data-lucide="book-open" class="w-5 h-5 text-[#232272]"></i>
+              Customer Series Khata Master Ledger
+            </h3>
+            <p class="text-xs text-slate-500">Regular customers credit tracking, continuous series ledger, 1-click WhatsApp reminders &amp; statement parchi</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2.5">
+            <button onclick="openBatchWhatsAppModal()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold py-2.5 px-3.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all cursor-pointer">
+              <i data-lucide="send" class="w-4 h-4"></i>
+              <span>⚡ WhatsApp All Pending</span>
+            </button>
+            <button onclick="openAddCustomerKhataModal()" class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 px-3.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all cursor-pointer">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>+ Add Credit Purchase</span>
+            </button>
+            <button onclick="openCustomerModal()" class="bg-[#232272] hover:bg-indigo-950 active:scale-95 text-white font-bold py-2.5 px-3.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all cursor-pointer">
+              <i data-lucide="user-plus" class="w-4 h-4"></i>
+              <span>+ New Customer</span>
+            </button>
+            <button onclick="openWeeklyKhataReportModal()" class="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold py-2.5 px-3.5 rounded-xl text-xs flex items-center gap-1.5 border border-slate-300 transition-all cursor-pointer">
+              <i data-lucide="printer" class="w-4 h-4"></i>
+              <span>Weekly Report</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- SEARCH AND FILTER PILLS -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
+          <div class="relative w-full sm:w-72">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+            <input type="text" id="customer-search-input" oninput="filterCustomerTable()" placeholder="Search by name, phone, address..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          </div>
+
+          <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+            <button onclick="setCustomerFilter('all')" id="btn-cust-filter-all" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#232272] text-white shadow-xs cursor-pointer">
+              All (<span id="count-cust-all">0</span>)
+            </button>
+            <button onclick="setCustomerFilter('pending')" id="btn-cust-filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700 cursor-pointer">
+              Has Pending Balance (<span id="count-cust-pending">0</span>)
+            </button>
+            <button onclick="setCustomerFilter('cleared')" id="btn-cust-filter-cleared" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer">
+              All Clear (<span id="count-cust-cleared">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- CUSTOMERS MASTER TABLE -->
+        <div class="overflow-x-auto mt-4">
+          <table class="w-full text-left text-sm border-collapse">
+            <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Customer Details</th>
+                <th class="py-3 px-4">Credit Limit &amp; Usage</th>
+                <th class="py-3 px-4">Total Credit</th>
+                <th class="py-3 px-4">Total Paid</th>
+                <th class="py-3 px-4 text-rose-600">Baqaya (Due Balance)</th>
+                <th class="py-3 px-4 text-center">Status</th>
+                <th class="py-3 px-4 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="customers-tbody" class="divide-y divide-slate-100 font-medium">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <!-- ================================================================= -->
     <!-- TAB 5: STAFF DIRECTORY & REGISTRATION -->
     <!-- ================================================================= -->
@@ -1378,6 +1586,445 @@
     </div>
   </div>
 
+  <!-- ================================================================= -->
+  <!-- MODAL: ADD / EDIT CUSTOMER -->
+  <!-- ================================================================= -->
+  <div id="customer-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200">
+      <button onclick="closeCustomerModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-[#232272] flex items-center justify-center">
+          <i data-lucide="user-plus" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 id="customer-modal-title" class="text-base font-bold text-slate-800">Register Credit Customer</h3>
+          <p class="text-xs text-slate-500">Regular customer profiling for Series Khata</p>
+        </div>
+      </div>
+
+      <form onsubmit="submitCustomerForm(event)" class="space-y-3">
+        <input type="hidden" id="customer-form-id" value="">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Customer Full Name *</label>
+          <input type="text" id="customer-form-name" required placeholder="e.g. Haji Abdul Rehman" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">WhatsApp / Phone Number *</label>
+          <input type="text" id="customer-form-phone" required placeholder="e.g. 0300-1234567" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <span class="text-[10px] text-slate-400">Used for 1-click WhatsApp payment reminders</span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Address / Shop / Mohalla</label>
+          <input type="text" id="customer-form-address" placeholder="e.g. House 22, Model Town, Lahore" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Credit Limit (PKR)</label>
+          <input type="number" id="customer-form-limit" min="1000" step="500" value="15000" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+        </div>
+
+        <div class="flex gap-3 pt-3">
+          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+            <i data-lucide="check" class="w-4 h-4"></i> Save Customer
+          </button>
+          <button type="button" onclick="closeCustomerModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: ADD CREDIT PURCHASE (NEW UDHAR INVOICE) -->
+  <!-- ================================================================= -->
+  <div id="add-customer-khata-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200">
+      <button onclick="closeAddCustomerKhataModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
+          <i data-lucide="receipt" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800">Record Credit Purchase (نیا ادھار)</h3>
+          <p class="text-xs text-slate-500">Append new invoice into customer's continuous series khata</p>
+        </div>
+      </div>
+
+      <form onsubmit="submitAddCustomerKhata(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Select Customer *</label>
+          <select id="khata-customer-select" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Invoice / Parchi # (Optional)</label>
+            <input type="text" id="khata-invoice-no" placeholder="Auto (e.g. INV-1082)" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Purchase Date *</label>
+            <input type="date" id="khata-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Medicines / Items Description *</label>
+          <textarea id="khata-items" required rows="2" placeholder="e.g. Augmentin 625mg (2 boxes), Panadol CF (1 leaf), Surbex Z" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Bill Amount (PKR) *</label>
+            <input type="number" id="khata-amount" required min="1" step="0.5" placeholder="e.g. 2450" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-bold text-rose-600 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Notes / Prescriber (Optional)</label>
+            <input type="text" id="khata-notes" placeholder="e.g. Monthly heart medicine" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-3">
+          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> Add to Series Khata
+          </button>
+          <button type="button" onclick="closeAddCustomerKhataModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: CUSTOMER SERIES KHATA LEDGER DETAIL -->
+  <!-- ================================================================= -->
+  <div id="customer-ledger-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl relative border border-slate-200 max-h-[92vh] flex flex-col">
+      <button onclick="closeCustomerLedgerModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <!-- CUSTOMER HEADER & SUMMARY -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold px-2 py-0.5 rounded bg-indigo-50 text-[#232272]">Series Khata Ledger</span>
+            <span id="ledger-modal-phone" class="text-xs font-mono text-slate-500">0300-1234567</span>
+          </div>
+          <h3 id="ledger-modal-name" class="text-xl font-black text-slate-800 mt-1">Haji Abdul Rehman</h3>
+          <p id="ledger-modal-address" class="text-xs text-slate-500">House 22, Model Town, Lahore</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- BIG BALANCE BADGE -->
+          <div class="bg-rose-50 border border-rose-200 px-4 py-2 rounded-xl text-right">
+            <div class="text-[10px] font-bold text-rose-700 uppercase tracking-wider">کل واجب الادا رقم (Baqaya)</div>
+            <div id="ledger-modal-balance" class="text-2xl font-black text-rose-600">Rs. 0.00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUMMARY PILLS & QUICK ACTION BAR -->
+      <div class="flex flex-wrap items-center justify-between gap-2 py-3 bg-slate-50 px-3 rounded-xl mt-3 border border-slate-200">
+        <div class="flex items-center gap-4 text-xs font-medium text-slate-600">
+          <span>Total Credit Taken: <strong id="ledger-modal-total-credit" class="text-slate-800">Rs. 0.00</strong></span>
+          <span>Total Settled: <strong id="ledger-modal-total-settled" class="text-emerald-700">Rs. 0.00</strong></span>
+          <span>Credit Limit: <strong id="ledger-modal-limit" class="text-indigo-800">Rs. 0.00</strong></span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-ledger-add-bill" onclick="openAddCreditForCurrentCustomer()" class="bg-[#156D38] hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow cursor-pointer">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Bill
+          </button>
+          <button id="btn-ledger-settle-all" onclick="settleAllBalanceForCurrentCustomer()" class="bg-[#232272] hover:bg-indigo-950 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow cursor-pointer">
+            <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Settle Full Balance
+          </button>
+          <button id="btn-ledger-print-parchi" onclick="printParchiForCurrentCustomer()" class="bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 border border-slate-300 shadow-xs cursor-pointer">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print Parchi
+          </button>
+        </div>
+      </div>
+
+      <!-- CHRONOLOGICAL SERIES TABLE -->
+      <div class="flex-1 overflow-y-auto mt-3 border border-slate-200 rounded-xl">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="bg-slate-100 text-slate-700 font-bold sticky top-0 uppercase border-b border-slate-200">
+            <tr>
+              <th class="py-2.5 px-3">Date</th>
+              <th class="py-2.5 px-3">Invoice #</th>
+              <th class="py-2.5 px-3">Medicines / Description</th>
+              <th class="py-2.5 px-3">Bill Amount</th>
+              <th class="py-2.5 px-3">Payment Status</th>
+              <th class="py-2.5 px-3 text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody id="ledger-modal-tbody" class="divide-y divide-slate-100 font-medium">
+            <!-- Rendered dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: SETTLE SINGLE KHATA INVOICE -->
+  <!-- ================================================================= -->
+  <div id="settle-customer-khata-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative border border-slate-200">
+      <button onclick="closeSettleCustomerKhataModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center">
+          <i data-lucide="check-circle" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800">Clear Khata Invoice</h3>
+          <p class="text-xs text-slate-500">Record 100% full invoice settlement</p>
+        </div>
+      </div>
+
+      <form onsubmit="submitSettleCustomerKhata(event)" class="space-y-3">
+        <input type="hidden" id="settle-entry-id" value="">
+        <input type="hidden" id="settle-entry-customer-id" value="">
+
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <div class="text-[11px] text-slate-500">Invoice: <strong id="settle-entry-inv-label" class="text-slate-800">INV-1001</strong></div>
+          <div class="text-[11px] text-slate-500">Customer: <strong id="settle-entry-customer-label" class="text-slate-800">Haji Abdul Rehman</strong></div>
+          <div class="text-base font-black text-rose-600 mt-1" id="settle-entry-amount-label">Rs. 0.00</div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Settlement Date *</label>
+          <input type="date" id="settle-entry-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Payment Method *</label>
+          <select id="settle-entry-method" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+            <option value="Cash">Cash (Counter Till)</option>
+            <option value="EasyPaisa">EasyPaisa</option>
+            <option value="JazzCash">JazzCash</option>
+            <option value="Bank Transfer">Bank Transfer (Meezan / HBL)</option>
+            <option value="Cheque">Cheque</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Audit Notes / Transaction ID (Optional)</label>
+          <input type="text" id="settle-entry-notes" placeholder="e.g. Paid at evening counter" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+        </div>
+
+        <div class="flex gap-3 pt-3">
+          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+            <i data-lucide="check" class="w-4 h-4"></i> Confirm Settlement
+          </button>
+          <button type="button" onclick="closeSettleCustomerKhataModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: BATCH WHATSAPP REMINDERS LAUNCHER -->
+  <!-- ================================================================= -->
+  <div id="batch-whatsapp-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative border border-slate-200 max-h-[85vh] flex flex-col">
+      <button onclick="closeBatchWhatsAppModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+          <i data-lucide="send" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800">⚡ 1-Click WhatsApp Reminders to Debtors</h3>
+          <p class="text-xs text-slate-500">Send polite balance notification in Urdu to all customers with unpaid credit</p>
+        </div>
+      </div>
+
+      <div id="batch-whatsapp-list" class="flex-1 overflow-y-auto space-y-3 mt-2 pr-1">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="pt-4 border-t border-slate-200 flex justify-end">
+        <button onclick="closeBatchWhatsAppModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-5 rounded-lg text-xs cursor-pointer">
+          Done / Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: PRINTABLE CUSTOMER KHATA PARCHI / STATEMENT -->
+  <!-- ================================================================= -->
+  <div id="customer-parchi-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200 max-h-[90vh] flex flex-col">
+      <button onclick="closeCustomerParchiModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <!-- PRINTABLE PARCHI CARD -->
+      <div id="printable-parchi" class="bg-white p-4 border border-slate-300 rounded-xl font-sans text-slate-800 overflow-y-auto">
+        <!-- PHARMACY LOGO & HEADER -->
+        <div class="text-center pb-3 border-b border-slate-300">
+          <div class="text-xs font-bold uppercase tracking-widest text-[#156D38]">Official Customer Ledger Statement</div>
+          <h2 class="text-xl font-black text-[#232272] tracking-wide mt-0.5">MUMTAZ PHARMACY &amp; WELLNESS</h2>
+          <div class="text-[11px] text-slate-500 mt-0.5">Model Town, Lahore • Phone: 0300-0000000</div>
+          <div class="inline-block mt-1 px-2.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[11px] font-bold text-slate-700">
+            کسٹمر ادھار کھاتہ پرچی (Series Khata)
+          </div>
+        </div>
+
+        <!-- CUSTOMER METADATA -->
+        <div class="grid grid-cols-2 gap-2 text-xs py-3 border-b border-slate-200">
+          <div>
+            <div class="text-slate-400 text-[10px]">CUSTOMER NAME:</div>
+            <div id="parchi-cust-name" class="font-bold text-slate-800">Haji Abdul Rehman</div>
+            <div id="parchi-cust-address" class="text-slate-500 text-[10px]">House 22, Model Town, Lahore</div>
+          </div>
+          <div class="text-right">
+            <div class="text-slate-400 text-[10px]">PHONE / WHATSAPP:</div>
+            <div id="parchi-cust-phone" class="font-bold font-mono text-slate-800">0300-1234567</div>
+            <div id="parchi-date-label" class="text-slate-500 text-[10px]">Date: 2026-09-12</div>
+          </div>
+        </div>
+
+        <!-- INVOICES TABLE -->
+        <div class="py-2">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 text-slate-700 uppercase font-bold text-[10px]">
+              <tr>
+                <th class="py-1.5 px-2">Date</th>
+                <th class="py-1.5 px-2">Invoice #</th>
+                <th class="py-1.5 px-2">Items</th>
+                <th class="py-1.5 px-2 text-right">Amount</th>
+                <th class="py-1.5 px-2 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody id="parchi-tbody" class="divide-y divide-slate-100 text-[11px]">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- TOTALS & BALANCE BOX -->
+        <div class="border-t-2 border-[#232272] pt-2 mt-2">
+          <div class="flex justify-between text-xs py-1">
+            <span class="text-slate-600">Total Credit Purchases:</span>
+            <span id="parchi-total-credit" class="font-bold">Rs. 0.00</span>
+          </div>
+          <div class="flex justify-between text-xs py-1">
+            <span class="text-slate-600">Total Payments Cleared:</span>
+            <span id="parchi-total-paid" class="font-bold text-emerald-700">- Rs. 0.00</span>
+          </div>
+          <div class="flex justify-between items-center text-sm font-black p-2 bg-rose-50 border border-rose-200 rounded-lg mt-1">
+            <span class="text-rose-800">NET DUE BALANCE (کل بقایا رقم):</span>
+            <span id="parchi-net-balance" class="text-base text-rose-600">Rs. 0.00</span>
+          </div>
+        </div>
+
+        <!-- FOOTER & SIGNATURE -->
+        <div class="mt-4 pt-3 border-t border-dashed border-slate-300 text-[10px] text-slate-400 flex justify-between items-end">
+          <div>
+            <div>محترم گاہک! برائے مہربانی اپنا بقایا کھاتہ جلد ادا فرمائیں۔</div>
+            <div class="text-[9px] text-slate-400 mt-0.5">Computerized Statement via Mumtaz Core Engine</div>
+          </div>
+          <div class="text-center">
+            <div class="h-6"></div>
+            <div class="border-t border-slate-400 px-3">Owner Signature &amp; Stamp</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="flex gap-3 mt-4">
+        <button onclick="executePrintCustomerParchi()" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+          <i data-lucide="printer" class="w-4 h-4"></i> Print Statement Parchi
+        </button>
+        <button onclick="closeCustomerParchiModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-xs cursor-pointer">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: WEEKLY AUDIT KHATA REPORT -->
+  <!-- ================================================================= -->
+  <div id="weekly-khata-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative border border-slate-200 max-h-[90vh] flex flex-col">
+      <button onclick="closeWeeklyKhataReportModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <!-- PRINTABLE WEEKLY REPORT CONTAINER -->
+      <div id="printable-weekly-khata" class="flex-1 overflow-y-auto font-sans">
+        <div class="text-center pb-3 border-b border-slate-200">
+          <h2 class="text-lg font-black text-[#232272]">MUMTAZ PHARMACY - WEEKLY CUSTOMER KHATA RECOVERY REPORT</h2>
+          <p id="weekly-report-period" class="text-xs text-slate-500 font-medium mt-0.5">Period: 7 Days Audit</p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 my-3">
+          <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
+            <div class="text-[10px] font-bold text-amber-800 uppercase">This Week Credit Given</div>
+            <div id="weekly-given-amt" class="text-base font-black text-amber-700 mt-1">Rs. 0.00</div>
+          </div>
+          <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
+            <div class="text-[10px] font-bold text-emerald-800 uppercase">This Week Recovered</div>
+            <div id="weekly-recovered-amt" class="text-base font-black text-[#156D38] mt-1">Rs. 0.00</div>
+          </div>
+          <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-center">
+            <div class="text-[10px] font-bold text-rose-800 uppercase">Market Outstanding</div>
+            <div id="weekly-outstanding-amt" class="text-base font-black text-rose-600 mt-1">Rs. 0.00</div>
+          </div>
+        </div>
+
+        <h4 class="font-bold text-xs text-slate-700 uppercase mt-4 mb-2">Active Debtors Summary:</h4>
+        <div class="border border-slate-200 rounded-xl overflow-hidden">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-100 font-bold text-slate-700">
+              <tr>
+                <th class="py-2 px-3">Customer Name</th>
+                <th class="py-2 px-3">Phone</th>
+                <th class="py-2 px-3">Unpaid Bills</th>
+                <th class="py-2 px-3 text-right">Outstanding Balance</th>
+              </tr>
+            </thead>
+            <tbody id="weekly-debtors-tbody" class="divide-y divide-slate-100">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-4 border-t border-slate-200 mt-3">
+        <button onclick="executePrintWeeklyKhataReport()" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+          <i data-lucide="printer" class="w-4 h-4"></i> Print Weekly Report
+        </button>
+        <button onclick="closeWeeklyKhataReportModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-xs cursor-pointer">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- JAVASCRIPT LOGIC -->
   <script>
     let staffList = [];
@@ -1391,6 +2038,8 @@
       loadStaff();
       loadTodayAttendance();
       generatePayroll();
+      loadCustomers();
+      loadCustomerKpis();
     });
 
     // 1. Live Clock
@@ -1404,18 +2053,30 @@
 
     // 2. Navigation Tabs
     function switchTab(tabId) {
-      ['kiosk', 'live', 'payroll', 'advances', 'staff', 'reports'].forEach(t => {
-        document.getElementById(`view-${t}`).classList.add('hidden');
-        document.getElementById(`tab-${t}`).classList.remove('border-emerald-400', 'text-white', 'bg-white/5');
-        document.getElementById(`tab-${t}`).classList.add('border-transparent', 'text-indigo-200/80');
+      ['kiosk', 'live', 'payroll', 'advances', 'customer-khata', 'staff', 'reports'].forEach(t => {
+        const viewEl = document.getElementById(`view-${t}`);
+        const tabEl = document.getElementById(`tab-${t}`);
+        if (viewEl) viewEl.classList.add('hidden');
+        if (tabEl) {
+          tabEl.classList.remove('border-emerald-400', 'text-white', 'bg-white/5');
+          tabEl.classList.add('border-transparent', 'text-indigo-200/80');
+        }
       });
-      document.getElementById(`view-${tabId}`).classList.remove('hidden');
-      document.getElementById(`tab-${tabId}`).classList.remove('border-transparent', 'text-indigo-200/80');
-      document.getElementById(`tab-${tabId}`).classList.add('border-emerald-400', 'text-white', 'bg-white/5');
+      const targetView = document.getElementById(`view-${tabId}`);
+      const targetTab = document.getElementById(`tab-${tabId}`);
+      if (targetView) targetView.classList.remove('hidden');
+      if (targetTab) {
+        targetTab.classList.remove('border-transparent', 'text-indigo-200/80');
+        targetTab.classList.add('border-emerald-400', 'text-white', 'bg-white/5');
+      }
 
       if (tabId === 'live') loadTodayAttendance();
       if (tabId === 'payroll') generatePayroll();
       if (tabId === 'advances') loadAdvances();
+      if (tabId === 'customer-khata') {
+        loadCustomers();
+        loadCustomerKpis();
+      }
       if (tabId === 'staff') renderStaffDirectory();
       if (tabId === 'reports') loadMonthlyReport();
       lucide.createIcons();
@@ -2501,14 +3162,24 @@
 
     window.addEventListener('beforeprint', () => {
       const slipModal = document.getElementById('slip-modal');
+      const parchiModal = document.getElementById('customer-parchi-modal');
+      const weeklyModal = document.getElementById('weekly-khata-modal');
       if (slipModal && !slipModal.classList.contains('hidden')) {
-        document.body.classList.remove('printing-report');
+        document.body.classList.remove('printing-report', 'printing-parchi', 'printing-weekly-khata');
         document.body.classList.add('printing-slip');
+        setPrintOrientation('portrait');
+      } else if (parchiModal && !parchiModal.classList.contains('hidden')) {
+        document.body.classList.remove('printing-report', 'printing-slip', 'printing-weekly-khata');
+        document.body.classList.add('printing-parchi');
+        setPrintOrientation('portrait');
+      } else if (weeklyModal && !weeklyModal.classList.contains('hidden')) {
+        document.body.classList.remove('printing-report', 'printing-slip', 'printing-parchi');
+        document.body.classList.add('printing-weekly-khata');
         setPrintOrientation('portrait');
       } else {
         const reportTab = document.getElementById('view-reports');
         if (reportTab && !reportTab.classList.contains('hidden')) {
-          document.body.classList.remove('printing-slip');
+          document.body.classList.remove('printing-slip', 'printing-parchi', 'printing-weekly-khata');
           document.body.classList.add('printing-report');
           setPrintOrientation('landscape');
         }
@@ -2516,7 +3187,7 @@
     });
 
     window.addEventListener('afterprint', () => {
-      document.body.classList.remove('printing-report', 'printing-slip');
+      document.body.classList.remove('printing-report', 'printing-slip', 'printing-parchi', 'printing-weekly-khata');
       setPrintOrientation('landscape');
     });
 
@@ -2591,6 +3262,610 @@
       } catch (err) {
         console.error("Failed to load monthly report", err);
       }
+    }
+
+    // =================================================================
+    // 9. CUSTOMER UDHAR & SERIES KHATA LEDGER MODULE
+    // =================================================================
+    let allCustomers = [];
+    let currentCustomerFilter = 'all';
+    let currentOpenLedgerCustomerId = null;
+    let currentOpenParchiCustomerId = null;
+
+    async function loadCustomers() {
+      try {
+        const res = await fetch('/api/customers');
+        allCustomers = await res.json();
+        renderCustomerTable();
+        updateCustomerCounts();
+        populateCustomerDropdowns();
+      } catch (err) {
+        console.error("Error loading customers", err);
+      }
+    }
+
+    async function loadCustomerKpis() {
+      try {
+        const res = await fetch('/api/customer-khata/kpis');
+        const kpis = await res.json();
+        document.getElementById('cust-kpi-outstanding').innerText = `Rs. ${kpis.total_outstanding.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('cust-kpi-week-credit').innerText = `Rs. ${kpis.this_week_credit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('cust-kpi-week-recovered').innerText = `Rs. ${kpis.this_week_recovered.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('cust-kpi-debtors-count').innerText = `${kpis.active_debtors_count} Customers`;
+      } catch (err) {
+        console.error("Error loading customer KPIs", err);
+      }
+    }
+
+    function updateCustomerCounts() {
+      const allCount = (allCustomers || []).length;
+      const pendingCount = (allCustomers || []).filter(c => c.current_balance > 0).length;
+      const clearedCount = (allCustomers || []).filter(c => c.current_balance <= 0).length;
+
+      document.getElementById('count-cust-all').innerText = allCount;
+      document.getElementById('count-cust-pending').innerText = pendingCount;
+      document.getElementById('count-cust-cleared').innerText = clearedCount;
+    }
+
+    function setCustomerFilter(filterType) {
+      currentCustomerFilter = filterType;
+      ['all', 'pending', 'cleared'].forEach(f => {
+        const btn = document.getElementById(`btn-cust-filter-${f}`);
+        if (btn) {
+          if (f === filterType) {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-[#232272] text-white shadow-xs cursor-pointer';
+          } else {
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer';
+          }
+        }
+      });
+      renderCustomerTable();
+    }
+
+    function filterCustomerTable() {
+      renderCustomerTable();
+    }
+
+    function renderCustomerTable() {
+      const q = (document.getElementById('customer-search-input')?.value || '').toLowerCase().trim();
+      let list = allCustomers || [];
+
+      if (currentCustomerFilter === 'pending') {
+        list = list.filter(c => c.current_balance > 0);
+      } else if (currentCustomerFilter === 'cleared') {
+        list = list.filter(c => c.current_balance <= 0);
+      }
+
+      if (q) {
+        list = list.filter(c => 
+          c.name.toLowerCase().includes(q) ||
+          c.phone.toLowerCase().includes(q) ||
+          (c.address && c.address.toLowerCase().includes(q))
+        );
+      }
+
+      const tbody = document.getElementById('customers-tbody');
+      if (!tbody) return;
+
+      if (!list || list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 text-xs">Koi matching customer record mojood nahi hai.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(c => {
+        const hasBalance = c.current_balance > 0;
+        const statusBadge = hasBalance 
+          ? `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> ${c.pending_invoices_count} Pending</span>`
+          : `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check" class="w-3 h-3"></i> All Clear</span>`;
+
+        const waMessage = encodeURIComponent(`السلام علیکم ${c.name} صاحب!\nممتاز فارمیسی کی طرف سے مطلع کیا جاتا ہے کہ آپ کے کھاتہ میں کل بقایا رقم Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} واجب الادا ہے۔\nبرائے مہربانی تشریف لا کر رقم ادا فرما دیں۔ شکریہ!\n— ممتاز فارمیسی، ماڈل ٹاؤن، لاہور`);
+        const waLink = c.wa_phone ? `https://wa.me/${c.wa_phone}?text=${waMessage}` : '#';
+
+        const limitPct = Math.min(100, Math.round((c.current_balance / (c.credit_limit || 15000)) * 100));
+        const barColor = limitPct > 85 ? 'bg-rose-500' : (limitPct > 50 ? 'bg-amber-500' : 'bg-[#156D38]');
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-800 text-sm">${c.name}</div>
+              <div class="text-[11px] font-mono text-slate-500 flex items-center gap-1 mt-0.5">
+                <i data-lucide="phone" class="w-3 h-3 text-slate-400"></i> ${c.phone}
+              </div>
+              <div class="text-[10px] text-slate-400 truncate max-w-[200px] mt-0.5">${c.address || 'Lahore'}</div>
+            </td>
+            <td class="py-3 px-4">
+              <div class="text-xs font-semibold text-slate-700">Limit: Rs. ${(c.credit_limit || 0).toLocaleString()}</div>
+              <div class="w-28 bg-slate-200 h-2 rounded-full mt-1.5 overflow-hidden">
+                <div class="${barColor} h-full rounded-full transition-all" style="width: ${limitPct}%"></div>
+              </div>
+              <div class="text-[10px] text-slate-400 mt-1">${limitPct}% used</div>
+            </td>
+            <td class="py-3 px-4 text-xs font-semibold text-slate-600">Rs. ${c.total_credit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td class="py-3 px-4 text-xs font-semibold text-emerald-700">Rs. ${c.total_settled.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td class="py-3 px-4">
+              <div class="text-sm font-black ${hasBalance ? 'text-rose-600' : 'text-slate-400'}">
+                Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              </div>
+              <div class="text-[10px] text-slate-400">${c.total_invoices_count || 0} total invoices</div>
+            </td>
+            <td class="py-3 px-4 text-center">
+              ${statusBadge}
+            </td>
+            <td class="py-3 px-4">
+              <div class="flex items-center justify-center gap-1.5">
+                ${hasBalance ? `
+                  <a href="${waLink}" target="_blank" title="1-Click WhatsApp Reminder" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-1.5 rounded-lg border border-emerald-200 transition-all flex items-center gap-1 text-[11px] font-bold">
+                    <i data-lucide="message-circle" class="w-4 h-4 text-emerald-600"></i>
+                    <span>WhatsApp</span>
+                  </a>
+                ` : `
+                  <span class="text-slate-300 p-1.5 text-xs font-semibold">—</span>
+                `}
+                <button onclick="openCustomerLedgerModal(${c.id})" title="Series Khata Ledger" class="bg-indigo-50 hover:bg-indigo-100 text-[#232272] p-1.5 rounded-lg border border-indigo-200 transition-all flex items-center gap-1 text-[11px] font-bold cursor-pointer">
+                  <i data-lucide="book-open" class="w-4 h-4"></i>
+                  <span>Ledger</span>
+                </button>
+                <button onclick="openCustomerParchiModal(${c.id})" title="Print Parchi Statement" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-1.5 rounded-lg border border-slate-300 transition-all cursor-pointer">
+                  <i data-lucide="printer" class="w-4 h-4"></i>
+                </button>
+                <button onclick="openCustomerModal(${c.id})" title="Edit Profile" class="text-slate-400 hover:text-slate-700 p-1 cursor-pointer">
+                  <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function populateCustomerDropdowns() {
+      const select = document.getElementById('khata-customer-select');
+      if (!select) return;
+      select.innerHTML = (allCustomers || []).map(c => `
+        <option value="${c.id}">${c.name} (${c.phone}) — Baqaya: Rs. ${c.current_balance.toLocaleString()}</option>
+      `).join('');
+    }
+
+    // Customer Form Modal (Create / Edit)
+    function openCustomerModal(customerId = null) {
+      const modal = document.getElementById('customer-modal');
+      const title = document.getElementById('customer-modal-title');
+      const formId = document.getElementById('customer-form-id');
+      const nameInp = document.getElementById('customer-form-name');
+      const phoneInp = document.getElementById('customer-form-phone');
+      const addrInp = document.getElementById('customer-form-address');
+      const limitInp = document.getElementById('customer-form-limit');
+
+      if (customerId) {
+        const c = allCustomers.find(x => x.id === customerId);
+        if (!c) return;
+        title.innerText = `Edit Profile: ${c.name}`;
+        formId.value = c.id;
+        nameInp.value = c.name;
+        phoneInp.value = c.phone;
+        addrInp.value = c.address || '';
+        limitInp.value = c.credit_limit || 15000;
+      } else {
+        title.innerText = 'Register Credit Customer';
+        formId.value = '';
+        nameInp.value = '';
+        phoneInp.value = '';
+        addrInp.value = '';
+        limitInp.value = 15000;
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeCustomerModal() {
+      document.getElementById('customer-modal').classList.add('hidden');
+    }
+
+    async function submitCustomerForm(e) {
+      e.preventDefault();
+      const id = document.getElementById('customer-form-id').value;
+      const name = document.getElementById('customer-form-name').value.trim();
+      const phone = document.getElementById('customer-form-phone').value.trim();
+      const address = document.getElementById('customer-form-address').value.trim();
+      const creditLimit = parseFloat(document.getElementById('customer-form-limit').value);
+
+      const url = id ? `/api/customers/${id}` : '/api/customers';
+      const method = id ? 'PUT' : 'POST';
+
+      try {
+        const res = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: name,
+            phone: phone,
+            address: address,
+            credit_limit: creditLimit
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeCustomerModal();
+          await loadCustomers();
+          await loadCustomerKpis();
+        } else {
+          alert(data.detail || "Customer save karne mein masla aaya.");
+        }
+      } catch (err) {
+        console.error("Error submitting customer", err);
+        alert("Server connection error.");
+      }
+    }
+
+    // Add Credit Purchase Modal
+    function openAddCustomerKhataModal(preSelectedCustomerId = null) {
+      const modal = document.getElementById('add-customer-khata-modal');
+      const select = document.getElementById('khata-customer-select');
+      populateCustomerDropdowns();
+
+      if (preSelectedCustomerId) {
+        select.value = preSelectedCustomerId;
+      }
+
+      document.getElementById('khata-invoice-no').value = '';
+      document.getElementById('khata-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('khata-items').value = '';
+      document.getElementById('khata-amount').value = '';
+      document.getElementById('khata-notes').value = '';
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeAddCustomerKhataModal() {
+      document.getElementById('add-customer-khata-modal').classList.add('hidden');
+    }
+
+    async function submitAddCustomerKhata(e) {
+      e.preventDefault();
+      const customerId = parseInt(document.getElementById('khata-customer-select').value);
+      const invoiceNo = document.getElementById('khata-invoice-no').value.trim();
+      const dateVal = document.getElementById('khata-date').value;
+      const items = document.getElementById('khata-items').value.trim();
+      const amount = parseFloat(document.getElementById('khata-amount').value);
+      const notes = document.getElementById('khata-notes').value.trim();
+
+      try {
+        const res = await fetch('/api/customer-khata', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_id: customerId,
+            invoice_no: invoiceNo,
+            date: dateVal,
+            item_description: items,
+            amount: amount,
+            notes: notes
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeAddCustomerKhataModal();
+          await loadCustomers();
+          await loadCustomerKpis();
+          if (currentOpenLedgerCustomerId === customerId) {
+            await openCustomerLedgerModal(customerId);
+          }
+          alert(data.message || "Credit purchase successfully added to Series Khata!");
+        } else {
+          alert(data.detail || "Failed to record credit purchase.");
+        }
+      } catch (err) {
+        console.error("Error adding credit purchase", err);
+        alert("Server error.");
+      }
+    }
+
+    // Customer Series Khata Ledger Modal
+    async function openCustomerLedgerModal(customerId) {
+      currentOpenLedgerCustomerId = customerId;
+      try {
+        const res = await fetch(`/api/customers/${customerId}/ledger`);
+        const data = await res.json();
+        const c = data.customer;
+        const summary = data.summary;
+        const entries = data.ledger;
+
+        document.getElementById('ledger-modal-name').innerText = c.name;
+        document.getElementById('ledger-modal-phone').innerText = c.phone;
+        document.getElementById('ledger-modal-address').innerText = c.address || 'Lahore';
+        document.getElementById('ledger-modal-balance').innerText = `Rs. ${summary.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('ledger-modal-total-credit').innerText = `Rs. ${summary.total_credit.toLocaleString()}`;
+        document.getElementById('ledger-modal-total-settled').innerText = `Rs. ${summary.total_settled.toLocaleString()}`;
+        document.getElementById('ledger-modal-limit').innerText = `Rs. ${(c.credit_limit || 0).toLocaleString()}`;
+
+        const settleAllBtn = document.getElementById('btn-ledger-settle-all');
+        if (summary.current_balance <= 0) {
+          settleAllBtn.classList.add('opacity-50', 'pointer-events-none');
+        } else {
+          settleAllBtn.classList.remove('opacity-50', 'pointer-events-none');
+        }
+
+        const tbody = document.getElementById('ledger-modal-tbody');
+        if (!entries || entries.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">Iss customer ka koi credit bill mojood nahi.</td></tr>`;
+        } else {
+          tbody.innerHTML = entries.map(e => {
+            const isSettled = e.is_settled === 1;
+            const statusBadge = isSettled 
+              ? `<div><span class="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-[10px]">PAID (${e.payment_method || 'Cash'})</span><div class="text-[10px] text-slate-400 mt-0.5">${e.settled_at || ''}</div></div>`
+              : `<span class="font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded text-[10px]">PENDING</span>`;
+
+            const actionCell = isSettled
+              ? `<span class="text-xs text-slate-400 italic">${e.notes || 'Settled'}</span>`
+              : `
+                <button onclick="openSettleCustomerKhataModal(${e.id}, '${e.invoice_no}', ${e.amount}, ${c.id}, '${c.name.replace(/'/g, "\\'")}')" class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold px-2.5 py-1 rounded text-[10px] flex items-center gap-1 shadow-xs cursor-pointer">
+                  <i data-lucide="check" class="w-3 h-3"></i> Settle
+                </button>
+              `;
+
+            return `
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="py-2.5 px-3 font-mono text-slate-600">${e.date}</td>
+                <td class="py-2.5 px-3 font-bold font-mono text-[#232272]">${e.invoice_no}</td>
+                <td class="py-2.5 px-3">
+                  <div class="font-medium text-slate-800">${e.item_description}</div>
+                  ${e.notes ? `<div class="text-[10px] text-slate-400 italic">${e.notes}</div>` : ''}
+                </td>
+                <td class="py-2.5 px-3 font-black text-rose-600 text-right">Rs. ${parseFloat(e.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td class="py-2.5 px-3">${statusBadge}</td>
+                <td class="py-2.5 px-3 text-center">${actionCell}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        document.getElementById('customer-ledger-modal').classList.remove('hidden');
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Error opening customer ledger", err);
+      }
+    }
+
+    function closeCustomerLedgerModal() {
+      document.getElementById('customer-ledger-modal').classList.add('hidden');
+      currentOpenLedgerCustomerId = null;
+    }
+
+    function openAddCreditForCurrentCustomer() {
+      if (currentOpenLedgerCustomerId) {
+        openAddCustomerKhataModal(currentOpenLedgerCustomerId);
+      }
+    }
+
+    function printParchiForCurrentCustomer() {
+      if (currentOpenLedgerCustomerId) {
+        openCustomerParchiModal(currentOpenLedgerCustomerId);
+      }
+    }
+
+    // Settle Single Invoice Modal
+    function openSettleCustomerKhataModal(entryId, invoiceNo, amount, customerId, customerName) {
+      document.getElementById('settle-entry-id').value = entryId;
+      document.getElementById('settle-entry-customer-id').value = customerId;
+      document.getElementById('settle-entry-inv-label').innerText = invoiceNo;
+      document.getElementById('settle-entry-customer-label').innerText = customerName;
+      document.getElementById('settle-entry-amount-label').innerText = `Rs. ${parseFloat(amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('settle-entry-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('settle-entry-notes').value = '';
+
+      document.getElementById('settle-customer-khata-modal').classList.remove('hidden');
+    }
+
+    function closeSettleCustomerKhataModal() {
+      document.getElementById('settle-customer-khata-modal').classList.add('hidden');
+    }
+
+    async function submitSettleCustomerKhata(e) {
+      e.preventDefault();
+      const entryId = document.getElementById('settle-entry-id').value;
+      const customerId = parseInt(document.getElementById('settle-entry-customer-id').value);
+      const settleDate = document.getElementById('settle-entry-date').value;
+      const method = document.getElementById('settle-entry-method').value;
+      const notes = document.getElementById('settle-entry-notes').value.trim();
+
+      try {
+        const res = await fetch(`/api/customer-khata/${entryId}/settle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            settled_at: settleDate,
+            payment_method: method,
+            notes: notes
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeSettleCustomerKhataModal();
+          await loadCustomers();
+          await loadCustomerKpis();
+          if (currentOpenLedgerCustomerId === customerId) {
+            await openCustomerLedgerModal(customerId);
+          }
+          alert(data.message || "Invoice settled successfully!");
+        } else {
+          alert(data.detail || "Settlement failed.");
+        }
+      } catch (err) {
+        console.error("Error settling invoice", err);
+        alert("Server error.");
+      }
+    }
+
+    // Settle All Balance in 1 Click
+    async function settleAllBalanceForCurrentCustomer() {
+      if (!currentOpenLedgerCustomerId) return;
+      const c = allCustomers.find(x => x.id === currentOpenLedgerCustomerId);
+      if (!c || c.current_balance <= 0) {
+        alert("Iss customer ka koi pending balance nahi hai.");
+        return;
+      }
+
+      const confirmMsg = `Kya aap waqai ${c.name} ka mukammal baqaya Rs. ${c.current_balance.toLocaleString()} settle karna chahte hain?`;
+      if (!confirm(confirmMsg)) return;
+
+      const method = prompt("Payment Method darj karein (Cash / EasyPaisa / JazzCash / Bank):", "Cash") || "Cash";
+      const settleDate = new Date().toISOString().split('T')[0];
+
+      try {
+        const res = await fetch(`/api/customers/${c.id}/settle-all`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            settled_at: settleDate,
+            payment_method: method,
+            notes: "Full series khata settlement"
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          await loadCustomers();
+          await loadCustomerKpis();
+          await openCustomerLedgerModal(c.id);
+          alert(data.message || "Mukammal balance settle ho gaya!");
+        } else {
+          alert(data.detail || "Settle All failed.");
+        }
+      } catch (err) {
+        console.error("Error settling all balance", err);
+        alert("Server error.");
+      }
+    }
+
+    // Batch WhatsApp Reminders Modal
+    function openBatchWhatsAppModal() {
+      const debtors = (allCustomers || []).filter(c => c.current_balance > 0);
+      const container = document.getElementById('batch-whatsapp-list');
+
+      if (!debtors || debtors.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-sm">Alhamdulillah! Kisi customer ka udhar baqaya nahi hai.</div>`;
+      } else {
+        container.innerHTML = debtors.map(c => {
+          const msg = `السلام علیکم ${c.name} صاحب!\nممتاز فارمیسی کی طرف سے مطلع کیا جاتا ہے کہ آپ کے کھاتہ میں کل بقایا رقم Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} ہے۔\nبرائے مہربانی تشریف لا کر رقم ادا فرما دیں۔ شکریہ!\n— ممتاز فارمیسی`;
+          const waLink = c.wa_phone ? `https://wa.me/${c.wa_phone}?text=${encodeURIComponent(msg)}` : '#';
+
+          return `
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <div class="font-bold text-slate-800 text-sm">${c.name}</div>
+                <div class="text-xs text-slate-500 font-mono">${c.phone} • ${c.address || 'Lahore'}</div>
+                <div class="text-xs font-bold text-rose-600 mt-0.5">Baqaya: Rs. ${c.current_balance.toLocaleString()} (${c.pending_invoices_count} pending invoices)</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <a href="${waLink}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3.5 rounded-lg text-xs flex items-center gap-1.5 shadow cursor-pointer">
+                  <i data-lucide="message-circle" class="w-4 h-4"></i>
+                  <span>Send WhatsApp</span>
+                </a>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('batch-whatsapp-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeBatchWhatsAppModal() {
+      document.getElementById('batch-whatsapp-modal').classList.add('hidden');
+    }
+
+    // Customer Parchi / Statement Modal
+    async function openCustomerParchiModal(customerId) {
+      currentOpenParchiCustomerId = customerId;
+      try {
+        const res = await fetch(`/api/customers/${customerId}/ledger`);
+        const data = await res.json();
+        const c = data.customer;
+        const summary = data.summary;
+        const entries = data.ledger;
+
+        document.getElementById('parchi-cust-name').innerText = c.name;
+        document.getElementById('parchi-cust-phone').innerText = c.phone;
+        document.getElementById('parchi-cust-address').innerText = c.address || 'Model Town, Lahore';
+        document.getElementById('parchi-date-label').innerText = `Date: ${new Date().toLocaleDateString()}`;
+
+        document.getElementById('parchi-total-credit').innerText = `Rs. ${summary.total_credit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('parchi-total-paid').innerText = `- Rs. ${summary.total_settled.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('parchi-net-balance').innerText = `Rs. ${summary.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+        const tbody = document.getElementById('parchi-tbody');
+        tbody.innerHTML = entries.map(e => `
+          <tr class="${e.is_settled ? 'text-slate-400 line-through bg-slate-50/50' : 'text-slate-700'}">
+            <td class="py-1 px-2 font-mono">${e.date}</td>
+            <td class="py-1 px-2 font-mono font-bold">${e.invoice_no}</td>
+            <td class="py-1 px-2">${e.item_description}</td>
+            <td class="py-1 px-2 text-right font-mono font-bold">Rs. ${parseFloat(e.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td class="py-1 px-2 text-center text-[10px] font-bold ${e.is_settled ? 'text-emerald-700' : 'text-rose-600'}">${e.is_settled ? 'PAID' : 'DUE'}</td>
+          </tr>
+        `).join('');
+
+        document.getElementById('customer-parchi-modal').classList.remove('hidden');
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Error loading parchi", err);
+      }
+    }
+
+    function closeCustomerParchiModal() {
+      document.getElementById('customer-parchi-modal').classList.add('hidden');
+      currentOpenParchiCustomerId = null;
+    }
+
+    function executePrintCustomerParchi() {
+      document.body.classList.remove('printing-report', 'printing-slip', 'printing-weekly-khata');
+      document.body.classList.add('printing-parchi');
+      setPrintOrientation('portrait');
+      setTimeout(() => { window.print(); }, 50);
+    }
+
+    // Weekly Khata Report Modal
+    async function openWeeklyKhataReportModal() {
+      try {
+        const res = await fetch('/api/customer-khata/weekly-report');
+        const data = await res.json();
+
+        document.getElementById('weekly-report-period').innerText = `Period: ${data.period} • Official 7-Day Audit`;
+        document.getElementById('weekly-given-amt').innerText = `Rs. ${data.summary.total_given_week.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('weekly-recovered-amt').innerText = `Rs. ${data.summary.total_recovered_week.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        document.getElementById('weekly-outstanding-amt').innerText = `Rs. ${data.summary.total_outstanding.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+        const debtorsTbody = document.getElementById('weekly-debtors-tbody');
+        if (!data.debtors || data.debtors.length === 0) {
+          debtorsTbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Koi active debtor mojood nahi.</td></tr>`;
+        } else {
+          debtorsTbody.innerHTML = data.debtors.map(d => `
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-800">${d.name}</td>
+              <td class="py-2 px-3 font-mono text-slate-500">${d.phone}</td>
+              <td class="py-2 px-3 text-slate-600">${d.pending_count} unpaid bills</td>
+              <td class="py-2 px-3 text-right font-black text-rose-600">Rs. ${d.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            </tr>
+          `).join('');
+        }
+
+        document.getElementById('weekly-khata-modal').classList.remove('hidden');
+        lucide.createIcons();
+      } catch (err) {
+        console.error("Error opening weekly report", err);
+      }
+    }
+
+    function closeWeeklyKhataReportModal() {
+      document.getElementById('weekly-khata-modal').classList.add('hidden');
+    }
+
+    function executePrintWeeklyKhataReport() {
+      document.body.classList.remove('printing-report', 'printing-slip', 'printing-parchi');
+      document.body.classList.add('printing-weekly-khata');
+      setPrintOrientation('portrait');
+      setTimeout(() => { window.print(); }, 50);
     }
   </script>
 </body>

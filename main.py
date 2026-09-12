@@ -8,10 +8,12 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime, date
+from typing import Optional, List, Dict, Any
+from datetime import datetime, date, timedelta
 import os
 import calendar
+import re
+import urllib.parse
 
 from database import init_db, get_db_connection
 from payroll_engine import process_punch, calculate_monthly_payroll
@@ -98,6 +100,38 @@ class AttendanceOverride(BaseModel):
     time_out: Optional[str] = None
     status: str # "ON_TIME", "LATE", "HALF_DAY", "ABSENT"
     notes: Optional[str] = "Manual Admin Adjustment"
+
+# --- Customer Khata Models ---
+class CustomerCreate(BaseModel):
+    name: str
+    phone: str
+    address: Optional[str] = ""
+    credit_limit: Optional[float] = 15000.0
+
+class CustomerUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    credit_limit: Optional[float] = None
+    is_active: Optional[int] = None
+
+class CustomerKhataCreate(BaseModel):
+    customer_id: int
+    invoice_no: Optional[str] = None
+    date: Optional[str] = None
+    item_description: str
+    amount: float
+    notes: Optional[str] = ""
+
+class CustomerKhataSettle(BaseModel):
+    settled_at: Optional[str] = None
+    payment_method: Optional[str] = "Cash"
+    notes: Optional[str] = ""
+
+class CustomerSettleAll(BaseModel):
+    settled_at: Optional[str] = None
+    payment_method: Optional[str] = "Cash"
+    notes: Optional[str] = ""
 
 # --- API Endpoints ---
 
@@ -728,6 +762,343 @@ def disburse_salary(data: PayrollDisburseRequest):
         "net_payable": updated_payroll["net_payable"],
         "auto_settled_advances_count": auto_settled_count,
         "auto_settled_advances_amount": auto_settled_amount
+    }
+
+# =====================================================================
+# CUSTOMER UDHAR & SERIES KHATA LEDGER ENDPOINTS
+# =====================================================================
+
+def format_whatsapp_number(phone: str) -> str:
+    digits = re.sub(r'[^0-9]', '', phone or '')
+    if digits.startswith('03') and len(digits) == 11:
+        return '92' + digits[1:]
+    elif digits.startswith('3') and len(digits) == 10:
+        return '92' + digits
+    elif digits.startswith('92') and len(digits) == 12:
+        return digits
+    return digits
+
+@app.get("/api/customers")
+def get_customers():
+    """Returns all customers with aggregated series khata metrics."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT 
+            c.id, c.name, c.phone, c.address, c.credit_limit, c.is_active, c.created_at,
+            COALESCE(SUM(k.amount), 0) as total_credit,
+            COALESCE(SUM(CASE WHEN k.is_settled = 1 THEN k.amount ELSE 0 END), 0) as total_settled,
+            COALESCE(SUM(CASE WHEN k.is_settled = 0 THEN k.amount ELSE 0 END), 0) as current_balance,
+            COALESCE(SUM(CASE WHEN k.is_settled = 0 THEN 1 ELSE 0 END), 0) as pending_invoices_count,
+            COUNT(k.id) as total_invoices_count
+        FROM customers c
+        LEFT JOIN customer_khata k ON c.id = k.customer_id
+        GROUP BY c.id
+        ORDER BY current_balance DESC, c.name ASC
+    """)
+    rows = cursor.fetchall()
+    customers = []
+    for r in rows:
+        c_dict = dict(r)
+        c_dict["credit_limit"] = float(c_dict["credit_limit"])
+        c_dict["total_credit"] = float(c_dict["total_credit"])
+        c_dict["total_settled"] = float(c_dict["total_settled"])
+        c_dict["current_balance"] = float(c_dict["current_balance"])
+        limit_used_pct = round((c_dict["current_balance"] / c_dict["credit_limit"]) * 100, 1) if c_dict["credit_limit"] > 0 else 0
+        c_dict["limit_used_pct"] = min(100.0, limit_used_pct)
+        c_dict["wa_phone"] = format_whatsapp_number(c_dict["phone"])
+        customers.append(c_dict)
+    conn.close()
+    return customers
+
+@app.post("/api/customers")
+def create_customer(data: CustomerCreate):
+    """Registers a new customer account."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO customers (name, phone, address, credit_limit)
+        VALUES (?, ?, ?, ?)
+    """, (data.name.strip(), data.phone.strip(), (data.address or "").strip(), data.credit_limit or 15000.0))
+    customer_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return {"success": True, "id": customer_id, "message": f"Customer '{data.name}' registered successfully."}
+
+@app.put("/api/customers/{customer_id}")
+def update_customer(customer_id: int, data: CustomerUpdate):
+    """Updates customer profile."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM customers WHERE id = ?", (customer_id,))
+    existing = cursor.fetchone()
+    if not existing:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    new_name = data.name.strip() if data.name is not None else existing["name"]
+    new_phone = data.phone.strip() if data.phone is not None else existing["phone"]
+    new_address = data.address.strip() if data.address is not None else existing["address"]
+    new_limit = data.credit_limit if data.credit_limit is not None else existing["credit_limit"]
+    new_active = data.is_active if data.is_active is not None else existing["is_active"]
+
+    cursor.execute("""
+        UPDATE customers
+        SET name = ?, phone = ?, address = ?, credit_limit = ?, is_active = ?
+        WHERE id = ?
+    """, (new_name, new_phone, new_address, new_limit, new_active, customer_id))
+    conn.commit()
+    conn.close()
+    return {"success": True, "message": f"Customer '{new_name}' updated successfully."}
+
+@app.get("/api/customers/{customer_id}/ledger")
+def get_customer_ledger(customer_id: int):
+    """Returns chronological series khata ledger for a customer."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM customers WHERE id = ?", (customer_id,))
+    customer_row = cursor.fetchone()
+    if not customer_row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    customer = dict(customer_row)
+    cursor.execute("""
+        SELECT * FROM customer_khata
+        WHERE customer_id = ?
+        ORDER BY date ASC, id ASC
+    """, (customer_id,))
+    entries = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+
+    total_credit = sum(e["amount"] for e in entries)
+    total_settled = sum(e["amount"] for e in entries if e["is_settled"] == 1)
+    current_balance = sum(e["amount"] for e in entries if e["is_settled"] == 0)
+    pending_count = sum(1 for e in entries if e["is_settled"] == 0)
+
+    customer["wa_phone"] = format_whatsapp_number(customer["phone"])
+
+    return {
+        "customer": customer,
+        "summary": {
+            "total_credit": total_credit,
+            "total_settled": total_settled,
+            "current_balance": current_balance,
+            "pending_count": pending_count,
+            "total_entries": len(entries)
+        },
+        "ledger": entries
+    }
+
+@app.post("/api/customer-khata")
+def add_customer_khata(data: CustomerKhataCreate):
+    """Adds a new credit purchase entry into customer's series khata."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM customers WHERE id = ?", (data.customer_id,))
+    customer = cursor.fetchone()
+    if not customer:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    entry_date = data.date or date.today().isoformat()
+    invoice_no = data.invoice_no
+    if not invoice_no or not invoice_no.strip():
+        cursor.execute("SELECT MAX(id) FROM customer_khata")
+        max_id = cursor.fetchone()[0] or 1000
+        invoice_no = f"INV-{1000 + max_id + 1}"
+
+    cursor.execute("""
+        INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes)
+        VALUES (?, ?, ?, ?, ?, 0, ?)
+    """, (data.customer_id, invoice_no.strip(), entry_date, data.item_description.strip(), data.amount, (data.notes or "").strip()))
+    entry_id = cursor.lastrowid
+    conn.commit()
+
+    # Get updated balance
+    cursor.execute("SELECT SUM(amount) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (data.customer_id,))
+    new_balance = cursor.fetchone()[0] or 0.0
+    conn.close()
+
+    return {
+        "success": True,
+        "id": entry_id,
+        "invoice_no": invoice_no,
+        "amount": data.amount,
+        "customer_name": customer["name"],
+        "new_balance": new_balance,
+        "message": f"Credit purchase of Rs. {data.amount:,.2f} recorded for {customer['name']} ({invoice_no})."
+    }
+
+@app.post("/api/customer-khata/{entry_id}/settle")
+def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
+    """Marks a single customer credit invoice as settled in full."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM customer_khata WHERE id = ?", (entry_id,))
+    entry = cursor.fetchone()
+    if not entry:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Khata entry not found")
+
+    settle_date = data.settled_at or date.today().isoformat()
+    pay_method = data.payment_method or "Cash"
+    notes_val = data.notes or ""
+
+    cursor.execute("""
+        UPDATE customer_khata
+        SET is_settled = 1,
+            settled_at = ?,
+            payment_method = ?,
+            notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
+        WHERE id = ?
+    """, (settle_date, pay_method, notes_val, notes_val, entry_id))
+    conn.commit()
+
+    # Recalculate customer balance
+    cursor.execute("SELECT SUM(amount) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (entry["customer_id"],))
+    updated_balance = cursor.fetchone()[0] or 0.0
+    conn.close()
+
+    return {
+        "success": True,
+        "entry_id": entry_id,
+        "settled_at": settle_date,
+        "payment_method": pay_method,
+        "amount": entry["amount"],
+        "updated_balance": updated_balance,
+        "message": f"Invoice {entry['invoice_no']} (Rs. {entry['amount']:,.2f}) settled in full via {pay_method}."
+    }
+
+@app.post("/api/customers/{customer_id}/settle-all")
+def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
+    """Marks ALL currently pending invoices of a customer as settled in full."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM customers WHERE id = ?", (customer_id,))
+    customer = cursor.fetchone()
+    if not customer:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Customer not found")
+
+    cursor.execute("SELECT * FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (customer_id,))
+    pending_items = cursor.fetchall()
+    if not pending_items:
+        conn.close()
+        return {"success": True, "message": "Koi pending balance mojood nahi.", "settled_count": 0, "settled_amount": 0}
+
+    settle_date = data.settled_at or date.today().isoformat()
+    pay_method = data.payment_method or "Cash"
+    total_cleared = sum(item["amount"] for item in pending_items)
+    audit_note = f"Full balance settled on {settle_date} via {pay_method}"
+    if data.notes:
+        audit_note += f" - {data.notes}"
+
+    cursor.execute("""
+        UPDATE customer_khata
+        SET is_settled = 1,
+            settled_at = ?,
+            payment_method = ?,
+            notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
+        WHERE customer_id = ? AND is_settled = 0
+    """, (settle_date, pay_method, audit_note, audit_note, customer_id))
+    conn.commit()
+    conn.close()
+
+    return {
+        "success": True,
+        "customer_id": customer_id,
+        "customer_name": customer["name"],
+        "settled_count": len(pending_items),
+        "settled_amount": total_cleared,
+        "settled_at": settle_date,
+        "payment_method": pay_method,
+        "message": f"Full balance of Rs. {total_cleared:,.2f} ({len(pending_items)} invoices) for {customer['name']} settled via {pay_method}."
+    }
+
+@app.get("/api/customer-khata/kpis")
+def get_customer_khata_kpis():
+    """Returns top 4 KPI metrics for Customer Khata dashboard."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # 1. Total Outstanding Udhar
+    cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM customer_khata WHERE is_settled = 0")
+    total_outstanding = float(cursor.fetchone()[0])
+
+    # 2. This Week's Credit Given (past 7 days)
+    seven_days_ago = (date.today() - timedelta(days=7)).isoformat()
+    cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM customer_khata WHERE date >= ?", (seven_days_ago,))
+    this_week_credit = float(cursor.fetchone()[0])
+
+    # 3. This Week's Recovered (past 7 days)
+    cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM customer_khata WHERE is_settled = 1 AND settled_at >= ?", (seven_days_ago,))
+    this_week_recovered = float(cursor.fetchone()[0])
+
+    # 4. Active Debtors Count
+    cursor.execute("SELECT COUNT(DISTINCT customer_id) FROM customer_khata WHERE is_settled = 0")
+    active_debtors_count = int(cursor.fetchone()[0])
+
+    # 5. Total Registered Customers
+    cursor.execute("SELECT COUNT(*) FROM customers WHERE is_active = 1")
+    total_customers_count = int(cursor.fetchone()[0])
+
+    conn.close()
+
+    return {
+        "total_outstanding": total_outstanding,
+        "this_week_credit": this_week_credit,
+        "this_week_recovered": this_week_recovered,
+        "active_debtors_count": active_debtors_count,
+        "total_customers_count": total_customers_count,
+        "since_date": seven_days_ago
+    }
+
+@app.get("/api/customer-khata/weekly-report")
+def get_customer_khata_weekly_report():
+    """Returns weekly audit report of credit given, recoveries, and list of debtors."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    today_str = date.today().isoformat()
+    seven_days_ago = (date.today() - timedelta(days=7)).isoformat()
+
+    cursor.execute("""
+        SELECT k.*, c.name as customer_name, c.phone as customer_phone
+        FROM customer_khata k
+        JOIN customers c ON k.customer_id = c.id
+        WHERE k.date >= ? OR (k.is_settled = 1 AND k.settled_at >= ?)
+        ORDER BY k.date DESC, k.id DESC
+    """, (seven_days_ago, seven_days_ago))
+    recent_transactions = [dict(r) for r in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT 
+            c.id, c.name, c.phone, c.address, c.credit_limit,
+            COALESCE(SUM(CASE WHEN k.is_settled = 0 THEN k.amount ELSE 0 END), 0) as current_balance,
+            COALESCE(SUM(CASE WHEN k.is_settled = 0 THEN 1 ELSE 0 END), 0) as pending_count
+        FROM customers c
+        LEFT JOIN customer_khata k ON c.id = k.customer_id
+        GROUP BY c.id
+        HAVING current_balance > 0
+        ORDER BY current_balance DESC
+    """)
+    debtors = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+
+    total_given = sum(t["amount"] for t in recent_transactions if t["date"] >= seven_days_ago)
+    total_recovered = sum(t["amount"] for t in recent_transactions if t["is_settled"] == 1 and t.get("settled_at", "") >= seven_days_ago)
+    total_outstanding = sum(d["current_balance"] for d in debtors)
+
+    return {
+        "period": f"{seven_days_ago} to {today_str}",
+        "summary": {
+            "total_given_week": total_given,
+            "total_recovered_week": total_recovered,
+            "total_outstanding": total_outstanding,
+            "debtor_count": len(debtors)
+        },
+        "debtors": debtors,
+        "recent_transactions": recent_transactions
     }
 
 # Mount static files for the frontend UI
