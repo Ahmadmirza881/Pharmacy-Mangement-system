@@ -850,11 +850,13 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 my-3 text-xs bg-slate-50 p-3 rounded-lg border border-slate-100">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 my-3 text-xs bg-slate-50 p-3 rounded-lg border border-slate-100">
           <div><span class="text-slate-400">Employee:</span> <strong id="slip-name" class="text-slate-800">Ali Raza</strong></div>
           <div><span class="text-slate-400">Role:</span> <strong id="slip-role" class="text-slate-800">Pharmacist</strong></div>
+          <div><span class="text-slate-400">Daily Duty:</span> <strong id="slip-duty" class="text-slate-800">8.0 hrs</strong></div>
           <div><span class="text-slate-400">Daily Wage:</span> <strong id="slip-daily" class="text-slate-800">Rs. 1,500.00</strong></div>
-          <div><span class="text-slate-400">Days in Month:</span> <strong id="slip-days" class="text-slate-800">30 Days</strong></div>
+          <div><span class="text-slate-400">Hourly Wage:</span> <strong id="slip-hourly" class="text-slate-800">Rs. 187.50</strong></div>
+          <div><span class="text-slate-400">Free Leaves:</span> <strong id="slip-free-leaves" class="text-slate-800">2 / month</strong></div>
         </div>
 
         <!-- BREAKDOWN TABLE -->
@@ -878,9 +880,9 @@
               <td class="py-1.5" id="slip-leave-desc">Extra Leaves Cut (>2 Allowed)</td>
               <td id="slip-leave" class="py-1.5 text-right">- Rs. 0.00</td>
             </tr>
-            <tr class="text-purple-700">
-              <td class="py-1.5" id="slip-halfday-desc">Extra Half-Days Cut (>4 Allowed)</td>
-              <td id="slip-halfday" class="py-1.5 text-right">- Rs. 0.00</td>
+            <tr class="text-amber-700" id="slip-shorthour-row">
+              <td class="py-1.5" id="slip-shorthour-desc">Short Hours Deficit Cut (0 hrs)</td>
+              <td id="slip-shorthour" class="py-1.5 text-right font-bold">- Rs. 0.00</td>
             </tr>
             <tr class="text-rose-600">
               <td class="py-1.5 font-semibold">Staff Khata &amp; Advance Deductions</td>
@@ -999,6 +1001,19 @@
               <option value="1">Yes (Verified)</option>
               <option value="0">No (Pending)</option>
             </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div>
+            <label class="block text-xs font-bold text-[#232272] uppercase mb-1">Daily Duty Hours *</label>
+            <input type="number" step="0.5" id="staff-form-hours" required min="1" max="24" value="8" placeholder="e.g. 8" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <span class="text-[10px] text-slate-400">Duty ghante (Flexible entry, 8h target)</span>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#156D38] uppercase mb-1">Free Paid Leaves (Monthly) *</label>
+            <input type="number" id="staff-form-leaves" required min="0" max="15" value="2" placeholder="e.g. 2" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <span class="text-[10px] text-slate-400">Mahana free leaves quota (Default: 2)</span>
           </div>
         </div>
 
@@ -1626,16 +1641,24 @@
 
       tbody.innerHTML = filtered.map(item => {
         let badge = '';
-        if (item.status === 'ON_TIME') {
-          badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">ON TIME</span>';
-        } else if (item.status === 'LATE') {
-          badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">LATE (${item.late_minutes}m)</span>`;
+        if (item.time_in && !item.time_out) {
+          const targetText = item.target_out ? ` (Target: ${item.target_out})` : '';
+          badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 inline-flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span> ON DUTY${targetText}</span>`;
+        } else if (item.status === 'ON_TIME' || item.status === 'PRESENT') {
+          badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">COMPLETED</span>';
+        } else if (item.status === 'SHORT_HOURS') {
+          const workedH = Math.floor((item.worked_minutes || 0) / 60);
+          const workedM = (item.worked_minutes || 0) % 60;
+          const reqH = item.daily_hours || 8;
+          badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">SHORT (${workedH}h ${workedM}m / ${reqH}h)</span>`;
         } else if (item.status === 'HALF_DAY') {
           badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">HALF DAY</span>';
         } else if (item.status === 'LEAVE') {
           badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800" title="${item.leave_reason || 'Approved Leave'}">ON LEAVE</span>`;
         } else if (item.status === 'ABSENT') {
           badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">ABSENT</span>';
+        } else if (item.status === 'LATE') {
+          badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">LATE (${item.late_minutes}m)</span>`;
         } else {
           badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">NOT CHECKED IN</span>';
         }
@@ -1648,7 +1671,10 @@
           <tr class="hover:bg-slate-50 transition-colors">
             <td class="py-3 px-4 font-bold text-slate-800">${item.name}</td>
             <td class="py-3 px-4 text-slate-600">${item.designation || item.role}</td>
-            <td class="py-3 px-4 text-xs font-mono text-slate-500">${item.shift_name} (${item.start_time} - ${item.end_time})</td>
+            <td class="py-3 px-4 text-xs font-mono text-slate-500">
+              ${item.shift_name}
+              <div class="text-[10px] text-indigo-700 font-bold font-sans">${item.daily_hours || 8}h Daily Target</div>
+            </td>
             <td class="py-3 px-4 font-mono font-semibold text-emerald-700">${item.time_in || '—'}</td>
             <td class="py-3 px-4 font-mono font-semibold text-slate-600">${item.time_out || '—'}</td>
             <td class="py-3 px-4">${badge}</td>
@@ -1812,6 +1838,9 @@
       document.getElementById('slip-name').innerText = p.staff_name;
       document.getElementById('slip-role').innerText = p.designation || p.role;
       document.getElementById('slip-daily').innerText = `Rs. ${p.daily_wage.toFixed(2)}`;
+      document.getElementById('slip-duty').innerText = `${p.daily_hours || 8} hrs/day`;
+      document.getElementById('slip-hourly').innerText = `Rs. ${(p.hourly_wage || (p.daily_wage / (p.daily_hours || 8))).toFixed(2)}`;
+      document.getElementById('slip-free-leaves').innerText = `${p.allowed_leaves ?? 2} / month`;
       document.getElementById('slip-days').innerText = `${p.days_in_month} Days`;
 
       const badgeEl = document.getElementById('slip-payment-badge');
@@ -1835,10 +1864,21 @@
       document.getElementById('slip-basic').innerText = `Rs. ${p.basic_salary.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
       document.getElementById('slip-absent-desc').innerText = `Absent Deduction (${p.absent_days} days)`;
       document.getElementById('slip-absent').innerText = `- Rs. ${p.absent_cut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-      document.getElementById('slip-leave-desc').innerText = `Extra Leaves Cut (${p.extra_leaves} beyond 2 free)`;
+      document.getElementById('slip-leave-desc').innerText = `Extra Leaves Cut (${p.extra_leaves} beyond ${p.allowed_leaves ?? 2} free)`;
       document.getElementById('slip-leave').innerText = `- Rs. ${p.extra_leave_cut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-      document.getElementById('slip-halfday-desc').innerText = `Extra Half-Days Cut (${p.extra_half_days} beyond 4 free)`;
-      document.getElementById('slip-halfday').innerText = `- Rs. ${p.extra_half_day_cut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+      const shRow = document.getElementById('slip-shorthour-row');
+      const shortMins = p.total_short_minutes || 0;
+      const shHours = Math.floor(shortMins / 60);
+      const shRemMins = shortMins % 60;
+      if (p.short_hours_cut && p.short_hours_cut > 0) {
+        shRow.classList.remove('hidden');
+        document.getElementById('slip-shorthour-desc').innerText = `Short Hours Cut (${shHours}h ${shRemMins}m deficit @ Rs. ${p.hourly_wage}/hr)`;
+        document.getElementById('slip-shorthour').innerText = `- Rs. ${parseFloat(p.short_hours_cut).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      } else {
+        shRow.classList.add('hidden');
+      }
+
       document.getElementById('slip-advance').innerText = `- Rs. ${p.advances_deducted.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
       document.getElementById('slip-net').innerText = `Rs. ${p.net_payable.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
@@ -2141,7 +2181,9 @@
             </td>
             <td class="py-3 px-4 text-xs font-mono text-indigo-900">
               <span class="font-semibold">${s.shift_name}</span>
-              <div class="text-[10px] text-slate-400">(${s.start_time} - ${s.end_time})</div>
+              <div class="text-[11px] text-slate-500 font-sans mt-0.5">
+                <span class="font-bold text-[#232272]">${s.daily_hours || 8} hrs/day</span> • <span class="text-[#156D38] font-bold">${s.allowed_leaves !== undefined ? s.allowed_leaves : 2} Free Leaves/mo</span>
+              </div>
             </td>
             <td class="py-3 px-4 font-black text-[#156D38] text-sm">
               Rs. ${s.monthly_salary.toLocaleString()}
@@ -2211,6 +2253,8 @@
         document.getElementById('staff-form-shift').value = staff.shift_id || 1;
         document.getElementById('staff-form-joining').value = staff.joining_date || '';
         document.getElementById('staff-form-police').value = (staff.police_report === 1 || staff.police_report === '1' || staff.police_report === 'YES' || staff.police_report === true) ? '1' : '0';
+        document.getElementById('staff-form-hours').value = staff.daily_hours || 8.0;
+        document.getElementById('staff-form-leaves').value = staff.allowed_leaves !== undefined ? staff.allowed_leaves : 2;
       } else {
         title.innerText = 'Add New Staff Member';
         formId.value = '';
@@ -2223,6 +2267,8 @@
         document.getElementById('staff-form-shift').value = '1';
         document.getElementById('staff-form-joining').value = new Date().toISOString().split('T')[0];
         document.getElementById('staff-form-police').value = '1';
+        document.getElementById('staff-form-hours').value = '8';
+        document.getElementById('staff-form-leaves').value = '2';
       }
 
       modal.classList.remove('hidden');
@@ -2246,7 +2292,9 @@
         monthly_salary: parseFloat(document.getElementById('staff-form-salary').value),
         shift_id: parseInt(document.getElementById('staff-form-shift').value),
         joining_date: document.getElementById('staff-form-joining').value,
-        police_report: parseInt(document.getElementById('staff-form-police').value)
+        police_report: parseInt(document.getElementById('staff-form-police').value),
+        daily_hours: parseFloat(document.getElementById('staff-form-hours').value) || 8.0,
+        allowed_leaves: parseInt(document.getElementById('staff-form-leaves').value) !== undefined ? parseInt(document.getElementById('staff-form-leaves').value) : 2
       };
 
       try {

@@ -49,6 +49,8 @@ class StaffCreate(BaseModel):
     shift_id: int
     fingerprint_id: Optional[str] = None
     police_report: Optional[int] = 0
+    allowed_leaves: Optional[int] = 2
+    daily_hours: Optional[float] = 8.0
 
 class StaffUpdate(BaseModel):
     name: Optional[str] = None
@@ -61,6 +63,8 @@ class StaffUpdate(BaseModel):
     shift_id: Optional[int] = None
     fingerprint_id: Optional[str] = None
     police_report: Optional[int] = None
+    allowed_leaves: Optional[int] = None
+    daily_hours: Optional[float] = None
 
 class AdvanceCreate(BaseModel):
     staff_id: int
@@ -121,7 +125,8 @@ def get_today_attendance():
 
     # Get all active staff with attendance logs and leaves
     cursor.execute("""
-        SELECT s.id, s.name, s.role, coalesce(nullif(s.designation, ''), s.role) as designation, s.monthly_salary, sh.name as shift_name,
+        SELECT s.id, s.name, s.role, coalesce(nullif(s.designation, ''), s.role) as designation, s.monthly_salary,
+               s.daily_hours, s.allowed_leaves, sh.name as shift_name,
                sh.start_time, sh.end_time,
                a.time_in, a.time_out, a.status, a.late_minutes, a.worked_minutes, a.overtime_minutes,
                l.reason as leave_reason
@@ -145,6 +150,25 @@ def get_today_attendance():
     for r in rows:
         item = dict(r)
         status = item.get("status")
+
+        daily_hours = float(item.get("daily_hours") or 8.0)
+        req_mins = int(daily_hours * 60)
+        item["daily_hours"] = daily_hours
+        item["required_minutes"] = req_mins
+
+        # Calculate target_out if currently checked in
+        if item.get("time_in") and not item.get("time_out"):
+            try:
+                t_parts = item["time_in"].split(":")
+                t_h, t_m = int(t_parts[0]), int(t_parts[1])
+                t_in_dt = datetime.now().replace(hour=t_h, minute=t_m, second=0)
+                t_target = t_in_dt + timedelta(minutes=req_mins)
+                item["target_out"] = t_target.strftime("%I:%M %p")
+            except Exception:
+                item["target_out"] = ""
+        else:
+            item["target_out"] = ""
+
         if item.get("leave_reason") or status == "LEAVE":
             item["status"] = "LEAVE"
             leave_count += 1
@@ -160,7 +184,7 @@ def get_today_attendance():
             else:
                 item["status"] = "PENDING"
         else:
-            if status in ("ON_TIME", "PRESENT", "HALF_DAY"):
+            if status in ("ON_TIME", "PRESENT", "HALF_DAY", "SHORT_HOURS"):
                 present_count += 1
             elif status == "LATE":
                 present_count += 1
@@ -331,10 +355,12 @@ def create_staff(data: StaffCreate):
     address = data.address or ""
     designation = data.designation or "Pharmacist"
     police_report = 1 if data.police_report in (1, "1", "yes", "YES", True) else 0
+    allowed_leaves = data.allowed_leaves if data.allowed_leaves is not None else 2
+    daily_hours = data.daily_hours if data.daily_hours is not None else 8.0
     cursor.execute("""
-        INSERT INTO staff (name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id, police_report)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (data.name, data.phone, data.cnic, address, designation, designation, data.monthly_salary, joining_date, data.shift_id, data.fingerprint_id, police_report))
+        INSERT INTO staff (name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id, police_report, allowed_leaves, daily_hours)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (data.name, data.phone, data.cnic, address, designation, designation, data.monthly_salary, joining_date, data.shift_id, data.fingerprint_id, police_report, allowed_leaves, daily_hours))
     new_id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -384,6 +410,12 @@ def update_staff(staff_id: int, data: StaffUpdate):
     if data.police_report is not None:
         fields.append("police_report = ?")
         values.append(1 if data.police_report in (1, "1", "yes", "YES", True) else 0)
+    if data.allowed_leaves is not None:
+        fields.append("allowed_leaves = ?")
+        values.append(data.allowed_leaves)
+    if data.daily_hours is not None:
+        fields.append("daily_hours = ?")
+        values.append(data.daily_hours)
 
     if fields:
         values.append(staff_id)

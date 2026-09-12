@@ -50,6 +50,8 @@ def init_db():
         shift_id INTEGER NOT NULL,
         fingerprint_id TEXT,           -- Template or registered token
         police_report INTEGER DEFAULT 0, -- 1 = Yes (Verified), 0 = No (Pending)
+        allowed_leaves INTEGER DEFAULT 2, -- Dynamic monthly paid leaves quota
+        daily_hours REAL DEFAULT 8.0,     -- Required daily work duty in hours
         is_active INTEGER DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (shift_id) REFERENCES shifts (id)
@@ -68,6 +70,10 @@ def init_db():
         cursor.execute("ALTER TABLE staff ADD COLUMN joining_date TEXT DEFAULT '2026-01-01'")
     if "police_report" not in existing_staff_cols:
         cursor.execute("ALTER TABLE staff ADD COLUMN police_report INTEGER DEFAULT 0")
+    if "allowed_leaves" not in existing_staff_cols:
+        cursor.execute("ALTER TABLE staff ADD COLUMN allowed_leaves INTEGER DEFAULT 2")
+    if "daily_hours" not in existing_staff_cols:
+        cursor.execute("ALTER TABLE staff ADD COLUMN daily_hours REAL DEFAULT 8.0")
 
     # 3. Attendance Logs Table
     cursor.execute("""
@@ -188,6 +194,10 @@ def init_db():
         cursor.execute("ALTER TABLE payroll_records ADD COLUMN payment_method TEXT DEFAULT 'Cash'")
     if "notes" not in existing_pr_cols:
         cursor.execute("ALTER TABLE payroll_records ADD COLUMN notes TEXT DEFAULT ''")
+    if "short_hours_cut" not in existing_pr_cols:
+        cursor.execute("ALTER TABLE payroll_records ADD COLUMN short_hours_cut REAL DEFAULT 0")
+    if "short_minutes" not in existing_pr_cols:
+        cursor.execute("ALTER TABLE payroll_records ADD COLUMN short_minutes INTEGER DEFAULT 0")
 
     # Populate Default Shifts if empty
     cursor.execute("SELECT COUNT(*) FROM shifts")

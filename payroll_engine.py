@@ -37,7 +37,7 @@ def process_punch(staff_id: int, punch_dt: datetime = None, method: str = "FINGE
 
     # Get staff & shift info
     cursor.execute("""
-        SELECT s.id, s.name, s.shift_id, sh.name as shift_name, 
+        SELECT s.id, s.name, s.shift_id, s.daily_hours, s.allowed_leaves, sh.name as shift_name, 
                sh.start_time, sh.end_time, sh.grace_minutes, sh.half_day_minutes, sh.is_night_shift
         FROM staff s
         JOIN shifts sh ON s.shift_id = sh.id
@@ -53,20 +53,15 @@ def process_punch(staff_id: int, punch_dt: datetime = None, method: str = "FINGE
     cursor.execute("SELECT * FROM attendance_logs WHERE staff_id = ? AND date = ?", (staff_id, punch_date_str))
     log = cursor.fetchone()
 
-    shift_start = parse_time_str(staff["start_time"])
-    shift_end = parse_time_str(staff["end_time"])
-    grace_mins = staff["grace_minutes"]
-    half_day_mins = staff["half_day_minutes"]
+    daily_hours = float(staff["daily_hours"]) if ("daily_hours" in staff.keys() and staff["daily_hours"]) else 8.0
+    required_minutes = int(daily_hours * 60)
 
-    # 1. PUNCH IN
+    # 1. PUNCH IN (Flexible Start)
     if not log:
-        punch_time_obj = punch_dt.time()
-        shift_start_dt = datetime.combine(punch_dt.date(), shift_start)
-        allowed_grace_dt = shift_start_dt + timedelta(minutes=grace_mins)
-
-        is_late = punch_dt > allowed_grace_dt
-        status = "LATE" if is_late else "ON_TIME"
-        late_minutes = max(0, int((punch_dt - shift_start_dt).total_seconds() // 60)) if is_late else 0
+        target_out_dt = punch_dt + timedelta(minutes=required_minutes)
+        target_out_str = target_out_dt.strftime("%I:%M %p")
+        status = "ON_TIME"
+        late_minutes = 0
 
         cursor.execute("""
             INSERT INTO attendance_logs 
@@ -76,23 +71,20 @@ def process_punch(staff_id: int, punch_dt: datetime = None, method: str = "FINGE
         conn.commit()
         conn.close()
 
-        msg = f"Welcome {staff['name']}! Time-IN recorded at {punch_time_str}."
-        if is_late:
-            msg += f" (Late by {late_minutes} minutes)"
-        else:
-            msg += " (On Time)"
-
+        msg = f"Welcome {staff['name']}! Time-IN recorded at {punch_time_str}. Target duty completion: {target_out_str} ({daily_hours:g} hrs)."
         return {
             "success": True,
             "punch_type": "IN",
             "staff_name": staff["name"],
             "time": punch_time_str,
             "status": status,
-            "late_minutes": late_minutes,
+            "late_minutes": 0,
+            "target_out": target_out_str,
+            "daily_hours": daily_hours,
             "message": msg
         }
 
-    # 2. PUNCH OUT
+    # 2. PUNCH OUT (Checks daily required hours)
     else:
         time_in_str = log["time_in"]
         time_in_dt = datetime.strptime(f"{punch_date_str} {time_in_str}", "%Y-%m-%d %H:%M:%S")
@@ -100,16 +92,13 @@ def process_punch(staff_id: int, punch_dt: datetime = None, method: str = "FINGE
         worked_seconds = max(0, (punch_dt - time_in_dt).total_seconds())
         worked_minutes = int(worked_seconds // 60)
 
-        # Overtime: beyond scheduled shift end
-        shift_end_dt = datetime.combine(punch_dt.date(), shift_end)
-        overtime_minutes = 0
-        if punch_dt > shift_end_dt:
-            overtime_minutes = int((punch_dt - shift_end_dt).total_seconds() // 60)
+        overtime_minutes = max(0, worked_minutes - required_minutes)
+        short_minutes = max(0, required_minutes - worked_minutes)
 
-        # Half day check: worked less than required half day threshold
-        status = log["status"]
-        if worked_minutes < half_day_mins:
-            status = "HALF_DAY"
+        if worked_minutes >= required_minutes:
+            status = "ON_TIME"
+        else:
+            status = "SHORT_HOURS" if worked_minutes >= (required_minutes // 2) else "HALF_DAY"
 
         cursor.execute("""
             UPDATE attendance_logs
@@ -121,10 +110,12 @@ def process_punch(staff_id: int, punch_dt: datetime = None, method: str = "FINGE
 
         hours = worked_minutes // 60
         mins = worked_minutes % 60
-        msg = f"Goodbye {staff['name']}! Time-OUT recorded at {punch_time_str}. (Worked: {hours}h {mins}m"
-        if overtime_minutes > 0:
-            msg += f", Overtime: {overtime_minutes} mins"
-        msg += ")"
+        if worked_minutes >= required_minutes:
+            msg = f"Goodbye {staff['name']}! Time-OUT recorded at {punch_time_str}. (Worked: {hours}h {mins}m — Full Duty Completed!)"
+        else:
+            sh_h = short_minutes // 60
+            sh_m = short_minutes % 60
+            msg = f"Goodbye {staff['name']}! Time-OUT recorded at {punch_time_str}. (Worked: {hours}h {mins}m — Short by {sh_h}h {sh_m}m)."
 
         return {
             "success": True,
@@ -133,7 +124,9 @@ def process_punch(staff_id: int, punch_dt: datetime = None, method: str = "FINGE
             "time": punch_time_str,
             "status": status,
             "worked_minutes": worked_minutes,
+            "short_minutes": short_minutes,
             "overtime_minutes": overtime_minutes,
+            "daily_hours": daily_hours,
             "message": msg
         }
 
@@ -166,6 +159,12 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
     basic_salary = staff["monthly_salary"]
     daily_wage = calculate_daily_wage(basic_salary, days_in_month)
 
+    allowed_leaves = staff["allowed_leaves"] if ("allowed_leaves" in staff.keys() and staff["allowed_leaves"] is not None) else 2
+    daily_hours = float(staff["daily_hours"]) if ("daily_hours" in staff.keys() and staff["daily_hours"]) else 8.0
+    hourly_wage = round(daily_wage / daily_hours, 2)
+    minute_wage = hourly_wage / 60.0
+    req_minutes = int(daily_hours * 60)
+
     # 1. Fetch all attendance logs for this month
     cursor.execute("""
         SELECT * FROM attendance_logs
@@ -176,17 +175,36 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
     present_days = 0
     late_count = 0
     half_days = 0
+    total_short_minutes = 0
+    short_days_count = 0
     total_overtime_mins = 0
     logged_dates = set()
 
     for log in logs:
         logged_dates.add(log["date"])
-        if log["status"] in ("ON_TIME", "LATE"):
+        status = log["status"]
+        worked = log["worked_minutes"] or 0
+
+        if status in ("ON_TIME", "LATE", "PRESENT"):
             present_days += 1
-            if log["status"] == "LATE":
+            if status == "LATE":
                 late_count += 1
-        elif log["status"] == "HALF_DAY":
+        elif status == "HALF_DAY":
             half_days += 1
+            present_days += 1
+        elif status == "SHORT_HOURS":
+            present_days += 1
+            if worked < req_minutes:
+                deficit = req_minutes - worked
+                total_short_minutes += deficit
+                short_days_count += 1
+        elif log["time_in"]:
+            present_days += 1
+            if log["time_out"] and worked < req_minutes:
+                deficit = req_minutes - worked
+                total_short_minutes += deficit
+                short_days_count += 1
+
         total_overtime_mins += log["overtime_minutes"] or 0
 
     # 2. Fetch approved leaves for this month
@@ -206,22 +224,23 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
     for day_num in range(1, eval_end_day + 1):
         cur_date_str = f"{year}-{month:02d}-{day_num:02d}"
         if cur_date_str not in logged_dates and cur_date_str not in leave_dates:
-            # Check if this day is a standard weekly rest day (e.g., if pharmacy gives Sundays off, optional)
-            # Default: all unlogged days are marked absent
             absent_days += 1
 
     # Deductions Math
     absent_cut = round(absent_days * daily_wage, 2)
 
-    # Feature 7 & 8: 2 Paid Leaves per Month Quota
+    # Dynamic Paid Leaves Quota
     leaves_count = len(leave_dates)
-    extra_leaves = max(0, leaves_count - 2)
+    extra_leaves = max(0, leaves_count - allowed_leaves)
     extra_leave_cut = round(extra_leaves * daily_wage, 2)
 
-    # Feature 9 & 10: 4 Half-Days per Month Allowance
+    # Half-day policy (for legacy HALF_DAY status logs)
     extra_half_days = max(0, half_days - 4)
     extra_half_day_cut = round(extra_half_days * (0.5 * daily_wage), 2)
-    half_day_cut = round(half_days * (0.5 * daily_wage), 2) # For tracking total half day fraction if needed
+    half_day_cut = extra_half_day_cut
+
+    # Short Hours Deficit Deduction (Hourly wage deduction)
+    short_hours_cut = round(total_short_minutes * minute_wage, 2)
 
     # Client Scope Check: Late Penalties & Overtime are strictly EXCLUDED from automatic wage cuts/additions
     late_cut = 0.0
@@ -239,10 +258,10 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
     advances = cursor.fetchall()
     advances_total = sum(adv["amount"] for adv in advances)
 
-    # Final Net Payable Formula (Feature 15):
-    # Basic Salary - Absent Cuts - Extra Leave Cuts - Extra Half-Day Cuts - Advance Deductions
+    # Final Net Payable Formula:
+    # Basic Salary - Absent Cuts - Extra Leave Cuts - Extra Half-Day Cuts - Short Hours Cuts - Advance Deductions
     net_payable = round(
-        basic_salary - absent_cut - extra_leave_cut - extra_half_day_cut - advances_total,
+        basic_salary - absent_cut - extra_leave_cut - extra_half_day_cut - short_hours_cut - advances_total,
         2
     )
     if net_payable < 0:
@@ -256,8 +275,8 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
          half_days, extra_half_days, half_day_cut, extra_half_day_cut,
          leaves_count, extra_leaves, extra_leave_cut,
          overtime_minutes, overtime_pay,
-         advances_deducted, net_payable)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         advances_deducted, short_hours_cut, short_minutes, net_payable)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(staff_id, month, year) DO UPDATE SET
             days_in_month = excluded.days_in_month,
             basic_salary = excluded.basic_salary,
@@ -277,13 +296,15 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
             overtime_minutes = excluded.overtime_minutes,
             overtime_pay = excluded.overtime_pay,
             advances_deducted = excluded.advances_deducted,
+            short_hours_cut = excluded.short_hours_cut,
+            short_minutes = excluded.short_minutes,
             net_payable = excluded.net_payable
     """, (staff_id, month, year, days_in_month, basic_salary, daily_wage,
           present_days, absent_days, absent_cut, late_count, late_cut,
           half_days, extra_half_days, half_day_cut, extra_half_day_cut,
           leaves_count, extra_leaves, extra_leave_cut,
           total_overtime_mins, overtime_pay,
-          advances_total, net_payable))
+          advances_total, short_hours_cut, total_short_minutes, net_payable))
 
     cursor.execute("""
         SELECT status, paid_at, payment_method, notes 
@@ -309,6 +330,9 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
         "days_in_month": days_in_month,
         "basic_salary": basic_salary,
         "daily_wage": daily_wage,
+        "daily_hours": daily_hours,
+        "hourly_wage": hourly_wage,
+        "allowed_leaves": allowed_leaves,
         "present_days": present_days,
         "absent_days": absent_days,
         "absent_cut": absent_cut,
@@ -316,8 +340,11 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
         "late_cut": 0.0,
         "half_days": half_days,
         "extra_half_days": extra_half_days,
-        "half_day_cut": extra_half_day_cut,
+        "half_day_cut": half_day_cut,
         "extra_half_day_cut": extra_half_day_cut,
+        "short_hours_cut": short_hours_cut,
+        "total_short_minutes": total_short_minutes,
+        "short_days_count": short_days_count,
         "leaves_count": leaves_count,
         "extra_leaves": extra_leaves,
         "extra_leave_cut": extra_leave_cut,

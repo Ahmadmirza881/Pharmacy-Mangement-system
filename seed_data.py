@@ -31,18 +31,18 @@ def seed():
 
     print("[2/6] Seeding Staff Directory (6 Mumtaz Pharmacy Team Members)...")
     staff_members = [
-        (1, 'Ali Raza', '0300-1234567', '35202-1234567-1', 'House 14, St 3, Model Town, Lahore', 'Senior Pharmacist', 'Senior Pharmacist', 45000.0, '2025-01-15', 1, 'FP_ALI_001', 1, 1),
-        (2, 'Bilal Ahmed', '0321-7654321', '35202-7654321-3', 'Plot 88, Block B, Faisal Town, Lahore', 'Counter Sales & Billing', 'Counter Sales & Billing', 35000.0, '2025-05-10', 1, 'FP_BILAL_002', 1, 1),
-        (3, 'Usman Tariq', '0333-9876543', '35202-9876543-5', 'Main Bazar, Kot Lakhpat, Lahore', 'Store Runner & Dispenser', 'Store Runner & Dispenser', 26000.0, '2025-11-20', 2, 'FP_USMAN_003', 0, 1),
-        (4, 'Hamza Farooq', '0312-4455667', '35201-4455667-7', 'St 8, Gulberg III, Lahore', 'Assistant Pharmacist', 'Assistant Pharmacist', 40000.0, '2025-08-01', 1, 'FP_HAMZA_004', 1, 1),
-        (5, 'Zainab Bibi', '0345-8899001', '35202-8899001-2', 'Allama Iqbal Town, Lahore', 'Cashier & Inventory', 'Cashier & Inventory', 30000.0, '2026-02-15', 1, 'FP_ZAINAB_005', 1, 1),
-        (6, 'Tariq Mehmood', '0308-3344556', '35202-3344556-9', 'Sector B, Township, Lahore', 'Night Shift Dispenser', 'Night Shift Dispenser', 28000.0, '2026-04-01', 2, 'FP_TARIQ_006', 0, 1),
-        (7, 'Muhammad Kashif', '0302-5566778', '35202-5566778-4', 'St 5, Samanabad, Lahore', 'Helper & Delivery Boy', 'Helper & Delivery Boy', 22000.0, '2026-05-01', 1, 'FP_KASHIF_007', 1, 1)
+        (1, 'Ali Raza', '0300-1234567', '35202-1234567-1', 'House 14, St 3, Model Town, Lahore', 'Senior Pharmacist', 'Senior Pharmacist', 45000.0, '2025-01-15', 1, 'FP_ALI_001', 1, 2, 8.0, 1),
+        (2, 'Bilal Ahmed', '0321-7654321', '35202-7654321-3', 'Plot 88, Block B, Faisal Town, Lahore', 'Counter Sales & Billing', 'Counter Sales & Billing', 35000.0, '2025-05-10', 1, 'FP_BILAL_002', 1, 2, 8.0, 1),
+        (3, 'Usman Tariq', '0333-9876543', '35202-9876543-5', 'Main Bazar, Kot Lakhpat, Lahore', 'Store Runner & Dispenser', 'Store Runner & Dispenser', 26000.0, '2025-11-20', 2, 'FP_USMAN_003', 0, 1, 8.0, 1),
+        (4, 'Hamza Farooq', '0312-4455667', '35201-4455667-7', 'St 8, Gulberg III, Lahore', 'Assistant Pharmacist', 'Assistant Pharmacist', 40000.0, '2025-08-01', 1, 'FP_HAMZA_004', 1, 2, 8.0, 1),
+        (5, 'Zainab Bibi', '0345-8899001', '35202-8899001-2', 'Allama Iqbal Town, Lahore', 'Cashier & Inventory', 'Cashier & Inventory', 30000.0, '2026-02-15', 1, 'FP_ZAINAB_005', 1, 2, 8.0, 1),
+        (6, 'Tariq Mehmood', '0308-3344556', '35202-3344556-9', 'Sector B, Township, Lahore', 'Night Shift Dispenser', 'Night Shift Dispenser', 28000.0, '2026-04-01', 2, 'FP_TARIQ_006', 0, 2, 8.0, 1),
+        (7, 'Muhammad Kashif', '0302-5566778', '35202-5566778-4', 'St 5, Samanabad, Lahore', 'Helper & Delivery Boy', 'Helper & Delivery Boy', 22000.0, '2026-05-01', 1, 'FP_KASHIF_007', 1, 2, 8.0, 1)
     ]
 
     cursor.executemany("""
-        INSERT INTO staff (id, name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id, police_report, is_active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO staff (id, name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id, police_report, allowed_leaves, daily_hours, is_active)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, staff_members)
 
     print("[3/6] Seeding Approved Leaves for July, August & September 2026...")
