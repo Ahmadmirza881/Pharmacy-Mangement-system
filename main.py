@@ -48,6 +48,7 @@ class StaffCreate(BaseModel):
     joining_date: Optional[str] = None
     shift_id: int
     fingerprint_id: Optional[str] = None
+    police_report: Optional[int] = 0
 
 class StaffUpdate(BaseModel):
     name: Optional[str] = None
@@ -59,6 +60,7 @@ class StaffUpdate(BaseModel):
     joining_date: Optional[str] = None
     shift_id: Optional[int] = None
     fingerprint_id: Optional[str] = None
+    police_report: Optional[int] = None
 
 class AdvanceCreate(BaseModel):
     staff_id: int
@@ -66,6 +68,19 @@ class AdvanceCreate(BaseModel):
     amount: float
     reason: Optional[str] = "Advance from Till"
     date_str: Optional[str] = None
+
+class AdvanceSettleRequest(BaseModel):
+    settled_at: Optional[str] = None
+    settlement_type: Optional[str] = "Direct Settlement"
+    notes: Optional[str] = None
+
+class PayrollDisburseRequest(BaseModel):
+    staff_id: int
+    month: int
+    year: int
+    paid_at: Optional[str] = None
+    payment_method: Optional[str] = "Cash"
+    notes: Optional[str] = ""
 
 class LeaveCreate(BaseModel):
     staff_id: int
@@ -315,10 +330,11 @@ def create_staff(data: StaffCreate):
     joining_date = data.joining_date or date.today().strftime("%Y-%m-%d")
     address = data.address or ""
     designation = data.designation or "Pharmacist"
+    police_report = 1 if data.police_report in (1, "1", "yes", "YES", True) else 0
     cursor.execute("""
-        INSERT INTO staff (name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (data.name, data.phone, data.cnic, address, designation, designation, data.monthly_salary, joining_date, data.shift_id, data.fingerprint_id))
+        INSERT INTO staff (name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id, police_report)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (data.name, data.phone, data.cnic, address, designation, designation, data.monthly_salary, joining_date, data.shift_id, data.fingerprint_id, police_report))
     new_id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -365,6 +381,9 @@ def update_staff(staff_id: int, data: StaffUpdate):
     if data.fingerprint_id is not None:
         fields.append("fingerprint_id = ?")
         values.append(data.fingerprint_id)
+    if data.police_report is not None:
+        fields.append("police_report = ?")
+        values.append(1 if data.police_report in (1, "1", "yes", "YES", True) else 0)
 
     if fields:
         values.append(staff_id)
@@ -372,6 +391,28 @@ def update_staff(staff_id: int, data: StaffUpdate):
         conn.commit()
     conn.close()
     return {"success": True, "message": "Staff member updated successfully."}
+
+@app.post("/api/staff/{staff_id}/toggle-police-report")
+def toggle_police_report(staff_id: int):
+    """Toggles police report verification status (0 <-> 1) for a staff member."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, police_report FROM staff WHERE id = ? AND is_active = 1", (staff_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Staff member not found")
+    
+    current_status = row["police_report"] or 0
+    new_status = 0 if current_status == 1 else 1
+    cursor.execute("UPDATE staff SET police_report = ? WHERE id = ?", (new_status, staff_id))
+    conn.commit()
+    conn.close()
+    return {
+        "success": True, 
+        "police_report": new_status, 
+        "message": f"Police report for {row['name']} updated to {'Yes (Verified)' if new_status == 1 else 'No (Pending)'}."
+    }
 
 @app.delete("/api/staff/{staff_id}")
 def delete_staff(staff_id: int):
@@ -476,10 +517,59 @@ def create_advance(data: AdvanceCreate):
         INSERT INTO advance_salaries (staff_id, entry_type, amount, date, reason)
         VALUES (?, ?, ?, ?, ?)
     """, (data.staff_id, entry_type, data.amount, date_str, data.reason))
+    new_id = cursor.lastrowid
     conn.commit()
     conn.close()
     label = "Medicine credit" if entry_type == "MEDICINE_CREDIT" else "Cash advance"
-    return {"success": True, "message": f"{label} of Rs. {data.amount:,.2f} recorded successfully."}
+    return {"success": True, "id": new_id, "message": f"{label} of Rs. {data.amount:,.2f} recorded successfully."}
+
+@app.post("/api/advances/{advance_id}/settle")
+def settle_advance(advance_id: int, req: Optional[AdvanceSettleRequest] = None):
+    """Direct settlement of a staff advance or medicine credit with audit tracking."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT a.*, s.name as staff_name 
+        FROM advance_salaries a 
+        JOIN staff s ON a.staff_id = s.id 
+        WHERE a.id = ?
+    """, (advance_id,))
+    adv = cursor.fetchone()
+    if not adv:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Advance record not found")
+
+    settled_date = (req.settled_at if req and req.settled_at else date.today().strftime("%Y-%m-%d"))
+    settlement_type = (req.settlement_type if req and req.settlement_type else "Direct Counter Settlement")
+    notes_val = (req.notes.strip() if req and req.notes else "")
+
+    # Only assign settled payroll month/year if deducted via salary
+    month_val = 0
+    year_val = 0
+    if "salary" in settlement_type.lower():
+        try:
+            parts = settled_date.split("-")
+            year_val = int(parts[0])
+            month_val = int(parts[1])
+        except Exception:
+            pass
+
+    cursor.execute("""
+        UPDATE advance_salaries
+        SET is_settled = 1, settled_at = ?, settlement_type = ?, notes = ?, settled_payroll_month = ?, settled_payroll_year = ?
+        WHERE id = ?
+    """, (settled_date, settlement_type, notes_val, month_val, year_val, advance_id))
+    conn.commit()
+    conn.close()
+
+    return {
+        "success": True,
+        "message": f"Advance #{advance_id} for {adv['staff_name']} (Rs. {adv['amount']:,.2f}) settled successfully via '{settlement_type}' on {settled_date}.",
+        "advance_id": advance_id,
+        "settled_at": settled_date,
+        "settlement_type": settlement_type,
+        "notes": notes_val
+    }
 
 @app.post("/api/leaves")
 def approve_leave(data: LeaveCreate):
@@ -527,6 +617,88 @@ def get_payroll(month: int = Query(..., ge=1, le=12), year: int = Query(..., ge=
         "total_payout": round(total_payout, 2),
         "total_deductions": round(total_deductions, 2),
         "sheet": results
+    }
+
+@app.post("/api/payroll/disburse")
+def disburse_salary(data: PayrollDisburseRequest):
+    """
+    Marks staff member's monthly salary as PAID with payment date, method, and audit notes.
+    Automatically settles all pending Khata entries (advances and medicine credits)
+    deducted in this payroll.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # 1. Verify staff exists
+    cursor.execute("SELECT id, name FROM staff WHERE id = ? AND is_active = 1", (data.staff_id,))
+    staff = cursor.fetchone()
+    if not staff:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Staff member not found")
+
+    # 2. Ensure payroll is calculated and recorded in payroll_records
+    payroll_data = calculate_monthly_payroll(data.staff_id, data.month, data.year)
+
+    paid_date = data.paid_at if data.paid_at and data.paid_at.strip() else date.today().strftime("%Y-%m-%d")
+    payment_method = data.payment_method if data.payment_method and data.payment_method.strip() else "Cash"
+    notes_val = data.notes.strip() if data.notes else ""
+
+    # 3. Mark payroll record as PAID
+    cursor.execute("""
+        UPDATE payroll_records
+        SET status = 'PAID', paid_at = ?, payment_method = ?, notes = ?
+        WHERE staff_id = ? AND month = ? AND year = ?
+    """, (paid_date, payment_method, notes_val, data.staff_id, data.month, data.year))
+
+    # 4. Auto-settle all unsettled advances and medicine credits for this staff member up to this month's end
+    days_in_month = calendar.monthrange(data.year, data.month)[1]
+    end_date_str = f"{data.year}-{data.month:02d}-{days_in_month:02d}"
+    month_name = calendar.month_name[data.month]
+    settlement_type = f"Deducted from {month_name} {data.year} Salary"
+    auto_note = f"Auto-settled via {month_name} {data.year} salary payment ({paid_date} via {payment_method})"
+    if notes_val:
+        auto_note += f" - {notes_val}"
+
+    # Find which advances will be settled
+    cursor.execute("""
+        SELECT id, amount, entry_type, date 
+        FROM advance_salaries 
+        WHERE staff_id = ? AND is_settled = 0 AND date <= ?
+    """, (data.staff_id, end_date_str))
+    pending_advances = cursor.fetchall()
+    auto_settled_count = len(pending_advances)
+    auto_settled_amount = sum(row["amount"] for row in pending_advances)
+
+    if auto_settled_count > 0:
+        cursor.execute("""
+            UPDATE advance_salaries
+            SET is_settled = 1,
+                settled_at = ?,
+                settlement_type = ?,
+                settled_payroll_month = ?,
+                settled_payroll_year = ?,
+                notes = ?
+            WHERE staff_id = ? AND is_settled = 0 AND date <= ?
+        """, (paid_date, settlement_type, data.month, data.year, auto_note, data.staff_id, end_date_str))
+
+    conn.commit()
+    conn.close()
+
+    # Re-calculate to return updated payroll info
+    updated_payroll = calculate_monthly_payroll(data.staff_id, data.month, data.year)
+
+    return {
+        "success": True,
+        "message": f"Salary for {staff['name']} ({month_name} {data.year}) marked as PAID on {paid_date} via {payment_method}. {auto_settled_count} Khata advance(s) totalling Rs. {auto_settled_amount:,.2f} auto-settled.",
+        "staff_id": data.staff_id,
+        "staff_name": staff["name"],
+        "month": data.month,
+        "year": data.year,
+        "paid_at": paid_date,
+        "payment_method": payment_method,
+        "net_payable": updated_payroll["net_payable"],
+        "auto_settled_advances_count": auto_settled_count,
+        "auto_settled_advances_amount": auto_settled_amount
     }
 
 # Mount static files for the frontend UI

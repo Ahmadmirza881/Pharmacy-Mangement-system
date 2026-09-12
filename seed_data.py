@@ -31,17 +31,17 @@ def seed():
 
     print("[2/6] Seeding Staff Directory (6 Mumtaz Pharmacy Team Members)...")
     staff_members = [
-        (1, 'Ali Raza', '0300-1234567', '35202-1234567-1', 'House 14, St 3, Model Town, Lahore', 'Senior Pharmacist', 'Senior Pharmacist', 45000.0, '2025-01-15', 1, 'FP_ALI_001', 1),
-        (2, 'Bilal Ahmed', '0321-7654321', '35202-7654321-3', 'Plot 88, Block B, Faisal Town, Lahore', 'Counter Sales & Billing', 'Counter Sales & Billing', 35000.0, '2025-05-10', 1, 'FP_BILAL_002', 1),
-        (3, 'Usman Tariq', '0333-9876543', '35202-9876543-5', 'Main Bazar, Kot Lakhpat, Lahore', 'Store Runner & Dispenser', 'Store Runner & Dispenser', 26000.0, '2025-11-20', 2, 'FP_USMAN_003', 1),
-        (4, 'Hamza Farooq', '0312-4455667', '35201-4455667-7', 'St 8, Gulberg III, Lahore', 'Assistant Pharmacist', 'Assistant Pharmacist', 40000.0, '2025-08-01', 1, 'FP_HAMZA_004', 1),
-        (5, 'Zainab Bibi', '0345-8899001', '35202-8899001-2', 'Allama Iqbal Town, Lahore', 'Cashier & Inventory', 'Cashier & Inventory', 30000.0, '2026-02-15', 1, 'FP_ZAINAB_005', 1),
-        (6, 'Tariq Mehmood', '0308-3344556', '35202-3344556-9', 'Sector B, Township, Lahore', 'Night Shift Dispenser', 'Night Shift Dispenser', 28000.0, '2026-04-01', 2, 'FP_TARIQ_006', 1)
+        (1, 'Ali Raza', '0300-1234567', '35202-1234567-1', 'House 14, St 3, Model Town, Lahore', 'Senior Pharmacist', 'Senior Pharmacist', 45000.0, '2025-01-15', 1, 'FP_ALI_001', 1, 1),
+        (2, 'Bilal Ahmed', '0321-7654321', '35202-7654321-3', 'Plot 88, Block B, Faisal Town, Lahore', 'Counter Sales & Billing', 'Counter Sales & Billing', 35000.0, '2025-05-10', 1, 'FP_BILAL_002', 1, 1),
+        (3, 'Usman Tariq', '0333-9876543', '35202-9876543-5', 'Main Bazar, Kot Lakhpat, Lahore', 'Store Runner & Dispenser', 'Store Runner & Dispenser', 26000.0, '2025-11-20', 2, 'FP_USMAN_003', 0, 1),
+        (4, 'Hamza Farooq', '0312-4455667', '35201-4455667-7', 'St 8, Gulberg III, Lahore', 'Assistant Pharmacist', 'Assistant Pharmacist', 40000.0, '2025-08-01', 1, 'FP_HAMZA_004', 1, 1),
+        (5, 'Zainab Bibi', '0345-8899001', '35202-8899001-2', 'Allama Iqbal Town, Lahore', 'Cashier & Inventory', 'Cashier & Inventory', 30000.0, '2026-02-15', 1, 'FP_ZAINAB_005', 1, 1),
+        (6, 'Tariq Mehmood', '0308-3344556', '35202-3344556-9', 'Sector B, Township, Lahore', 'Night Shift Dispenser', 'Night Shift Dispenser', 28000.0, '2026-04-01', 2, 'FP_TARIQ_006', 0, 1)
     ]
 
     cursor.executemany("""
-        INSERT INTO staff (id, name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id, is_active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO staff (id, name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id, police_report, is_active)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, staff_members)
 
     print("[3/6] Seeding Approved Leaves for July, August & September 2026...")
@@ -77,7 +77,7 @@ def seed():
         (2, '2026-09-08', 'Vehicle emergency repair'), # Bilal 3rd leave in Sept = 1 EXTRA!
         (4, '2026-09-05', 'Back pain physiotherapy'),
         # Tariq is on approved leave today!
-        (6, '2026-09-11', 'Severe seasonal flu & fever')
+        (6, date.today().strftime("%Y-%m-%d"), 'Severe seasonal flu & fever')
     ]
 
     cursor.executemany("""
@@ -86,51 +86,54 @@ def seed():
     """, leaves_data)
 
     print("[4/6] Seeding Staff Khata (Cash Advances & Medicine Credits)...")
-    # July entries (initially unsettled)
+    # July entries (Settled via July 2026 Payroll)
     july_khata = [
-        (1, 'ADVANCE', 3000.0, '2026-07-05', 'Emergency Cash for Utility Bills', 0),
-        (2, 'MEDICINE_CREDIT', 1200.0, '2026-07-12', 'Augmentin 625mg + Panadol for Family', 0),
-        (3, 'ADVANCE', 2000.0, '2026-07-15', 'Counter Cash Advance', 0),
+        (1, 'ADVANCE', 3000.0, '2026-07-05', 'Emergency Cash for Utility Bills', 1, '2026-07-31', 'Deducted from July 2026 Salary', 7, 2026),
+        (2, 'MEDICINE_CREDIT', 1200.0, '2026-07-12', 'Augmentin 625mg + Panadol for Family', 1, '2026-07-31', 'Deducted from July 2026 Salary', 7, 2026),
+        (3, 'ADVANCE', 2000.0, '2026-07-15', 'Counter Cash Advance', 1, '2026-07-31', 'Deducted from July 2026 Salary', 7, 2026),
     ]
     cursor.executemany("""
-        INSERT INTO advance_salaries (staff_id, entry_type, amount, date, reason, is_settled)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO advance_salaries (staff_id, entry_type, amount, date, reason, is_settled, settled_at, settlement_type, settled_payroll_month, settled_payroll_year)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, july_khata)
 
-    # August entries (initially unsettled)
+    # August entries (Settled via August 2026 Payroll)
     august_khata = [
-        (1, 'MEDICINE_CREDIT', 2500.0, '2026-08-08', 'Surbex Z, Calpol, Insulin for Father', 0),
-        (2, 'ADVANCE', 4000.0, '2026-08-12', 'Cash Advance for School Fees', 0),
-        (4, 'MEDICINE_CREDIT', 1800.0, '2026-08-18', 'Antibiotics & Inhaler', 0),
-        (5, 'ADVANCE', 2500.0, '2026-08-20', 'Cash for Mother Medicine', 0),
+        (1, 'MEDICINE_CREDIT', 2500.0, '2026-08-08', 'Surbex Z, Calpol, Insulin for Father', 1, '2026-08-31', 'Deducted from August 2026 Salary', 8, 2026),
+        (2, 'ADVANCE', 4000.0, '2026-08-12', 'Cash Advance for School Fees', 1, '2026-08-31', 'Deducted from August 2026 Salary', 8, 2026),
+        (4, 'MEDICINE_CREDIT', 1800.0, '2026-08-18', 'Antibiotics & Inhaler', 1, '2026-08-31', 'Deducted from August 2026 Salary', 8, 2026),
+        (5, 'ADVANCE', 2500.0, '2026-08-20', 'Cash for Mother Medicine', 1, '2026-08-31', 'Deducted from August 2026 Salary', 8, 2026),
     ]
     cursor.executemany("""
-        INSERT INTO advance_salaries (staff_id, entry_type, amount, date, reason, is_settled)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO advance_salaries (staff_id, entry_type, amount, date, reason, is_settled, settled_at, settlement_type, settled_payroll_month, settled_payroll_year)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, august_khata)
 
-    # September entries (UNSETTLED - Ready for 1-Click Payroll!)
+    # September entries (UNSETTLED - Ready for 1-Click Payroll & Direct UI Settlement!)
     sept_khata = [
-        (1, 'ADVANCE', 4000.0, '2026-09-02', 'Emergency Cash from Drawer', 0),
-        (1, 'MEDICINE_CREDIT', 2200.0, '2026-09-07', 'Diabetes Meter Strips & Glucophage', 0),
-        (2, 'ADVANCE', 3000.0, '2026-09-04', 'Counter Cash Advance', 0),
-        (3, 'MEDICINE_CREDIT', 1500.0, '2026-09-06', 'Panadol CF, Arinac & Brufen', 0),
-        (4, 'ADVANCE', 2000.0, '2026-09-09', 'Cash Advance for Bike Fuel & Repair', 0),
-        (5, 'MEDICINE_CREDIT', 1100.0, '2026-09-10', 'Multivitamins & Baby Diapers', 0)
+        (1, 'ADVANCE', 4000.0, '2026-09-02', 'Emergency Cash from Drawer', 0, '', '', 0, 0),
+        (1, 'MEDICINE_CREDIT', 2200.0, '2026-09-07', 'Diabetes Meter Strips & Glucophage', 0, '', '', 0, 0),
+        (2, 'ADVANCE', 3000.0, '2026-09-04', 'Counter Cash Advance', 0, '', '', 0, 0),
+        (3, 'MEDICINE_CREDIT', 1500.0, '2026-09-06', 'Panadol CF, Arinac & Brufen', 0, '', '', 0, 0),
+        (4, 'ADVANCE', 2000.0, '2026-09-09', 'Cash Advance for Bike Fuel & Repair', 0, '', '', 0, 0),
+        (5, 'MEDICINE_CREDIT', 1100.0, '2026-09-10', 'Multivitamins & Baby Diapers', 0, '', '', 0, 0)
     ]
     cursor.executemany("""
-        INSERT INTO advance_salaries (staff_id, entry_type, amount, date, reason, is_settled)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO advance_salaries (staff_id, entry_type, amount, date, reason, is_settled, settled_at, settlement_type, settled_payroll_month, settled_payroll_year)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, sept_khata)
 
     print("[5/6] Seeding Daily Attendance Logs (July, August, September)...")
     leave_dates_set = {(row[0], row[1]) for row in leaves_data}
 
+    today = date.today()
+    max_sept_day = today.day if (today.year == 2026 and today.month == 9) else 12
+
     logs_to_insert = []
     months_plan = [
         (7, 2026, 31),
         (8, 2026, 31),
-        (9, 2026, 11) # Up to today (11th Sept)
+        (9, 2026, max_sept_day) # Up to today
     ]
 
     for m, y, max_days in months_plan:
@@ -175,8 +178,8 @@ def seed():
                     # Marked absent (no log inserted)
                     continue
 
-                # TODAY (September 11) live roster state:
-                if m == 9 and d == 11:
+                # TODAY live roster state:
+                if (m == today.month and y == today.year and d == today.day) or (m == 9 and d == max_sept_day and y == 2026):
                     if s_id == 1:
                         # Ali: Senior Pharmacist, morning shift, checked in on time, completed shift
                         status = "ON_TIME"
@@ -230,23 +233,9 @@ def seed():
     for s_id in range(1, 7):
         calculate_monthly_payroll(s_id, 7, 2026)
 
-    # Mark July advances as settled
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("UPDATE advance_salaries SET is_settled = 1 WHERE date <= '2026-07-31'")
-    conn.commit()
-    conn.close()
-
     # Calculate August 2026 payroll for all staff
     for s_id in range(1, 7):
         calculate_monthly_payroll(s_id, 8, 2026)
-
-    # Mark August advances as settled
-    conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    c.execute("UPDATE advance_salaries SET is_settled = 1 WHERE date BETWEEN '2026-08-01' AND '2026-08-31'")
-    conn.commit()
-    conn.close()
 
     print("SUCCESS! Mumtaz Pharmacy database seeded with realistic 3-month operational data.")
     print("Today's Live Roster, Staff Directory, Advance Khata, and 1-Click Payroll are ready for testing.")

@@ -227,11 +227,15 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
     late_cut = 0.0
     overtime_pay = 0.0
 
-    # 4. Fetch unsettled advances and medicine credits taken by staff
+    # 4. Fetch unsettled advances and medicine credits, plus advances settled in this month's payroll
     cursor.execute("""
-        SELECT id, amount, date, reason, entry_type FROM advance_salaries
-        WHERE staff_id = ? AND is_settled = 0 AND date <= ?
-    """, (staff_id, end_date_str))
+        SELECT id, amount, date, reason, entry_type, settlement_type, settled_at FROM advance_salaries
+        WHERE staff_id = ? AND (
+            (settled_payroll_month = ? AND settled_payroll_year = ?)
+            OR (is_settled = 1 AND settled_at BETWEEN ? AND ? AND (settlement_type LIKE '%Salary%' OR settlement_type = ''))
+            OR (is_settled = 0 AND date <= ?)
+        )
+    """, (staff_id, month, year, start_date_str, end_date_str, end_date_str))
     advances = cursor.fetchall()
     advances_total = sum(adv["amount"] for adv in advances)
 
@@ -281,6 +285,17 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
           total_overtime_mins, overtime_pay,
           advances_total, net_payable))
 
+    cursor.execute("""
+        SELECT status, paid_at, payment_method, notes 
+        FROM payroll_records 
+        WHERE staff_id = ? AND month = ? AND year = ?
+    """, (staff_id, month, year))
+    pr_row = cursor.fetchone()
+    pr_status = pr_row["status"] if pr_row and pr_row["status"] else "GENERATED"
+    pr_paid_at = pr_row["paid_at"] if pr_row and pr_row["paid_at"] else ""
+    pr_payment_method = pr_row["payment_method"] if pr_row and "payment_method" in pr_row.keys() and pr_row["payment_method"] else "Cash"
+    pr_notes = pr_row["notes"] if pr_row and "notes" in pr_row.keys() and pr_row["notes"] else ""
+
     conn.commit()
     conn.close()
 
@@ -307,5 +322,10 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
         "extra_leaves": extra_leaves,
         "extra_leave_cut": extra_leave_cut,
         "advances_deducted": advances_total,
-        "net_payable": net_payable
+        "advances_list": [dict(a) for a in advances],
+        "net_payable": net_payable,
+        "status": pr_status,
+        "paid_at": pr_paid_at,
+        "payment_method": pr_payment_method,
+        "notes": pr_notes
     }

@@ -34,10 +34,256 @@
     .scanner-pulse {
       animation: pulse-ring 2.5s infinite ease-in-out;
     }
+    .pulse-card {
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pulse-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px -2px rgba(35, 34, 114, 0.12);
+    }
+    .pulse-card.active-filter {
+      transform: translateY(-2px);
+    }
+    #pulse-card-ALL.active-filter {
+      box-shadow: 0 0 0 3px rgba(35, 34, 114, 0.35), 0 4px 12px -2px rgba(35, 34, 114, 0.2);
+      border-color: #232272 !important;
+    }
+    #pulse-card-PRESENT.active-filter {
+      box-shadow: 0 0 0 3px rgba(21, 109, 56, 0.35), 0 4px 12px -2px rgba(21, 109, 56, 0.2);
+      border-color: #156D38 !important;
+    }
+    #pulse-card-LATE.active-filter {
+      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.35), 0 4px 12px -2px rgba(217, 119, 6, 0.2);
+      border-color: #d97706 !important;
+    }
+    #pulse-card-LEAVE.active-filter {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35), 0 4px 12px -2px rgba(37, 99, 235, 0.2);
+      border-color: #2563eb !important;
+    }
+    #pulse-card-ABSENT.active-filter {
+      box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.35), 0 4px 12px -2px rgba(225, 29, 72, 0.2);
+      border-color: #e11d48 !important;
+    }
+  </style>
+  <style id="dynamic-page-style">
+    @page {
+      size: A4 landscape;
+      margin: 5mm;
+    }
+  </style>
+  <style>
     @media print {
-      body * { visibility: hidden; }
-      #printable-slip, #printable-slip *, #printable-report, #printable-report * { visibility: visible; }
-      #printable-slip, #printable-report { position: absolute; left: 0; top: 0; width: 100%; }
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        height: auto !important;
+        min-height: 0 !important;
+      }
+
+      /* 1. PAYSLIP PRINTING (A4 Portrait - 1 Single Page, No Blank Leading Page) */
+      body.printing-slip > header,
+      body.printing-slip > nav,
+      body.printing-slip > main,
+      body.printing-slip #staff-modal,
+      body.printing-slip #staff-history-modal,
+      body.printing-slip #attendance-override-modal,
+      body.printing-slip #settle-advance-modal,
+      body.printing-slip #disburse-salary-modal,
+      body.printing-slip #printable-report {
+        display: none !important;
+      }
+
+      body.printing-slip #slip-modal {
+        display: block !important;
+        position: static !important;
+        inset: auto !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        page-break-before: avoid !important;
+        break-before: avoid !important;
+      }
+
+      body.printing-slip #slip-modal > div {
+        display: block !important;
+        position: static !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        page-break-before: avoid !important;
+        break-before: avoid !important;
+      }
+
+      body.printing-slip #printable-slip { 
+        display: block !important;
+        position: relative !important; 
+        left: auto !important; 
+        top: auto !important; 
+        transform: none !important;
+        width: 100% !important;
+        max-width: 175mm !important;
+        margin: 0 auto !important;
+        background: white !important;
+        border: 1.5px solid #232272 !important;
+        border-radius: 8px !important;
+        padding: 16px 20px !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        page-break-before: avoid !important;
+        break-before: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      body.printing-slip #printable-slip * {
+        visibility: visible !important;
+      }
+
+      body.printing-slip button,
+      body.printing-slip #slip-modal button {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      /* 2. MONTHLY REGISTER PRINTING (A4 Landscape - Full Width) */
+      body.printing-report > header,
+      body.printing-report > nav,
+      body.printing-report #view-kiosk,
+      body.printing-report #view-live,
+      body.printing-report #view-payroll,
+      body.printing-report #view-advances,
+      body.printing-report #view-staff,
+      body.printing-report #slip-modal,
+      body.printing-report #staff-modal,
+      body.printing-report #staff-history-modal,
+      body.printing-report #attendance-override-modal,
+      body.printing-report #settle-advance-modal,
+      body.printing-report #disburse-salary-modal,
+      body.printing-report #printable-slip {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      body.printing-report main {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+
+      body.printing-report #view-reports > div:not(#printable-report) {
+        display: none !important;
+      }
+
+      body.printing-report #printable-report,
+      body.printing-report #printable-report * {
+        visibility: visible !important;
+      }
+
+      /* Default fallback if no class on body */
+      body:not(.printing-report):not(.printing-slip) > header,
+      body:not(.printing-report):not(.printing-slip) > nav {
+        display: none !important;
+      }
+
+      /* Monthly Register Landscape Print - Fits 100% in A4 Landscape */
+      #printable-report { 
+        position: absolute !important; 
+        left: 0 !important; 
+        top: 0 !important; 
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+        box-sizing: border-box !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      #printable-report .overflow-x-auto {
+        overflow: visible !important;
+        width: 100% !important;
+      }
+      #printable-report table {
+        table-layout: fixed !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        font-size: 6.8pt !important;
+        border-collapse: collapse !important;
+        box-sizing: border-box !important;
+      }
+      #printable-report th, #printable-report td {
+        min-width: 0 !important;
+        max-width: none !important;
+        padding: 1.5px 0.5px !important;
+        line-height: 1.1 !important;
+        border: 0.5px solid #cbd5e1 !important;
+        box-sizing: border-box !important;
+        text-align: center !important;
+      }
+      #printable-report th.sticky, #printable-report td.sticky {
+        position: static !important;
+        background-color: transparent !important;
+      }
+      /* Staff Column ~14% */
+      #printable-report th:first-child, #printable-report td:first-child {
+        width: 14% !important;
+        max-width: 14% !important;
+        text-align: left !important;
+        padding-left: 2px !important;
+        font-weight: 700 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+      /* Designation Column ~10% */
+      #printable-report th:nth-child(2), #printable-report td:nth-child(2) {
+        width: 10% !important;
+        max-width: 10% !important;
+        text-align: left !important;
+        padding-left: 2px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+      /* Days 1..31 and Summary Columns (P, L, HD, LV, A) ~2.11% each */
+      #printable-report th:not(:first-child):not(:nth-child(2)),
+      #printable-report td:not(:first-child):not(:nth-child(2)) {
+        width: 2.11% !important;
+        text-align: center !important;
+        padding: 1px 0 !important;
+      }
+      .day-badge {
+        display: inline-block !important;
+        width: 13px !important;
+        height: 13px !important;
+        line-height: 13px !important;
+        font-size: 5.5pt !important;
+        border-radius: 2px !important;
+        text-align: center !important;
+        font-weight: 800 !important;
+        margin: 0 auto !important;
+      }
+      #printable-report tr {
+        page-break-inside: avoid !important;
+      }
     }
   </style>
 </head>
@@ -175,9 +421,9 @@
     <!-- TAB 2: TODAY'S LIVE ROSTER (OWNER PULSE) -->
     <!-- ================================================================= -->
     <section id="view-live" class="space-y-6 hidden">
-      <!-- PULSE CARDS -->
+      <!-- PULSE CARDS (CLICKABLE FOR INSTANT FILTERING) -->
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div id="pulse-card-ALL" onclick="filterLiveRoster('ALL')" class="pulse-card cursor-pointer bg-white p-4 rounded-xl border-2 border-[#232272] shadow-sm flex items-center justify-between active-filter" title="Click to view all staff members">
           <div>
             <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Staff</p>
             <h3 id="pulse-total" class="text-2xl font-black text-[#232272] mt-1">6</h3>
@@ -187,7 +433,7 @@
           </div>
         </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div id="pulse-card-PRESENT" onclick="filterLiveRoster('PRESENT')" class="pulse-card cursor-pointer bg-white p-4 rounded-xl border-2 border-transparent hover:border-emerald-300 shadow-sm flex items-center justify-between" title="Click to filter only Present staff">
           <div>
             <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Present Today</p>
             <h3 id="pulse-present" class="text-2xl font-black text-[#156D38] mt-1">0</h3>
@@ -197,7 +443,7 @@
           </div>
         </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div id="pulse-card-LATE" onclick="filterLiveRoster('LATE')" class="pulse-card cursor-pointer bg-white p-4 rounded-xl border-2 border-transparent hover:border-amber-300 shadow-sm flex items-center justify-between" title="Click to filter Late Arrivals">
           <div>
             <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Late Arrivals</p>
             <h3 id="pulse-late" class="text-2xl font-black text-amber-600 mt-1">0</h3>
@@ -207,7 +453,7 @@
           </div>
         </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div id="pulse-card-LEAVE" onclick="filterLiveRoster('LEAVE')" class="pulse-card cursor-pointer bg-white p-4 rounded-xl border-2 border-transparent hover:border-blue-300 shadow-sm flex items-center justify-between" title="Click to filter staff On Leave">
           <div>
             <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">On Leave</p>
             <h3 id="pulse-leave" class="text-2xl font-black text-blue-600 mt-1">0</h3>
@@ -217,7 +463,7 @@
           </div>
         </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div id="pulse-card-ABSENT" onclick="filterLiveRoster('ABSENT')" class="pulse-card cursor-pointer bg-white p-4 rounded-xl border-2 border-transparent hover:border-rose-300 shadow-sm flex items-center justify-between" title="Click to filter Absent staff">
           <div>
             <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Absent Today</p>
             <h3 id="pulse-absent" class="text-2xl font-black text-rose-600 mt-1">0</h3>
@@ -230,14 +476,22 @@
 
       <!-- LIVE ROSTER TABLE -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 class="font-bold text-slate-800 text-base">Live Staff Shift Duty Table</h3>
-            <p class="text-xs text-slate-500">Subah aane aur sham jane ke live timestamps</p>
+            <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
+              <span>Live Staff Shift Duty Table</span>
+              <span id="live-filter-badge" class="text-xs bg-indigo-50 text-[#232272] border border-indigo-200 font-semibold px-2.5 py-0.5 rounded-full">Showing All Staff (6)</span>
+            </h3>
+            <p class="text-xs text-slate-500">Subah aane aur sham jane ke live timestamps. Pulse card par click kar ke instant filter karein.</p>
           </div>
-          <button onclick="loadTodayAttendance()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-3 rounded-lg font-semibold flex items-center gap-1.5">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
-          </button>
+          <div class="flex items-center gap-2">
+            <button id="live-filter-reset-btn" onclick="filterLiveRoster('ALL')" class="hidden text-xs bg-indigo-50 hover:bg-indigo-100 text-[#232272] py-1.5 px-3 rounded-lg font-bold flex items-center gap-1 transition-colors">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i> Show All
+            </button>
+            <button onclick="loadTodayAttendance()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-3 rounded-lg font-semibold flex items-center gap-1.5 transition-colors">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+            </button>
+          </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -276,13 +530,21 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <select id="payroll-month" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold">
-            <option value="9" selected>September (Current)</option>
-            <option value="10">October</option>
-            <option value="11">November</option>
-            <option value="12">December</option>
+          <select id="payroll-month" onchange="generatePayroll()" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold">
+            <option value="1">January 2026</option>
+            <option value="2">February 2026</option>
+            <option value="3">March 2026</option>
+            <option value="4">April 2026</option>
+            <option value="5">May 2026</option>
+            <option value="6">June 2026</option>
+            <option value="7">July 2026</option>
+            <option value="8">August 2026 (Last Month)</option>
+            <option value="9" selected>September 2026 (Current)</option>
+            <option value="10">October 2026</option>
+            <option value="11">November 2026</option>
+            <option value="12">December 2026</option>
           </select>
-          <select id="payroll-year" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold">
+          <select id="payroll-year" onchange="generatePayroll()" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold">
             <option value="2026" selected>2026</option>
             <option value="2027">2027</option>
           </select>
@@ -324,12 +586,13 @@
                 <th class="py-3 px-4">Extra Half-Days (>4 Free)</th>
                 <th class="py-3 px-4">Khata Deductions</th>
                 <th class="py-3 px-4">Net Payable</th>
+                <th class="py-3 px-4 text-center">Payment Status</th>
                 <th class="py-3 px-4 text-center">Slip</th>
               </tr>
             </thead>
             <tbody id="payroll-tbody" class="divide-y divide-slate-100">
               <tr>
-                <td colspan="9" class="p-8 text-center text-slate-400">Pehle month select kar ke "Calculate Payroll" dabayein.</td>
+                <td colspan="10" class="p-8 text-center text-slate-400">Pehle month select kar ke "Calculate Payroll" dabayein.</td>
               </tr>
             </tbody>
           </table>
@@ -396,7 +659,8 @@
                   <th class="py-2.5 px-3">Type</th>
                   <th class="py-2.5 px-3">Amount</th>
                   <th class="py-2.5 px-3">Reason</th>
-                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3">Settlement / Status</th>
+                  <th class="py-2.5 px-3 text-center">Action</th>
                 </tr>
               </thead>
               <tbody id="advances-tbody" class="divide-y divide-slate-100">
@@ -451,6 +715,7 @@
                 <th class="py-3 px-4">Assigned Shift</th>
                 <th class="py-3 px-4">Basic Salary</th>
                 <th class="py-3 px-4">Joining Date</th>
+                <th class="py-3 px-4 text-center">Police Report</th>
                 <th class="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
@@ -478,10 +743,18 @@
 
         <div class="flex flex-wrap items-center gap-3">
           <select id="report-month" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-800">
+            <option value="1">January 2026</option>
+            <option value="2">February 2026</option>
+            <option value="3">March 2026</option>
+            <option value="4">April 2026</option>
+            <option value="5">May 2026</option>
+            <option value="6">June 2026</option>
             <option value="7">July 2026</option>
             <option value="8">August 2026</option>
             <option value="9" selected>September 2026 (Current)</option>
             <option value="10">October 2026</option>
+            <option value="11">November 2026</option>
+            <option value="12">December 2026</option>
           </select>
           <select id="report-year" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-800">
             <option value="2026" selected>2026</option>
@@ -562,8 +835,9 @@
             </div>
           </div>
           <div class="text-right">
-            <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded">VERIFIED</span>
+            <span id="slip-payment-badge" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-300">PAID</span>
             <div id="slip-month-label" class="text-xs font-bold text-slate-700 mt-1">September 2026</div>
+            <div id="slip-payment-date-label" class="text-[10px] text-slate-500 font-medium mt-0.5"></div>
           </div>
         </div>
 
@@ -600,8 +874,18 @@
               <td id="slip-halfday" class="py-1.5 text-right">- Rs. 0.00</td>
             </tr>
             <tr class="text-rose-600">
-              <td class="py-1.5">Staff Khata &amp; Advance Deductions</td>
-              <td id="slip-advance" class="py-1.5 text-right">- Rs. 0.00</td>
+              <td class="py-1.5 font-semibold">Staff Khata &amp; Advance Deductions</td>
+              <td id="slip-advance" class="py-1.5 text-right font-bold">- Rs. 0.00</td>
+            </tr>
+            <tr id="slip-advances-details-row" class="hidden text-xs text-slate-600 bg-slate-50/80">
+              <td colspan="2" class="py-2 px-3 border border-slate-200 rounded-lg">
+                <div class="font-bold text-[11px] text-[#232272] mb-1 flex items-center gap-1">
+                  <span>Itemized Khata Deductions:</span>
+                </div>
+                <div id="slip-advances-items" class="space-y-1">
+                  <!-- Rendered dynamically -->
+                </div>
+              </td>
             </tr>
             <tr class="border-t-2 border-[#232272] font-black text-sm bg-indigo-50/70">
               <td class="py-2 text-[#232272]">NET PAYABLE SALARY</td>
@@ -621,10 +905,13 @@
 
       <!-- ACTION BUTTONS -->
       <div class="flex gap-3 mt-4">
-        <button onclick="window.print()" class="flex-1 bg-[#232272] text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2">
+        <button id="slip-pay-btn" onclick="openDisburseModalFromSlip()" class="flex-1 bg-[#156D38] hover:bg-emerald-800 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 shadow cursor-pointer">
+          <i data-lucide="banknote" class="w-4 h-4"></i> Mark Paid
+        </button>
+        <button onclick="printPayslip()" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 shadow cursor-pointer">
           <i data-lucide="printer" class="w-4 h-4"></i> Print Payslip
         </button>
-        <button onclick="closeSlipModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-sm">
+        <button onclick="closeSlipModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-sm cursor-pointer">
           Close
         </button>
       </div>
@@ -685,17 +972,24 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Assigned Shift *</label>
-            <select id="staff-form-shift" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
-              <option value="1">Morning Shift (09:00 - 17:00)</option>
-              <option value="2">Evening / Night Shift (17:00 - 01:00)</option>
+            <select id="staff-form-shift" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+              <option value="1">Morning (09:00 - 17:00)</option>
+              <option value="2">Evening / Night (17:00 - 01:00)</option>
             </select>
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Joining Date *</label>
-            <input type="date" id="staff-form-joining" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <input type="date" id="staff-form-joining" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Police Report *</label>
+            <select id="staff-form-police" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+              <option value="1">Yes (Verified)</option>
+              <option value="0">No (Pending)</option>
+            </select>
           </div>
         </div>
 
@@ -754,11 +1048,12 @@
         </div>
       </div>
 
-      <!-- BIO ADDRESS & PHONE -->
-      <div class="bg-indigo-50/50 p-3 rounded-xl text-xs text-slate-600 mb-4 flex flex-col sm:flex-row justify-between gap-2 border border-indigo-100">
+      <!-- BIO ADDRESS & PHONE & POLICE VERIFICATION -->
+      <div class="bg-indigo-50/50 p-3 rounded-xl text-xs text-slate-600 mb-4 flex flex-col sm:flex-row justify-between gap-2 border border-indigo-100 items-start sm:items-center">
         <div><strong>Address:</strong> <span id="dossier-address">—</span></div>
         <div><strong>Phone:</strong> <span id="dossier-phone">—</span></div>
         <div><strong>Shift:</strong> <span id="dossier-shift">—</span></div>
+        <div><strong>Police Report:</strong> <span id="dossier-police" class="font-bold">—</span></div>
       </div>
 
       <!-- DOSSIER TABS -->
@@ -904,10 +1199,166 @@
     </div>
   </div>
 
+  <!-- ================================================================= -->
+  <!-- MODAL: SETTLE ADVANCE / KHATA ENTRY -->
+  <!-- ================================================================= -->
+  <div id="settle-advance-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200">
+      <button onclick="closeSettleAdvanceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center">
+          <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800">Settle Khata / Advance Record</h3>
+          <p class="text-xs text-slate-500">Record direct counter cash return or salary deduction audit</p>
+        </div>
+      </div>
+
+      <form onsubmit="submitSettleAdvance(event)" class="space-y-3">
+        <input type="hidden" id="settle-advance-id" value="">
+
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+          <div>
+            <span class="text-slate-400 block text-[11px]">Staff Member</span>
+            <strong id="settle-staff-name" class="text-slate-800 text-sm">Ali Raza</strong>
+          </div>
+          <div class="text-right">
+            <span class="text-slate-400 block text-[11px]" id="settle-entry-label">Khata Amount</span>
+            <strong id="settle-amount-display" class="text-rose-600 font-black text-sm">Rs. 0</strong>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Settlement Date *</label>
+          <input type="date" id="settle-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#156D38]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Settlement Method / Reason *</label>
+          <select id="settle-type" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#156D38]">
+            <option value="Deducted from August 2026 Salary">Deducted from August 2026 Salary</option>
+            <option value="Deducted from September 2026 Salary" selected>Deducted from September 2026 Salary</option>
+            <option value="Cash Return at Counter Drawer">Cash Return at Counter Drawer</option>
+            <option value="Paid via Online Transfer / JazzCash">Paid via Online Transfer / JazzCash</option>
+            <option value="Waived by Owner Discretion">Waived by Owner Discretion</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Audit Notes / Receipt # (Optional)</label>
+          <input type="text" id="settle-notes" placeholder="e.g. Returned to drawer during evening shift" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+        </div>
+
+        <div class="flex gap-3 pt-3">
+          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow">
+            <i data-lucide="check" class="w-4 h-4"></i> Confirm Settlement
+          </button>
+          <button type="button" onclick="closeSettleAdvanceModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: DISBURSE SALARY & AUTO-SETTLE KHATA -->
+  <!-- ================================================================= -->
+  <div id="disburse-salary-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200">
+      <button onclick="closeDisburseModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 cursor-pointer">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center">
+          <i data-lucide="banknote" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800">Disburse Salary &amp; Settle Khata</h3>
+          <p class="text-xs text-slate-500">Official disbursement receipt &amp; advance reconciliation</p>
+        </div>
+      </div>
+
+      <form onsubmit="submitDisburseSalary(event)" class="space-y-3">
+        <input type="hidden" id="disburse-staff-id" value="">
+        <input type="hidden" id="disburse-month" value="">
+        <input type="hidden" id="disburse-year" value="">
+
+        <!-- STAFF & PAY SUMMARY -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 text-xs">
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="text-slate-400 block text-[11px]">Staff Member</span>
+              <strong id="disburse-staff-name" class="text-slate-800 text-sm">Ali Raza</strong>
+            </div>
+            <div class="text-right">
+              <span class="text-slate-400 block text-[11px]">Payroll Month</span>
+              <strong id="disburse-month-label" class="text-slate-800 font-bold">September 2026</strong>
+            </div>
+          </div>
+          <div class="pt-2 border-t border-slate-200 flex justify-between items-center">
+            <div>
+              <span class="text-slate-400 block text-[11px]">Net Payable</span>
+              <strong id="disburse-net-display" class="text-[#156D38] text-base font-black">Rs. 0</strong>
+            </div>
+            <div class="text-right">
+              <span class="text-slate-400 block text-[11px]">Khata Deductions</span>
+              <strong id="disburse-khata-display" class="text-rose-600 font-bold text-xs">Rs. 0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- AUTO-SETTLEMENT NOTICE -->
+        <div id="disburse-khata-notice" class="bg-amber-50 border border-amber-200 p-2.5 rounded-lg text-amber-900 text-xs flex items-start gap-2">
+          <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+          <div>
+            <strong>Automatic Khata Deduction:</strong>
+            <span id="disburse-khata-notice-text">Pending advances for this month will automatically be settled as deducted from salary.</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Payment Date *</label>
+          <input type="date" id="disburse-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#156D38]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Disbursement Method *</label>
+          <select id="disburse-method" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#156D38]">
+            <option value="Cash at Counter Till" selected>Cash at Counter Till</option>
+            <option value="Direct Bank Transfer">Direct Bank Transfer</option>
+            <option value="JazzCash / EasyPaisa">JazzCash / EasyPaisa</option>
+            <option value="Cheque Payment">Cheque Payment</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Audit Notes / Receipt # (Optional)</label>
+          <input type="text" id="disburse-notes" placeholder="e.g. Paid in full during evening closing" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+        </div>
+
+        <div class="flex gap-3 pt-3">
+          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+            <i data-lucide="check" class="w-4 h-4"></i> Confirm Payment &amp; Settle
+          </button>
+          <button type="button" onclick="closeDisburseModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- JAVASCRIPT LOGIC -->
   <script>
     let staffList = [];
     let recentPunches = [];
+    let allAdvances = [];
 
     // Initialize Page
     document.addEventListener("DOMContentLoaded", () => {
@@ -915,6 +1366,7 @@
       startLiveClock();
       loadStaff();
       loadTodayAttendance();
+      generatePayroll();
     });
 
     // 1. Live Clock
@@ -938,6 +1390,7 @@
       document.getElementById(`tab-${tabId}`).classList.add('border-[#156D38]', 'text-white');
 
       if (tabId === 'live') loadTodayAttendance();
+      if (tabId === 'payroll') generatePayroll();
       if (tabId === 'advances') loadAdvances();
       if (tabId === 'staff') renderStaffDirectory();
       if (tabId === 'reports') loadMonthlyReport();
@@ -1062,7 +1515,10 @@
       `).join('');
     }
 
-    // 5. Today's Attendance (Owner Pulse)
+    // 5. Today's Attendance & Interactive Live Filter
+    let rawTodayRoster = [];
+    let currentLiveFilter = 'ALL';
+
     async function loadTodayAttendance() {
       try {
         const res = await fetch('/api/attendance/today');
@@ -1074,47 +1530,129 @@
         document.getElementById('pulse-leave').innerText = data.leave_count || 0;
         document.getElementById('pulse-absent').innerText = data.absent_count;
 
-        const tbody = document.getElementById('live-roster-tbody');
-        tbody.innerHTML = data.roster.map(item => {
-          let badge = '';
-          if (item.status === 'ON_TIME') {
-            badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">ON TIME</span>';
-          } else if (item.status === 'LATE') {
-            badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">LATE (${item.late_minutes}m)</span>`;
-          } else if (item.status === 'HALF_DAY') {
-            badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">HALF DAY</span>';
-          } else if (item.status === 'LEAVE') {
-            badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800" title="${item.leave_reason || 'Approved Leave'}">ON LEAVE</span>`;
-          } else if (item.status === 'ABSENT') {
-            badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">ABSENT</span>';
-          } else {
-            badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">NOT CHECKED IN</span>';
-          }
-
-          return `
-            <tr class="hover:bg-slate-50 transition-colors">
-              <td class="py-3 px-4 font-bold text-slate-800">${item.name}</td>
-              <td class="py-3 px-4 text-slate-600">${item.designation || item.role}</td>
-              <td class="py-3 px-4 text-xs font-mono text-slate-500">${item.shift_name} (${item.start_time} - ${item.end_time})</td>
-              <td class="py-3 px-4 font-mono font-semibold text-emerald-700">${item.time_in || '—'}</td>
-              <td class="py-3 px-4 font-mono font-semibold text-slate-600">${item.time_out || '—'}</td>
-              <td class="py-3 px-4">${badge}</td>
-              <td class="py-3 px-4">
-                <div class="flex items-center gap-1.5">
-                  <button onclick="openManualAttendanceModal(${item.id}, '${item.name}', '${item.time_in || ''}', '${item.time_out || ''}', '${item.status || 'ON_TIME'}')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-[#232272] px-2.5 py-1 rounded-md font-bold transition-colors">
-                    Edit
-                  </button>
-                  <button onclick="markApprovedLeave(${item.id})" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-[#156D38] px-2.5 py-1 rounded-md font-bold transition-colors">
-                    Leave
-                  </button>
-                </div>
-              </td>
-            </tr>
-          `;
-        }).join('');
+        rawTodayRoster = data.roster || [];
+        renderLiveRosterTable();
       } catch (err) {
         console.error("Failed to load today attendance", err);
       }
+    }
+
+    function filterLiveRoster(filterType) {
+      currentLiveFilter = filterType;
+
+      ['ALL', 'PRESENT', 'LATE', 'LEAVE', 'ABSENT'].forEach(key => {
+        const el = document.getElementById(`pulse-card-${key}`);
+        if (el) {
+          if (key === filterType) {
+            el.classList.add('active-filter');
+            el.classList.remove('border-transparent');
+          } else {
+            el.classList.remove('active-filter');
+            el.classList.add('border-transparent');
+          }
+        }
+      });
+
+      renderLiveRosterTable();
+    }
+
+    function getFilteredRoster() {
+      if (currentLiveFilter === 'ALL') return rawTodayRoster;
+      if (currentLiveFilter === 'PRESENT') {
+        return rawTodayRoster.filter(i => ['ON_TIME', 'PRESENT', 'HALF_DAY', 'LATE'].includes(i.status));
+      }
+      if (currentLiveFilter === 'LATE') {
+        return rawTodayRoster.filter(i => i.status === 'LATE');
+      }
+      if (currentLiveFilter === 'LEAVE') {
+        return rawTodayRoster.filter(i => i.status === 'LEAVE');
+      }
+      if (currentLiveFilter === 'ABSENT') {
+        return rawTodayRoster.filter(i => i.status === 'ABSENT' || i.status === 'PENDING');
+      }
+      return rawTodayRoster;
+    }
+
+    function renderLiveRosterTable() {
+      const filtered = getFilteredRoster();
+      const badgeEl = document.getElementById('live-filter-badge');
+      const resetBtn = document.getElementById('live-filter-reset-btn');
+
+      const filterNames = {
+        'ALL': 'All Staff',
+        'PRESENT': 'Present Today',
+        'LATE': 'Late Arrivals',
+        'LEAVE': 'On Leave',
+        'ABSENT': 'Absent Today'
+      };
+
+      if (badgeEl) {
+        badgeEl.innerText = `Showing: ${filterNames[currentLiveFilter] || 'Staff'} (${filtered.length})`;
+        badgeEl.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full border transition-all ';
+        if (currentLiveFilter === 'ALL') {
+          badgeEl.className += 'bg-indigo-50 text-[#232272] border-indigo-200';
+        } else if (currentLiveFilter === 'PRESENT') {
+          badgeEl.className += 'bg-emerald-50 text-[#156D38] border-emerald-200';
+        } else if (currentLiveFilter === 'LATE') {
+          badgeEl.className += 'bg-amber-50 text-amber-800 border-amber-200';
+        } else if (currentLiveFilter === 'LEAVE') {
+          badgeEl.className += 'bg-blue-50 text-blue-800 border-blue-200';
+        } else if (currentLiveFilter === 'ABSENT') {
+          badgeEl.className += 'bg-rose-50 text-rose-800 border-rose-200';
+        }
+      }
+      if (resetBtn) {
+        if (currentLiveFilter === 'ALL') {
+          resetBtn.classList.add('hidden');
+        } else {
+          resetBtn.classList.remove('hidden');
+        }
+      }
+
+      const tbody = document.getElementById('live-roster-tbody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">Is filter category mein koi staff member mojood nahi.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(item => {
+        let badge = '';
+        if (item.status === 'ON_TIME') {
+          badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">ON TIME</span>';
+        } else if (item.status === 'LATE') {
+          badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">LATE (${item.late_minutes}m)</span>`;
+        } else if (item.status === 'HALF_DAY') {
+          badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">HALF DAY</span>';
+        } else if (item.status === 'LEAVE') {
+          badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800" title="${item.leave_reason || 'Approved Leave'}">ON LEAVE</span>`;
+        } else if (item.status === 'ABSENT') {
+          badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">ABSENT</span>';
+        } else {
+          badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">NOT CHECKED IN</span>';
+        }
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-3 px-4 font-bold text-slate-800">${item.name}</td>
+            <td class="py-3 px-4 text-slate-600">${item.designation || item.role}</td>
+            <td class="py-3 px-4 text-xs font-mono text-slate-500">${item.shift_name} (${item.start_time} - ${item.end_time})</td>
+            <td class="py-3 px-4 font-mono font-semibold text-emerald-700">${item.time_in || '—'}</td>
+            <td class="py-3 px-4 font-mono font-semibold text-slate-600">${item.time_out || '—'}</td>
+            <td class="py-3 px-4">${badge}</td>
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-1.5">
+                <button onclick="openManualAttendanceModal(${item.id}, '${item.name}', '${item.time_in || ''}', '${item.time_out || ''}', '${item.status || 'ON_TIME'}')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-[#232272] px-2.5 py-1 rounded-md font-bold transition-colors">
+                  Edit
+                </button>
+                <button onclick="markApprovedLeave(${item.id})" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-[#156D38] px-2.5 py-1 rounded-md font-bold transition-colors">
+                  Leave
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
     }
 
     // Manual Attendance Override Functions (Feature 18)
@@ -1160,6 +1698,7 @@
         if (data.success) {
           closeManualAttendanceModal();
           loadTodayAttendance();
+          generatePayroll();
           alert("Attendance record updated successfully!");
         } else {
           alert(data.detail || "Error updating attendance");
@@ -1178,6 +1717,7 @@
         body: JSON.stringify({ staff_id: staffId, date: today, reason: 'Approved Personal/Medical Leave' })
       });
       loadTodayAttendance();
+      generatePayroll();
     }
 
     // 6. 1-Click Payroll Calculation
@@ -1196,7 +1736,28 @@
         document.getElementById('summary-deductions').innerText = `Rs. ${data.total_deductions.toLocaleString()}`;
 
         const tbody = document.getElementById('payroll-tbody');
-        tbody.innerHTML = data.sheet.map(p => `
+        tbody.innerHTML = data.sheet.map(p => {
+          let paymentCell = '';
+          if (p.status === 'PAID') {
+            paymentCell = `
+              <div class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-[#156D38]"></i> Paid
+              </div>
+              <div class="text-[10px] text-slate-600 font-semibold mt-0.5">${p.paid_at || ''}</div>
+              <div class="text-[9px] text-slate-400 font-medium">(${p.payment_method || 'Cash'})</div>
+            `;
+          } else {
+            paymentCell = `
+              <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                Pending
+              </span>
+              <button onclick="openDisburseModal(${p.staff_id})" class="mt-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white text-[11px] px-2.5 py-1 rounded-md font-bold flex items-center gap-1 shadow mx-auto transition-all cursor-pointer">
+                <i data-lucide="banknote" class="w-3.5 h-3.5"></i> Mark Paid
+              </button>
+            `;
+          }
+
+          return `
           <tr class="hover:bg-slate-50 font-medium">
             <td class="py-3 px-4 font-bold text-slate-800">${p.staff_name} <br><span class="text-[11px] font-normal text-slate-400">${p.designation || p.role}</span></td>
             <td class="py-3 px-4">Rs. ${p.basic_salary.toLocaleString()}</td>
@@ -1210,22 +1771,27 @@
             </td>
             <td class="py-3 px-4 text-rose-600 font-semibold">- Rs. ${p.advances_deducted.toLocaleString()}</td>
             <td class="py-3 px-4 font-black text-[#156D38] text-base">Rs. ${p.net_payable.toLocaleString()}</td>
+            <td class="py-3 px-4 text-center">${paymentCell}</td>
             <td class="py-3 px-4 text-center">
-              <button onclick="openSlipModal(${p.staff_id})" class="bg-[#232272] hover:bg-indigo-900 text-white text-xs px-2.5 py-1.5 rounded font-bold flex items-center gap-1 shadow mx-auto">
+              <button onclick="openSlipModal(${p.staff_id})" class="bg-[#232272] hover:bg-indigo-900 text-white text-xs px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow mx-auto cursor-pointer">
                 <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Payslip
               </button>
             </td>
           </tr>
-        `).join('');
+        `;
+        }).join('');
 
         lucide.createIcons();
       } catch (err) {
         console.error("Payroll calculation error", err);
       }
     }
+    const loadPayroll = generatePayroll;
 
     // 7. Payslip Modal
+    let currentOpenSlipStaffId = null;
     function openSlipModal(staffId) {
+      currentOpenSlipStaffId = staffId;
       const p = currentPayrollData.find(x => x.staff_id === staffId);
       if (!p) return;
 
@@ -1237,15 +1803,54 @@
       document.getElementById('slip-daily').innerText = `Rs. ${p.daily_wage.toFixed(2)}`;
       document.getElementById('slip-days').innerText = `${p.days_in_month} Days`;
 
-      document.getElementById('slip-basic').innerText = `Rs. ${p.basic_salary.toLocaleString()}`;
+      const badgeEl = document.getElementById('slip-payment-badge');
+      const dateEl = document.getElementById('slip-payment-date-label');
+      const payBtn = document.getElementById('slip-pay-btn');
+
+      if (p.status === 'PAID') {
+        badgeEl.className = 'text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-300';
+        badgeEl.innerText = 'PAID';
+        dateEl.innerText = `Paid on ${p.paid_at || ''} (${p.payment_method || 'Cash'})`;
+        dateEl.classList.remove('hidden');
+        if (payBtn) payBtn.classList.add('hidden');
+      } else {
+        badgeEl.className = 'text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded border border-amber-300';
+        badgeEl.innerText = 'PENDING PAYMENT';
+        dateEl.innerText = 'Not yet disbursed';
+        dateEl.classList.add('hidden');
+        if (payBtn) payBtn.classList.remove('hidden');
+      }
+
+      document.getElementById('slip-basic').innerText = `Rs. ${p.basic_salary.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
       document.getElementById('slip-absent-desc').innerText = `Absent Deduction (${p.absent_days} days)`;
-      document.getElementById('slip-absent').innerText = `- Rs. ${p.absent_cut.toLocaleString()}`;
+      document.getElementById('slip-absent').innerText = `- Rs. ${p.absent_cut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
       document.getElementById('slip-leave-desc').innerText = `Extra Leaves Cut (${p.extra_leaves} beyond 2 free)`;
-      document.getElementById('slip-leave').innerText = `- Rs. ${p.extra_leave_cut.toLocaleString()}`;
+      document.getElementById('slip-leave').innerText = `- Rs. ${p.extra_leave_cut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
       document.getElementById('slip-halfday-desc').innerText = `Extra Half-Days Cut (${p.extra_half_days} beyond 4 free)`;
-      document.getElementById('slip-halfday').innerText = `- Rs. ${p.extra_half_day_cut.toLocaleString()}`;
-      document.getElementById('slip-advance').innerText = `- Rs. ${p.advances_deducted.toLocaleString()}`;
-      document.getElementById('slip-net').innerText = `Rs. ${p.net_payable.toLocaleString()}`;
+      document.getElementById('slip-halfday').innerText = `- Rs. ${p.extra_half_day_cut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('slip-advance').innerText = `- Rs. ${p.advances_deducted.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('slip-net').innerText = `Rs. ${p.net_payable.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+      const advRow = document.getElementById('slip-advances-details-row');
+      const advItems = document.getElementById('slip-advances-items');
+      if (advRow && advItems) {
+        if (p.advances_list && p.advances_list.length > 0) {
+          advRow.classList.remove('hidden');
+          advItems.innerHTML = p.advances_list.map(a => {
+            const typeLabel = a.entry_type === 'MEDICINE_CREDIT' ? 'Medicine Credit' : 'Cash Advance';
+            const reasonText = a.reason ? ` — ${a.reason}` : '';
+            return `
+              <div class="flex justify-between text-slate-700 text-[11px] py-0.5 border-b border-slate-100 last:border-none">
+                <span>• <strong class="text-slate-800">${a.date} (${typeLabel})</strong>${reasonText}</span>
+                <span class="font-bold text-rose-600 font-mono">Rs. ${parseFloat(a.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+              </div>
+            `;
+          }).join('');
+        } else {
+          advRow.classList.add('hidden');
+          advItems.innerHTML = '';
+        }
+      }
 
       document.getElementById('slip-modal').classList.remove('hidden');
       lucide.createIcons();
@@ -1255,37 +1860,211 @@
       document.getElementById('slip-modal').classList.add('hidden');
     }
 
-    // 8. Staff Advances & Medicine Credits
+    // 7B. Disburse Salary Modal & Automatic Khata Settlement
+    function openDisburseModal(staffId) {
+      const p = currentPayrollData.find(x => x.staff_id === staffId);
+      if (!p) return;
+
+      const monthSelect = document.getElementById('payroll-month');
+      const monthVal = parseInt(monthSelect.value);
+      const yearVal = parseInt(document.getElementById('payroll-year').value);
+      const monthName = monthSelect.selectedOptions[0].text.split(' ')[0];
+
+      document.getElementById('disburse-staff-id').value = staffId;
+      document.getElementById('disburse-month').value = monthVal;
+      document.getElementById('disburse-year').value = yearVal;
+      document.getElementById('disburse-staff-name').innerText = `${p.staff_name} (${p.designation || p.role})`;
+      document.getElementById('disburse-month-label').innerText = `${monthName} ${yearVal}`;
+      document.getElementById('disburse-net-display').innerText = `Rs. ${p.net_payable.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('disburse-khata-display').innerText = `Rs. ${p.advances_deducted.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+      const noticeEl = document.getElementById('disburse-khata-notice');
+      const noticeText = document.getElementById('disburse-khata-notice-text');
+      if (p.advances_deducted > 0) {
+        noticeEl.classList.remove('hidden');
+        noticeText.innerText = `Rs. ${p.advances_deducted.toLocaleString()} pending in advances/medicine credits will automatically be settled with audit notes.`;
+      } else {
+        noticeEl.classList.add('hidden');
+      }
+
+      document.getElementById('disburse-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('disburse-notes').value = '';
+
+      const modal = document.getElementById('disburse-salary-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeDisburseModal() {
+      const modal = document.getElementById('disburse-salary-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function openDisburseModalFromSlip() {
+      const staffId = currentOpenSlipStaffId;
+      closeSlipModal();
+      if (staffId) openDisburseModal(staffId);
+    }
+
+    async function submitDisburseSalary(e) {
+      e.preventDefault();
+      const staffId = parseInt(document.getElementById('disburse-staff-id').value);
+      const month = parseInt(document.getElementById('disburse-month').value);
+      const year = parseInt(document.getElementById('disburse-year').value);
+      const paidAt = document.getElementById('disburse-date').value;
+      const method = document.getElementById('disburse-method').value;
+      const notes = document.getElementById('disburse-notes').value.trim();
+
+      try {
+        const res = await fetch('/api/payroll/disburse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            staff_id: staffId,
+            month: month,
+            year: year,
+            paid_at: paidAt,
+            payment_method: method,
+            notes: notes
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeDisburseModal();
+          await generatePayroll();
+          await loadAdvances();
+          alert(data.message || "Salary marked as PAID and advances auto-settled!");
+        } else {
+          alert(data.detail || "Failed to mark salary as paid.");
+        }
+      } catch (err) {
+        console.error("Disburse error", err);
+        alert("Server error while disbursing salary.");
+      }
+    }
+
+    // 8. Staff Advances & Medicine Credits with Direct Settlement
     async function loadAdvances() {
       try {
         const res = await fetch('/api/advances');
         const advances = await res.json();
+        allAdvances = advances || [];
         const tbody = document.getElementById('advances-tbody');
-        if (advances.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">Koi advance ya medicine credit record mojood nahi.</td></tr>';
+        if (!advances || advances.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-400">Koi advance ya medicine credit record mojood nahi.</td></tr>';
           return;
         }
         tbody.innerHTML = advances.map(a => {
           const typeBadge = a.entry_type === 'MEDICINE_CREDIT' 
             ? '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">Medicine Credit</span>'
             : '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">Cash Advance</span>';
+          
+          let statusCell = '';
+          let actionCell = '';
+
+          if (a.is_settled) {
+            statusCell = `
+              <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <i data-lucide="check-circle" class="w-3 h-3"></i> Settled
+              </span>
+              <div class="text-[10px] text-slate-500 font-medium mt-1">
+                ${a.settled_at ? `<span class="font-semibold text-slate-700">${a.settled_at}</span>` : ''}
+                ${a.settlement_type ? `<div class="truncate max-w-[160px] text-slate-600" title="${a.settlement_type}">${a.settlement_type}</div>` : ''}
+                ${a.notes ? `<div class="truncate max-w-[160px] text-slate-400 italic text-[9px]" title="${a.notes}">Note: ${a.notes}</div>` : ''}
+              </div>
+            `;
+            actionCell = `<span class="text-xs text-slate-300 font-bold">—</span>`;
+          } else {
+            statusCell = `
+              <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200">
+                Pending Deduction
+              </span>
+              <div class="text-[10px] text-slate-400 mt-1">Salary deduction</div>
+            `;
+            actionCell = `
+              <button onclick="openSettleAdvanceModal(${a.id})" 
+                      class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm transition-all flex items-center gap-1.5 mx-auto cursor-pointer"
+                      title="Direct Settlement Now">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i> Settle Now
+              </button>
+            `;
+          }
+
           return `
-          <tr>
+          <tr class="hover:bg-slate-50 transition-colors">
             <td class="py-2.5 px-3 font-mono text-xs text-slate-500">${a.date}</td>
             <td class="py-2.5 px-3 font-bold text-slate-800">${a.staff_name}</td>
             <td class="py-2.5 px-3">${typeBadge}</td>
             <td class="py-2.5 px-3 font-black text-rose-600">Rs. ${a.amount.toLocaleString()}</td>
             <td class="py-2.5 px-3 text-xs text-slate-600">${a.reason || '—'}</td>
-            <td class="py-2.5 px-3">
-              <span class="text-[11px] font-bold px-2 py-0.5 rounded ${a.is_settled ? 'bg-slate-100 text-slate-600' : 'bg-rose-100 text-rose-800'}">
-                ${a.is_settled ? 'Settled' : 'Pending Deduction'}
-              </span>
-            </td>
+            <td class="py-2.5 px-3">${statusCell}</td>
+            <td class="py-2.5 px-3 text-center">${actionCell}</td>
           </tr>
         `;
         }).join('');
+        lucide.createIcons();
       } catch (err) {
         console.error("Failed to load advances", err);
+      }
+    }
+
+    function openSettleAdvanceModal(advanceId, staffName, amount, entryType) {
+      const a = (allAdvances || []).find(item => item.id === advanceId);
+      const name = staffName || (a ? a.staff_name : 'Staff');
+      const amt = (amount !== undefined && amount !== null) ? amount : (a ? a.amount : 0);
+      const type = entryType || (a ? a.entry_type : 'ADVANCE');
+
+      document.getElementById('settle-advance-id').value = advanceId;
+      document.getElementById('settle-staff-name').innerText = name;
+      document.getElementById('settle-amount-display').innerText = `Rs. ${Number(amt).toLocaleString()}`;
+      document.getElementById('settle-entry-label').innerText = type === 'MEDICINE_CREDIT' ? 'Medicine Credit' : 'Cash Advance';
+      document.getElementById('settle-date').value = new Date().toISOString().split('T')[0];
+      document.getElementById('settle-notes').value = '';
+      
+      const modal = document.getElementById('settle-advance-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeSettleAdvanceModal() {
+      const modal = document.getElementById('settle-advance-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function submitSettleAdvance(e) {
+      e.preventDefault();
+      const advanceId = document.getElementById('settle-advance-id').value;
+      const settledAt = document.getElementById('settle-date').value;
+      const settlementType = document.getElementById('settle-type').value;
+      const notes = document.getElementById('settle-notes').value.trim();
+
+      try {
+        const res = await fetch(`/api/advances/${advanceId}/settle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            settled_at: settledAt,
+            settlement_type: settlementType,
+            notes: notes
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeSettleAdvanceModal();
+          await loadAdvances();
+          await generatePayroll();
+          if (typeof loadStaff === 'function') loadStaff();
+          alert(data.message || "Advance settled successfully!");
+        } else {
+          alert(data.detail || "Failed to settle advance");
+        }
+      } catch (err) {
+        console.error("Settlement error", err);
+        alert("Server error occurred while settling advance");
       }
     }
 
@@ -1309,7 +2088,8 @@
 
       document.getElementById('advance-amount').value = '';
       document.getElementById('advance-reason').value = '';
-      loadAdvances();
+      await loadAdvances();
+      await generatePayroll();
       alert(type === 'MEDICINE_CREDIT' ? "Medicine Credit entry recorded successfully!" : "Cash Advance recorded successfully!");
     }
     // 9. Staff Directory & Management
@@ -1318,7 +2098,7 @@
       const tbody = document.getElementById('staff-directory-tbody');
       
       if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-slate-400">Koi staff member nahi mila.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-slate-400">Koi staff member nahi mila.</td></tr>';
         return;
       }
 
@@ -1328,6 +2108,10 @@
         const joining = s.joining_date || '—';
         const cnic = s.cnic || '—';
         const phone = s.phone || '—';
+        const isPoliceOk = s.police_report === 1 || s.police_report === '1' || s.police_report === 'YES' || s.police_report === true;
+        const policeBadge = isPoliceOk
+          ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200" title="Police Report Verified"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Yes</span>`
+          : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200" title="Police Report Pending"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> No</span>`;
 
         return `
           <tr class="hover:bg-slate-50 transition-colors">
@@ -1353,6 +2137,9 @@
             </td>
             <td class="py-3 px-4 text-xs font-mono text-slate-500">
               ${joining}
+            </td>
+            <td class="py-3 px-4 text-center">
+              ${policeBadge}
             </td>
             <td class="py-3 px-4 text-center">
               <div class="flex items-center justify-center gap-1.5">
@@ -1386,7 +2173,9 @@
         const phoneMatch = (s.phone || '').toLowerCase().includes(q);
         const desigMatch = ((s.designation || s.role) || '').toLowerCase().includes(q);
         const addressMatch = (s.address || '').toLowerCase().includes(q);
-        return nameMatch || cnicMatch || phoneMatch || desigMatch || addressMatch;
+        const policeStr = (s.police_report === 1 || s.police_report === '1' || s.police_report === 'YES' || s.police_report === true) ? 'police verified yes' : 'police pending no';
+        const policeMatch = policeStr.includes(q);
+        return nameMatch || cnicMatch || phoneMatch || desigMatch || addressMatch || policeMatch;
       });
       renderStaffDirectory(filtered);
     }
@@ -1410,6 +2199,7 @@
         document.getElementById('staff-form-salary').value = staff.monthly_salary || '';
         document.getElementById('staff-form-shift').value = staff.shift_id || 1;
         document.getElementById('staff-form-joining').value = staff.joining_date || '';
+        document.getElementById('staff-form-police').value = (staff.police_report === 1 || staff.police_report === '1' || staff.police_report === 'YES' || staff.police_report === true) ? '1' : '0';
       } else {
         title.innerText = 'Add New Staff Member';
         formId.value = '';
@@ -1421,6 +2211,7 @@
         document.getElementById('staff-form-salary').value = '';
         document.getElementById('staff-form-shift').value = '1';
         document.getElementById('staff-form-joining').value = new Date().toISOString().split('T')[0];
+        document.getElementById('staff-form-police').value = '1';
       }
 
       modal.classList.remove('hidden');
@@ -1443,7 +2234,8 @@
         designation: document.getElementById('staff-form-designation').value.trim(),
         monthly_salary: parseFloat(document.getElementById('staff-form-salary').value),
         shift_id: parseInt(document.getElementById('staff-form-shift').value),
-        joining_date: document.getElementById('staff-form-joining').value
+        joining_date: document.getElementById('staff-form-joining').value,
+        police_report: parseInt(document.getElementById('staff-form-police').value)
       };
 
       try {
@@ -1520,6 +2312,14 @@
         document.getElementById('dossier-address').innerText = p.address || '—';
         document.getElementById('dossier-phone').innerText = p.phone || '—';
         document.getElementById('dossier-shift').innerText = `${p.shift_name} (${p.start_time} - ${p.end_time})`;
+
+        const isPolOk = p.police_report === 1 || p.police_report === '1' || p.police_report === 'YES' || p.police_report === true;
+        const polEl = document.getElementById('dossier-police');
+        if (polEl) {
+          polEl.innerHTML = isPolOk
+            ? `<span class="inline-flex items-center gap-1 text-xs text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Yes (Verified)</span>`
+            : `<span class="inline-flex items-center gap-1 text-xs text-rose-700 font-bold bg-rose-100 px-2 py-0.5 rounded-full"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> No (Pending)</span>`;
+        }
 
         // Render Attendance Logs
         const attTbody = document.getElementById('dossier-att-tbody');
@@ -1606,9 +2406,54 @@
     }
 
     // 10. Monthly Attendance Register & Matrix (Feature 6 & 17)
-    function printMonthlyReport() {
-      window.print();
+    function setPrintOrientation(orientation) {
+      let styleTag = document.getElementById('dynamic-page-style');
+      if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.id = 'dynamic-page-style';
+        document.head.appendChild(styleTag);
+      }
+      if (orientation === 'portrait') {
+        styleTag.innerHTML = '@page { size: A4 portrait !important; margin: 8mm !important; }';
+      } else {
+        styleTag.innerHTML = '@page { size: A4 landscape !important; margin: 5mm !important; }';
+      }
     }
+
+    function printMonthlyReport() {
+      document.body.classList.remove('printing-slip');
+      document.body.classList.add('printing-report');
+      setPrintOrientation('landscape');
+      setTimeout(() => { window.print(); }, 50);
+    }
+
+    function printPayslip() {
+      document.body.classList.remove('printing-report');
+      document.body.classList.add('printing-slip');
+      setPrintOrientation('portrait');
+      setTimeout(() => { window.print(); }, 50);
+    }
+
+    window.addEventListener('beforeprint', () => {
+      const slipModal = document.getElementById('slip-modal');
+      if (slipModal && !slipModal.classList.contains('hidden')) {
+        document.body.classList.remove('printing-report');
+        document.body.classList.add('printing-slip');
+        setPrintOrientation('portrait');
+      } else {
+        const reportTab = document.getElementById('view-reports');
+        if (reportTab && !reportTab.classList.contains('hidden')) {
+          document.body.classList.remove('printing-slip');
+          document.body.classList.add('printing-report');
+          setPrintOrientation('landscape');
+        }
+      }
+    });
+
+    window.addEventListener('afterprint', () => {
+      document.body.classList.remove('printing-report', 'printing-slip');
+      setPrintOrientation('landscape');
+    });
 
     async function loadMonthlyReport() {
       const month = document.getElementById('report-month').value;
@@ -1652,17 +2497,17 @@
 
           for (let d = 1; d <= daysCount; d++) {
             const st = row.days[d] || row.days[String(d)] || '—';
-            let badge = `<span class="text-slate-300 font-mono">—</span>`;
+            let badge = `<span class="day-badge text-slate-300 font-mono">—</span>`;
             if (st === 'ON_TIME' || st === 'PRESENT') {
-              badge = `<span class="inline-block w-5 h-5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px] leading-5">P</span>`;
+              badge = `<span class="day-badge inline-block w-5 h-5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px] leading-5">P</span>`;
             } else if (st === 'LATE') {
-              badge = `<span class="inline-block w-5 h-5 rounded bg-amber-100 text-amber-800 font-bold text-[10px] leading-5">L</span>`;
+              badge = `<span class="day-badge inline-block w-5 h-5 rounded bg-amber-100 text-amber-800 font-bold text-[10px] leading-5">L</span>`;
             } else if (st === 'HALF_DAY') {
-              badge = `<span class="inline-block w-5 h-5 rounded bg-purple-100 text-purple-800 font-bold text-[10px] leading-5">HD</span>`;
+              badge = `<span class="day-badge inline-block w-5 h-5 rounded bg-purple-100 text-purple-800 font-bold text-[10px] leading-5">HD</span>`;
             } else if (st === 'LEAVE') {
-              badge = `<span class="inline-block w-5 h-5 rounded bg-blue-100 text-blue-800 font-bold text-[10px] leading-5">LV</span>`;
+              badge = `<span class="day-badge inline-block w-5 h-5 rounded bg-blue-100 text-blue-800 font-bold text-[10px] leading-5">LV</span>`;
             } else if (st === 'ABSENT') {
-              badge = `<span class="inline-block w-5 h-5 rounded bg-rose-100 text-rose-800 font-bold text-[10px] leading-5">A</span>`;
+              badge = `<span class="day-badge inline-block w-5 h-5 rounded bg-rose-100 text-rose-800 font-bold text-[10px] leading-5">A</span>`;
             }
             rowHtml += `<td class="py-1 px-0.5">${badge}</td>`;
           }

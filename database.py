@@ -49,6 +49,7 @@ def init_db():
         joining_date TEXT DEFAULT '',
         shift_id INTEGER NOT NULL,
         fingerprint_id TEXT,           -- Template or registered token
+        police_report INTEGER DEFAULT 0, -- 1 = Yes (Verified), 0 = No (Pending)
         is_active INTEGER DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (shift_id) REFERENCES shifts (id)
@@ -65,6 +66,8 @@ def init_db():
         cursor.execute("UPDATE staff SET designation = role WHERE designation IS NULL OR designation = ''")
     if "joining_date" not in existing_staff_cols:
         cursor.execute("ALTER TABLE staff ADD COLUMN joining_date TEXT DEFAULT '2026-01-01'")
+    if "police_report" not in existing_staff_cols:
+        cursor.execute("ALTER TABLE staff ADD COLUMN police_report INTEGER DEFAULT 0")
 
     # 3. Attendance Logs Table
     cursor.execute("""
@@ -110,6 +113,8 @@ def init_db():
         cursor.execute("ALTER TABLE advance_salaries ADD COLUMN settled_at TEXT DEFAULT ''")
     if "settlement_type" not in existing_adv_cols:
         cursor.execute("ALTER TABLE advance_salaries ADD COLUMN settlement_type TEXT DEFAULT ''")
+    if "notes" not in existing_adv_cols:
+        cursor.execute("ALTER TABLE advance_salaries ADD COLUMN notes TEXT DEFAULT ''")
     if "settled_payroll_month" not in existing_adv_cols:
         cursor.execute("ALTER TABLE advance_salaries ADD COLUMN settled_payroll_month INTEGER DEFAULT 0")
     if "settled_payroll_year" not in existing_adv_cols:
@@ -175,6 +180,14 @@ def init_db():
         cursor.execute("ALTER TABLE payroll_records ADD COLUMN extra_half_days INTEGER DEFAULT 0")
     if "extra_half_day_cut" not in existing_pr_cols:
         cursor.execute("ALTER TABLE payroll_records ADD COLUMN extra_half_day_cut REAL DEFAULT 0")
+    if "status" not in existing_pr_cols:
+        cursor.execute("ALTER TABLE payroll_records ADD COLUMN status TEXT DEFAULT 'GENERATED'")
+    if "paid_at" not in existing_pr_cols:
+        cursor.execute("ALTER TABLE payroll_records ADD COLUMN paid_at TEXT DEFAULT ''")
+    if "payment_method" not in existing_pr_cols:
+        cursor.execute("ALTER TABLE payroll_records ADD COLUMN payment_method TEXT DEFAULT 'Cash'")
+    if "notes" not in existing_pr_cols:
+        cursor.execute("ALTER TABLE payroll_records ADD COLUMN notes TEXT DEFAULT ''")
 
     # Populate Default Shifts if empty
     cursor.execute("SELECT COUNT(*) FROM shifts")
