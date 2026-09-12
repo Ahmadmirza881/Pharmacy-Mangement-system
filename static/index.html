@@ -1642,15 +1642,15 @@
   </div>
 
   <!-- ================================================================= -->
-  <!-- MODAL: ADD CREDIT PURCHASE (NEW UDHAR INVOICE) -->
+  <!-- MODAL: ADD CREDIT PURCHASE (NEW UDHAR INVOICE & 1-STEP REGISTER) -->
   <!-- ================================================================= -->
   <div id="add-customer-khata-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200 max-h-[95vh] overflow-y-auto">
       <button onclick="closeAddCustomerKhataModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
         <i data-lucide="x" class="w-6 h-6"></i>
       </button>
 
-      <div class="flex items-center gap-3 mb-4">
+      <div class="flex items-center gap-3 mb-3">
         <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
           <i data-lucide="receipt" class="w-5 h-5"></i>
         </div>
@@ -1660,12 +1660,63 @@
         </div>
       </div>
 
+      <!-- CONTEXTUAL NOTICE WHEN OPENED FROM LEDGER -->
+      <div id="khata-from-ledger-notice" class="hidden p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl mb-3 flex items-center justify-between text-xs text-[#232272]">
+        <div class="flex items-center gap-1.5 font-bold">
+          <i data-lucide="info" class="w-4 h-4"></i>
+          <span id="khata-from-ledger-text">Adding bill for customer</span>
+        </div>
+        <span class="text-[10px] text-indigo-500 font-medium">Auto-returns to ledger</span>
+      </div>
+
+      <!-- MODE TOGGLE: EXISTING vs NEW CUSTOMER -->
+      <div id="khata-mode-toggle-container" class="flex items-center p-1 bg-slate-100 rounded-xl mb-3">
+        <button type="button" id="toggle-khata-mode-existing" onclick="setAddKhataMode('existing')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-[#232272] shadow-xs transition-all cursor-pointer">
+          Existing Customer (Mojooda)
+        </button>
+        <button type="button" id="toggle-khata-mode-new" onclick="setAddKhataMode('new')" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer">
+          + Naya Customer (1-Step Register &amp; Bill)
+        </button>
+      </div>
+
       <form onsubmit="submitAddCustomerKhata(event)" class="space-y-3">
-        <div>
+        <!-- EXISTING CUSTOMER SELECT & FILTER -->
+        <div id="khata-existing-section" class="space-y-1">
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Select Customer *</label>
-          <select id="khata-customer-select" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <div class="relative mb-1">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
+            <input type="text" id="khata-customer-search" oninput="filterKhataCustomerSelect()" placeholder="Type name or phone to filter list..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+          </div>
+          <select id="khata-customer-select" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
             <!-- Populated via JS -->
           </select>
+        </div>
+
+        <!-- NEW CUSTOMER INLINE FORM (1-STEP) -->
+        <div id="khata-new-section" class="hidden space-y-2.5 p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl">
+          <div class="text-[11px] font-bold text-emerald-800 flex items-center gap-1 mb-1">
+            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i> New Customer Details (Automated 1-Step Registration)
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Customer Full Name *</label>
+              <input type="text" id="khata-new-name" placeholder="e.g. Muhammad Aslam" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Phone / WhatsApp *</label>
+              <input type="text" id="khata-new-phone" placeholder="e.g. 0300-1234567" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Address / Mohalla (Optional)</label>
+              <input type="text" id="khata-new-address" placeholder="e.g. Model Town Block C" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Credit Limit (PKR)</label>
+              <input type="number" id="khata-new-limit" value="15000" min="1000" step="500" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800">
+            </div>
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -1696,8 +1747,9 @@
         </div>
 
         <div class="flex gap-3 pt-3">
-          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i> Add to Series Khata
+          <button type="submit" id="khata-submit-btn" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span id="khata-submit-btn-text">Add to Series Khata</span>
           </button>
           <button type="button" onclick="closeAddCustomerKhataModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer">
             Cancel
@@ -1755,6 +1807,35 @@
             <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print Parchi
           </button>
         </div>
+      </div>
+
+      <!-- INLINE QUICK ADD BILL BAR -->
+      <div class="bg-indigo-50/70 border border-indigo-100 p-3 rounded-xl mt-3">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-xs font-bold text-[#232272] flex items-center gap-1.5">
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500"></i> Quick Add Bill to Ledger
+          </span>
+          <span class="text-[11px] text-slate-500 font-medium">Bina window tabdeel kiye foran bill darj karein</span>
+        </div>
+        <form onsubmit="submitInlineLedgerBill(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
+          <div class="sm:col-span-3">
+            <input type="date" id="inline-ledger-date" required class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+          </div>
+          <div class="sm:col-span-5">
+            <input type="text" id="inline-ledger-items" required placeholder="Medicines / Items description..." class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+          </div>
+          <div class="sm:col-span-2">
+            <div class="relative">
+              <span class="absolute left-2.5 top-2 text-xs font-bold text-rose-600">Rs.</span>
+              <input type="number" id="inline-ledger-amount" required min="1" step="0.5" placeholder="Amount" class="w-full pl-8 pr-2 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-rose-600 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+            </div>
+          </div>
+          <div class="sm:col-span-2">
+            <button type="submit" class="w-full bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center gap-1 shadow cursor-pointer">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Bill
+            </button>
+          </div>
+        </form>
       </div>
 
       <!-- CHRONOLOGICAL SERIES TABLE -->
@@ -3271,6 +3352,8 @@
     let currentCustomerFilter = 'all';
     let currentOpenLedgerCustomerId = null;
     let currentOpenParchiCustomerId = null;
+    let currentAddKhataMode = 'existing';
+    let returnToLedgerCustomerId = null;
 
     async function loadCustomers() {
       try {
@@ -3394,6 +3477,10 @@
             <td class="py-3 px-4">
               <div class="flex items-center justify-center gap-1.5">
                 ${hasBalance ? `
+                  <button onclick="quickSettleCustomerMaster(${c.id})" title="Clear Baqaya (1-Click Settle)" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white p-1.5 rounded-lg border border-emerald-700 shadow-xs transition-all flex items-center gap-1 text-[11px] font-bold cursor-pointer">
+                    <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+                    <span>Clear</span>
+                  </button>
                   <a href="${waLink}" target="_blank" title="1-Click WhatsApp Reminder" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-1.5 rounded-lg border border-emerald-200 transition-all flex items-center gap-1 text-[11px] font-bold">
                     <i data-lucide="message-circle" class="w-4 h-4 text-emerald-600"></i>
                     <span>WhatsApp</span>
@@ -3420,12 +3507,26 @@
       lucide.createIcons();
     }
 
-    function populateCustomerDropdowns() {
+    function populateCustomerDropdowns(filterQuery = '') {
       const select = document.getElementById('khata-customer-select');
       if (!select) return;
-      select.innerHTML = (allCustomers || []).map(c => `
-        <option value="${c.id}">${c.name} (${c.phone}) — Baqaya: Rs. ${c.current_balance.toLocaleString()}</option>
-      `).join('');
+      const q = (filterQuery || '').toLowerCase().trim();
+      const filtered = (allCustomers || []).filter(c => 
+        !q || c.name.toLowerCase().includes(q) || c.phone.toLowerCase().includes(q)
+      );
+
+      if (filtered.length === 0) {
+        select.innerHTML = `<option value="" disabled selected>Koi matching customer nahi mila</option>`;
+      } else {
+        select.innerHTML = filtered.map(c => `
+          <option value="${c.id}">${c.name} (${c.phone}) — Baqaya: Rs. ${c.current_balance.toLocaleString()}</option>
+        `).join('');
+      }
+    }
+
+    function filterKhataCustomerSelect() {
+      const q = (document.getElementById('khata-customer-search')?.value || '').trim();
+      populateCustomerDropdowns(q);
     }
 
     // Customer Form Modal (Create / Edit)
@@ -3499,14 +3600,73 @@
       }
     }
 
-    // Add Credit Purchase Modal
-    function openAddCustomerKhataModal(preSelectedCustomerId = null) {
+    // Mode Switcher: Existing vs New Customer (1-Step Workflow)
+    function setAddKhataMode(mode) {
+      currentAddKhataMode = mode;
+      const btnExisting = document.getElementById('toggle-khata-mode-existing');
+      const btnNew = document.getElementById('toggle-khata-mode-new');
+      const existingSec = document.getElementById('khata-existing-section');
+      const newSec = document.getElementById('khata-new-section');
+      const submitText = document.getElementById('khata-submit-btn-text');
+      const selectEl = document.getElementById('khata-customer-select');
+      const nameEl = document.getElementById('khata-new-name');
+      const phoneEl = document.getElementById('khata-new-phone');
+
+      if (mode === 'new') {
+        if (btnNew) btnNew.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 text-white shadow-xs transition-all cursor-pointer';
+        if (btnExisting) btnExisting.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer';
+        if (existingSec) existingSec.classList.add('hidden');
+        if (newSec) newSec.classList.remove('hidden');
+        if (submitText) submitText.innerText = '⚡ Register Customer & Add Bill (1-Click)';
+        if (selectEl) selectEl.removeAttribute('required');
+        if (nameEl) nameEl.setAttribute('required', 'required');
+        if (phoneEl) phoneEl.setAttribute('required', 'required');
+      } else {
+        if (btnExisting) btnExisting.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-[#232272] shadow-xs transition-all cursor-pointer';
+        if (btnNew) btnNew.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer';
+        if (existingSec) existingSec.classList.remove('hidden');
+        if (newSec) newSec.classList.add('hidden');
+        if (submitText) submitText.innerText = 'Add to Series Khata';
+        if (selectEl) selectEl.setAttribute('required', 'required');
+        if (nameEl) nameEl.removeAttribute('required');
+        if (phoneEl) phoneEl.removeAttribute('required');
+      }
+      lucide.createIcons();
+    }
+
+    // Add Credit Purchase Modal (Supports both Existing & 1-Step New Customer)
+    function openAddCustomerKhataModal(preSelectedCustomerId = null, fromLedger = false) {
       const modal = document.getElementById('add-customer-khata-modal');
       const select = document.getElementById('khata-customer-select');
+      const toggleContainer = document.getElementById('khata-mode-toggle-container');
+      const fromLedgerNotice = document.getElementById('khata-from-ledger-notice');
+      const fromLedgerText = document.getElementById('khata-from-ledger-text');
+      const searchInput = document.getElementById('khata-customer-search');
+
+      if (searchInput) searchInput.value = '';
       populateCustomerDropdowns();
 
-      if (preSelectedCustomerId) {
+      if (fromLedger && preSelectedCustomerId) {
+        returnToLedgerCustomerId = preSelectedCustomerId;
+        // Hide ledger modal to prevent double window stacking
+        document.getElementById('customer-ledger-modal').classList.add('hidden');
+
+        const cust = (allCustomers || []).find(c => c.id === preSelectedCustomerId);
+        if (fromLedgerNotice) fromLedgerNotice.classList.remove('hidden');
+        if (fromLedgerText) fromLedgerText.innerText = `Adding bill for ${cust ? cust.name : 'Customer'} (Auto-returns to ledger)`;
+        if (toggleContainer) toggleContainer.classList.add('hidden');
+        setAddKhataMode('existing');
         select.value = preSelectedCustomerId;
+        select.disabled = true;
+      } else {
+        returnToLedgerCustomerId = null;
+        if (fromLedgerNotice) fromLedgerNotice.classList.add('hidden');
+        if (toggleContainer) toggleContainer.classList.remove('hidden');
+        select.disabled = false;
+        setAddKhataMode('existing');
+        if (preSelectedCustomerId) {
+          select.value = preSelectedCustomerId;
+        }
       }
 
       document.getElementById('khata-invoice-no').value = '';
@@ -3514,25 +3674,88 @@
       document.getElementById('khata-items').value = '';
       document.getElementById('khata-amount').value = '';
       document.getElementById('khata-notes').value = '';
+      const newName = document.getElementById('khata-new-name');
+      if (newName) newName.value = '';
+      const newPhone = document.getElementById('khata-new-phone');
+      if (newPhone) newPhone.value = '';
+      const newAddr = document.getElementById('khata-new-address');
+      if (newAddr) newAddr.value = '';
+      const newLimit = document.getElementById('khata-new-limit');
+      if (newLimit) newLimit.value = '15000';
 
       modal.classList.remove('hidden');
+      lucide.createIcons();
     }
 
     function closeAddCustomerKhataModal() {
+      const select = document.getElementById('khata-customer-select');
+      if (select) select.disabled = false;
       document.getElementById('add-customer-khata-modal').classList.add('hidden');
+
+      // Seamless return to ledger if user was in ledger view!
+      if (returnToLedgerCustomerId) {
+        const cid = returnToLedgerCustomerId;
+        returnToLedgerCustomerId = null;
+        openCustomerLedgerModal(cid);
+      }
     }
 
     async function submitAddCustomerKhata(e) {
       e.preventDefault();
-      const customerId = parseInt(document.getElementById('khata-customer-select').value);
-      const invoiceNo = document.getElementById('khata-invoice-no').value.trim();
-      const dateVal = document.getElementById('khata-date').value;
-      const items = document.getElementById('khata-items').value.trim();
-      const amount = parseFloat(document.getElementById('khata-amount').value);
-      const notes = document.getElementById('khata-notes').value.trim();
+      const submitBtn = document.getElementById('khata-submit-btn');
+      if (submitBtn) submitBtn.disabled = true;
 
       try {
-        const res = await fetch('/api/customer-khata', {
+        let customerId;
+
+        // 1-STEP WORKFLOW: If new customer mode, register customer first
+        if (currentAddKhataMode === 'new') {
+          const newName = (document.getElementById('khata-new-name')?.value || '').trim();
+          const newPhone = (document.getElementById('khata-new-phone')?.value || '').trim();
+          const newAddr = (document.getElementById('khata-new-address')?.value || '').trim();
+          const newLimit = parseFloat(document.getElementById('khata-new-limit')?.value) || 15000;
+
+          if (!newName || !newPhone) {
+            alert("Baraye meherbani customer ka naam aur phone number darj karein.");
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+          }
+
+          const custRes = await fetch('/api/customers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: newName,
+              phone: newPhone,
+              address: newAddr,
+              credit_limit: newLimit
+            })
+          });
+          const custData = await custRes.json();
+          if (!custData.success) {
+            alert(custData.detail || "New customer register karne mein masla aaya.");
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+          }
+          customerId = custData.id;
+        } else {
+          const select = document.getElementById('khata-customer-select');
+          customerId = parseInt(select.value);
+          if (!customerId) {
+            alert("Baraye meherbani customer muntakhab karein.");
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+          }
+        }
+
+        // Save Credit Purchase into customer's continuous series khata
+        const invoiceNo = document.getElementById('khata-invoice-no').value.trim();
+        const dateVal = document.getElementById('khata-date').value;
+        const items = document.getElementById('khata-items').value.trim();
+        const amount = parseFloat(document.getElementById('khata-amount').value);
+        const notes = document.getElementById('khata-notes').value.trim();
+
+        const khataRes = await fetch('/api/customer-khata', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -3544,21 +3767,33 @@
             notes: notes
           })
         });
-        const data = await res.json();
-        if (data.success) {
-          closeAddCustomerKhataModal();
+        const khataData = await khataRes.json();
+        if (khataData.success) {
+          const hadReturnLedgerId = returnToLedgerCustomerId;
+          returnToLedgerCustomerId = null; // Clear before close to prevent double call
+
+          const select = document.getElementById('khata-customer-select');
+          if (select) select.disabled = false;
+          document.getElementById('add-customer-khata-modal').classList.add('hidden');
+
           await loadCustomers();
           await loadCustomerKpis();
-          if (currentOpenLedgerCustomerId === customerId) {
+
+          if (hadReturnLedgerId) {
+            await openCustomerLedgerModal(hadReturnLedgerId);
+          } else if (currentOpenLedgerCustomerId === customerId) {
             await openCustomerLedgerModal(customerId);
           }
-          alert(data.message || "Credit purchase successfully added to Series Khata!");
+
+          alert(khataData.message || "Credit purchase successfully added to Series Khata!");
         } else {
-          alert(data.detail || "Failed to record credit purchase.");
+          alert(khataData.detail || "Failed to record credit purchase.");
         }
       } catch (err) {
         console.error("Error adding credit purchase", err);
         alert("Server error.");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
       }
     }
 
@@ -3579,6 +3814,15 @@
         document.getElementById('ledger-modal-total-credit').innerText = `Rs. ${summary.total_credit.toLocaleString()}`;
         document.getElementById('ledger-modal-total-settled').innerText = `Rs. ${summary.total_settled.toLocaleString()}`;
         document.getElementById('ledger-modal-limit').innerText = `Rs. ${(c.credit_limit || 0).toLocaleString()}`;
+
+        // Initialize inline quick add bill bar
+        const todayStr = new Date().toISOString().split('T')[0];
+        const inlineDate = document.getElementById('inline-ledger-date');
+        if (inlineDate) inlineDate.value = todayStr;
+        const inlineItems = document.getElementById('inline-ledger-items');
+        if (inlineItems) inlineItems.value = '';
+        const inlineAmount = document.getElementById('inline-ledger-amount');
+        if (inlineAmount) inlineAmount.value = '';
 
         const settleAllBtn = document.getElementById('btn-ledger-settle-all');
         if (summary.current_balance <= 0) {
@@ -3631,22 +3875,73 @@
     function closeCustomerLedgerModal() {
       document.getElementById('customer-ledger-modal').classList.add('hidden');
       currentOpenLedgerCustomerId = null;
+      returnToLedgerCustomerId = null;
     }
 
     function openAddCreditForCurrentCustomer() {
       if (currentOpenLedgerCustomerId) {
-        openAddCustomerKhataModal(currentOpenLedgerCustomerId);
+        openAddCustomerKhataModal(currentOpenLedgerCustomerId, true);
+      }
+    }
+
+    // Inline Quick Add Bill from inside Ledger Modal
+    async function submitInlineLedgerBill(e) {
+      e.preventDefault();
+      if (!currentOpenLedgerCustomerId) {
+        alert("No customer ledger active.");
+        return;
+      }
+      const dateVal = document.getElementById('inline-ledger-date').value;
+      const items = document.getElementById('inline-ledger-items').value.trim();
+      const amount = parseFloat(document.getElementById('inline-ledger-amount').value);
+
+      if (!items || isNaN(amount) || amount <= 0) {
+        alert("Baraye meherbani items aur durust amount darj karein.");
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/customer-khata', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customer_id: currentOpenLedgerCustomerId,
+            invoice_no: '',
+            date: dateVal,
+            item_description: items,
+            amount: amount,
+            notes: 'Quick inline ledger entry'
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('inline-ledger-items').value = '';
+          document.getElementById('inline-ledger-amount').value = '';
+          await openCustomerLedgerModal(currentOpenLedgerCustomerId);
+          loadCustomers();
+          loadCustomerKpis();
+        } else {
+          alert(data.detail || "Bill save karne mein masla aaya.");
+        }
+      } catch (err) {
+        console.error("Error submitting inline ledger bill", err);
+        alert("Server error.");
       }
     }
 
     function printParchiForCurrentCustomer() {
       if (currentOpenLedgerCustomerId) {
-        openCustomerParchiModal(currentOpenLedgerCustomerId);
+        returnToLedgerCustomerId = currentOpenLedgerCustomerId;
+        document.getElementById('customer-ledger-modal').classList.add('hidden');
+        openCustomerParchiModal(returnToLedgerCustomerId);
       }
     }
 
-    // Settle Single Invoice Modal
+    // Settle Single Invoice Modal (With auto-return to ledger)
     function openSettleCustomerKhataModal(entryId, invoiceNo, amount, customerId, customerName) {
+      returnToLedgerCustomerId = customerId;
+      document.getElementById('customer-ledger-modal').classList.add('hidden');
+
       document.getElementById('settle-entry-id').value = entryId;
       document.getElementById('settle-entry-customer-id').value = customerId;
       document.getElementById('settle-entry-inv-label').innerText = invoiceNo;
@@ -3656,10 +3951,16 @@
       document.getElementById('settle-entry-notes').value = '';
 
       document.getElementById('settle-customer-khata-modal').classList.remove('hidden');
+      lucide.createIcons();
     }
 
     function closeSettleCustomerKhataModal() {
       document.getElementById('settle-customer-khata-modal').classList.add('hidden');
+      if (returnToLedgerCustomerId) {
+        const cid = returnToLedgerCustomerId;
+        returnToLedgerCustomerId = null;
+        openCustomerLedgerModal(cid);
+      }
     }
 
     async function submitSettleCustomerKhata(e) {
@@ -3682,10 +3983,16 @@
         });
         const data = await res.json();
         if (data.success) {
-          closeSettleCustomerKhataModal();
+          const hadReturnLedgerId = returnToLedgerCustomerId;
+          returnToLedgerCustomerId = null;
+          document.getElementById('settle-customer-khata-modal').classList.add('hidden');
+
           await loadCustomers();
           await loadCustomerKpis();
-          if (currentOpenLedgerCustomerId === customerId) {
+
+          if (hadReturnLedgerId) {
+            await openCustomerLedgerModal(hadReturnLedgerId);
+          } else if (currentOpenLedgerCustomerId === customerId) {
             await openCustomerLedgerModal(customerId);
           }
           alert(data.message || "Invoice settled successfully!");
@@ -3698,7 +4005,7 @@
       }
     }
 
-    // Settle All Balance in 1 Click
+    // Settle All Balance in 1 Click from Ledger
     async function settleAllBalanceForCurrentCustomer() {
       if (!currentOpenLedgerCustomerId) return;
       const c = allCustomers.find(x => x.id === currentOpenLedgerCustomerId);
@@ -3734,6 +4041,44 @@
         }
       } catch (err) {
         console.error("Error settling all balance", err);
+        alert("Server error.");
+      }
+    }
+
+    // Quick 1-Click Clear Baqaya directly from Customer Master Table
+    async function quickSettleCustomerMaster(customerId) {
+      const c = (allCustomers || []).find(x => x.id === customerId);
+      if (!c || c.current_balance <= 0) {
+        alert("Iss customer ka koi pending balance nahi hai.");
+        return;
+      }
+
+      const confirmMsg = `Kya aap waqai ${c.name} ka mukammal baqaya Rs. ${c.current_balance.toLocaleString()} clear karna chahte hain?`;
+      if (!confirm(confirmMsg)) return;
+
+      const method = prompt("Payment Method darj karein (Cash / EasyPaisa / JazzCash / Bank):", "Cash") || "Cash";
+      const settleDate = new Date().toISOString().split('T')[0];
+
+      try {
+        const res = await fetch(`/api/customers/${c.id}/settle-all`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            settled_at: settleDate,
+            payment_method: method,
+            notes: "Quick 1-click counter settlement"
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          await loadCustomers();
+          await loadCustomerKpis();
+          alert(data.message || "Mukammal balance settle ho gaya!");
+        } else {
+          alert(data.detail || "Settlement failed.");
+        }
+      } catch (err) {
+        console.error("Error settling customer balance", err);
         alert("Server error.");
       }
     }
@@ -3816,6 +4161,11 @@
     function closeCustomerParchiModal() {
       document.getElementById('customer-parchi-modal').classList.add('hidden');
       currentOpenParchiCustomerId = null;
+      if (returnToLedgerCustomerId) {
+        const cid = returnToLedgerCustomerId;
+        returnToLedgerCustomerId = null;
+        openCustomerLedgerModal(cid);
+      }
     }
 
     function executePrintCustomerParchi() {
@@ -3867,6 +4217,47 @@
       setPrintOrientation('portrait');
       setTimeout(() => { window.print(); }, 50);
     }
+
+    // Universal backdrop click dismissal for modals
+    document.addEventListener('click', function(e) {
+      const modalList = [
+        { id: 'add-customer-khata-modal', close: closeAddCustomerKhataModal },
+        { id: 'customer-ledger-modal', close: closeCustomerLedgerModal },
+        { id: 'customer-modal', close: closeCustomerModal },
+        { id: 'settle-customer-khata-modal', close: closeSettleCustomerKhataModal },
+        { id: 'batch-whatsapp-modal', close: closeBatchWhatsAppModal },
+        { id: 'customer-parchi-modal', close: closeCustomerParchiModal },
+        { id: 'weekly-khata-modal', close: closeWeeklyKhataReportModal }
+      ];
+      modalList.forEach(m => {
+        const el = document.getElementById(m.id);
+        if (el && !el.classList.contains('hidden') && e.target === el) {
+          m.close();
+        }
+      });
+    });
+
+    // Universal ESC key dismissal
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const priorityModals = [
+          { id: 'add-customer-khata-modal', close: closeAddCustomerKhataModal },
+          { id: 'settle-customer-khata-modal', close: closeSettleCustomerKhataModal },
+          { id: 'customer-parchi-modal', close: closeCustomerParchiModal },
+          { id: 'customer-modal', close: closeCustomerModal },
+          { id: 'batch-whatsapp-modal', close: closeBatchWhatsAppModal },
+          { id: 'weekly-khata-modal', close: closeWeeklyKhataReportModal },
+          { id: 'customer-ledger-modal', close: closeCustomerLedgerModal }
+        ];
+        for (const m of priorityModals) {
+          const el = document.getElementById(m.id);
+          if (el && !el.classList.contains('hidden')) {
+            m.close();
+            break;
+          }
+        }
+      }
+    });
   </script>
 </body>
 </html>
