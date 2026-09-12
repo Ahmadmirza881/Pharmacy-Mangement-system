@@ -1640,6 +1640,10 @@
           badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600">NOT CHECKED IN</span>';
         }
 
+        const leaveActionBtn = item.status === 'LEAVE'
+          ? `<span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-bold border border-blue-200 inline-flex items-center gap-1" title="Leave approved for today"><i data-lucide="check" class="w-3.5 h-3.5 text-blue-600"></i> Leave Added</span>`
+          : `<button onclick="markApprovedLeave(${item.id})" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-[#156D38] px-2.5 py-1 rounded-md font-bold transition-colors">Leave</button>`;
+
         return `
           <tr class="hover:bg-slate-50 transition-colors">
             <td class="py-3 px-4 font-bold text-slate-800">${item.name}</td>
@@ -1653,9 +1657,7 @@
                 <button onclick="openManualAttendanceModal(${item.id}, '${item.name}', '${item.time_in || ''}', '${item.time_out || ''}', '${item.status || 'ON_TIME'}')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-[#232272] px-2.5 py-1 rounded-md font-bold transition-colors">
                   Edit
                 </button>
-                <button onclick="markApprovedLeave(${item.id})" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-[#156D38] px-2.5 py-1 rounded-md font-bold transition-colors">
-                  Leave
-                </button>
+                ${leaveActionBtn}
               </div>
             </td>
           </tr>

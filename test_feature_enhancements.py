@@ -142,5 +142,31 @@ class TestMumtazFeatureEnhancements(unittest.TestCase):
             self.assertIn("leave_count", staff_row)
             self.assertIn("absent_count", staff_row)
 
+    def test_5_approve_leave_converts_absent_to_leave(self):
+        """Feature 5: Verify clicking Leave on an absent staff member overrides status to LEAVE."""
+        from datetime import date
+        today_str = date.today().strftime("%Y-%m-%d")
+        # Kashif (id=7) is ABSENT today
+        res = self.client.get("/api/attendance/today")
+        kashif = next(s for s in res.json()["roster"] if s["id"] == 7)
+        self.assertEqual(kashif["status"], "ABSENT")
+        self.assertEqual(res.json()["absent_count"], 1)
+
+        # Mark leave for Kashif
+        leave_res = self.client.post("/api/leaves", json={
+            "staff_id": 7,
+            "date": today_str,
+            "reason": "Approved Emergency Leave"
+        })
+        self.assertEqual(leave_res.status_code, 200)
+
+        # Re-check live roster
+        res2 = self.client.get("/api/attendance/today")
+        data2 = res2.json()
+        kashif_after = next(s for s in data2["roster"] if s["id"] == 7)
+        self.assertEqual(kashif_after["status"], "LEAVE")
+        self.assertEqual(data2["absent_count"], 0)
+        self.assertEqual(data2["leave_count"], 2)
+
 if __name__ == "__main__":
     unittest.main()

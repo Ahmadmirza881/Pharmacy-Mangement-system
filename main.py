@@ -145,7 +145,7 @@ def get_today_attendance():
     for r in rows:
         item = dict(r)
         status = item.get("status")
-        if item.get("leave_reason") and not status:
+        if item.get("leave_reason") or status == "LEAVE":
             item["status"] = "LEAVE"
             leave_count += 1
         elif not status:
@@ -581,6 +581,11 @@ def approve_leave(data: LeaveCreate):
         VALUES (?, ?, ?)
         ON CONFLICT(staff_id, date) DO UPDATE SET reason = excluded.reason
     """, (data.staff_id, data.date, data.reason))
+    cursor.execute("""
+        UPDATE attendance_logs 
+        SET status = 'LEAVE', notes = coalesce(nullif(notes, ''), ?)
+        WHERE staff_id = ? AND date = ? AND status = 'ABSENT'
+    """, (f"Approved Leave: {data.reason}", data.staff_id, data.date))
     conn.commit()
     conn.close()
     return {"success": True, "message": f"Leave approved for date {data.date}."}
