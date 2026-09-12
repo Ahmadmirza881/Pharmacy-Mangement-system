@@ -173,16 +173,8 @@ def get_today_attendance():
             item["status"] = "LEAVE"
             leave_count += 1
         elif not status:
-            # Has not punched in yet today
-            shift_parts = item["start_time"].split(":")
-            shift_h, shift_m = int(shift_parts[0]), int(shift_parts[1])
-            cutoff_dt = datetime.now().replace(hour=shift_h + 2, minute=shift_m, second=0)
-
-            if datetime.now() > cutoff_dt:
-                item["status"] = "ABSENT"
-                absent_count += 1
-            else:
-                item["status"] = "PENDING"
+            # Has not punched in yet today (Flexible duty: pending check-in)
+            item["status"] = "PENDING"
         else:
             if status in ("ON_TIME", "PRESENT", "HALF_DAY", "SHORT_HOURS"):
                 present_count += 1
