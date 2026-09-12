@@ -290,60 +290,69 @@
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
 
   <!-- TOP HEADER WITH MUMTAZ BRANDING -->
-  <header class="bg-[#232272] text-white shadow-lg sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+  <header class="bg-[#232272] text-white shadow-md sticky top-0 z-50">
+    <!-- BRAND & STATUS BAR -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between border-b border-indigo-900/40">
+      <!-- Left: Logo & Clean Title -->
       <div class="flex items-center space-x-3">
-        <div class="bg-white p-1 rounded-lg shadow">
-          <img src="/logo.jpg" alt="Mumtaz Pharmacy" class="h-10 w-auto object-contain">
+        <div class="bg-white p-1 rounded-xl shadow-sm border border-indigo-100 flex-shrink-0 flex items-center justify-center">
+          <img src="/logo.jpg" alt="Mumtaz Pharmacy" class="h-9 w-auto object-contain">
         </div>
         <div>
-          <h1 class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            MUMTAZ PHARMACY
-            <span class="bg-[#156D38] text-xs px-2 py-0.5 rounded-full font-semibold">ATTENDANCE &amp; PAYROLL</span>
-          </h1>
-          <p class="text-xs text-indigo-200">Biometric Staff Management &amp; Automated Salary Engine</p>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-black tracking-tight text-white leading-tight">
+              MUMTAZ PHARMACY
+            </h1>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              CORE SYSTEM
+            </span>
+          </div>
+          <p class="text-[11px] text-indigo-200/90 font-medium">Biometric Staff Attendance &amp; Payroll Engine</p>
         </div>
       </div>
 
-      <!-- DIGITAL LIVE CLOCK -->
-      <div class="flex items-center space-x-4">
-        <div class="text-right hidden sm:block">
-          <div id="live-time" class="text-xl font-black font-mono tracking-wider text-emerald-400">00:00:00 AM</div>
-          <div id="live-date" class="text-xs text-indigo-200">Wednesday, 10 Sept 2026</div>
+      <!-- Right: Live Clock & Device Status -->
+      <div class="flex items-center gap-3 sm:gap-5">
+        <div class="text-right hidden sm:block leading-tight">
+          <div id="live-time" class="text-base sm:text-lg font-black font-mono tracking-wide text-emerald-400">00:00:00 AM</div>
+          <div id="live-date" class="text-[11px] text-indigo-200/80 font-medium">Wednesday, 10 Sept 2026</div>
         </div>
-        <div class="bg-[#156D38] text-white p-2 rounded-lg flex items-center gap-2 text-xs font-semibold shadow">
-          <i data-lucide="shield-check" class="w-4 h-4"></i>
-          <span>Biometric Connected</span>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold shadow-sm">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span class="text-[11px] font-bold">Biometric Active</span>
         </div>
       </div>
     </div>
 
     <!-- NAVIGATION TABS -->
-    <div class="bg-[#1a1854] border-t border-indigo-900/50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 flex space-x-1 sm:space-x-4 overflow-x-auto text-sm font-medium">
-        <button onclick="switchTab('kiosk')" id="tab-kiosk" class="py-3 px-4 border-b-2 border-[#156D38] text-white flex items-center gap-2">
-          <i data-lucide="fingerprint" class="w-4 h-4"></i>
-          Biometric Punch Terminal
+    <div class="bg-[#1b1959]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 flex space-x-1 sm:space-x-2 overflow-x-auto text-xs sm:text-sm font-semibold">
+        <button onclick="switchTab('kiosk')" id="tab-kiosk" class="py-2.5 px-3.5 border-b-2 border-emerald-400 text-white bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
+          <i data-lucide="fingerprint" class="w-4 h-4 text-emerald-400"></i>
+          <span>Punch Terminal</span>
         </button>
-        <button onclick="switchTab('live')" id="tab-live" class="py-3 px-4 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-2">
+        <button onclick="switchTab('live')" id="tab-live" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
           <i data-lucide="activity" class="w-4 h-4"></i>
-          Today's Live Roster
+          <span>Live Roster</span>
         </button>
-        <button onclick="switchTab('payroll')" id="tab-payroll" class="py-3 px-4 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-2">
+        <button onclick="switchTab('payroll')" id="tab-payroll" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
           <i data-lucide="calculator" class="w-4 h-4"></i>
-          1-Click Payroll &amp; Slips
+          <span>Payroll &amp; Slips</span>
         </button>
-        <button onclick="switchTab('advances')" id="tab-advances" class="py-3 px-4 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-2">
+        <button onclick="switchTab('advances')" id="tab-advances" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
           <i data-lucide="banknote" class="w-4 h-4"></i>
-          Staff Advance Khata
+          <span>Advance Khata</span>
         </button>
-        <button onclick="switchTab('staff')" id="tab-staff" class="py-3 px-4 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-2">
+        <button onclick="switchTab('staff')" id="tab-staff" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
           <i data-lucide="users" class="w-4 h-4"></i>
-          Staff Directory
+          <span>Staff Directory</span>
         </button>
-        <button onclick="switchTab('reports')" id="tab-reports" class="py-3 px-4 border-b-2 border-transparent text-indigo-200 hover:text-white flex items-center gap-2">
+        <button onclick="switchTab('reports')" id="tab-reports" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
           <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-          Monthly Reports &amp; Matrix
+          <span>Monthly Register</span>
         </button>
       </div>
     </div>
@@ -1382,12 +1391,12 @@
     function switchTab(tabId) {
       ['kiosk', 'live', 'payroll', 'advances', 'staff', 'reports'].forEach(t => {
         document.getElementById(`view-${t}`).classList.add('hidden');
-        document.getElementById(`tab-${t}`).classList.remove('border-[#156D38]', 'text-white');
-        document.getElementById(`tab-${t}`).classList.add('border-transparent', 'text-indigo-200');
+        document.getElementById(`tab-${t}`).classList.remove('border-emerald-400', 'text-white', 'bg-white/5');
+        document.getElementById(`tab-${t}`).classList.add('border-transparent', 'text-indigo-200/80');
       });
       document.getElementById(`view-${tabId}`).classList.remove('hidden');
-      document.getElementById(`tab-${tabId}`).classList.remove('border-transparent', 'text-indigo-200');
-      document.getElementById(`tab-${tabId}`).classList.add('border-[#156D38]', 'text-white');
+      document.getElementById(`tab-${tabId}`).classList.remove('border-transparent', 'text-indigo-200/80');
+      document.getElementById(`tab-${tabId}`).classList.add('border-emerald-400', 'text-white', 'bg-white/5');
 
       if (tabId === 'live') loadTodayAttendance();
       if (tabId === 'payroll') generatePayroll();
