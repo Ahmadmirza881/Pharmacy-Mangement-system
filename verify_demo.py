@@ -30,8 +30,8 @@ for s in pay["sheet"]:
     print(f"  #{s['staff_id']:<2} {s['staff_name']:<16} ({s['designation']})")
     print(f"      Basic Pay: Rs. {s['basic_salary']:>9,.2f}  |  Daily Wage: Rs. {s['daily_wage']:>7,.2f}")
     print(f"      Absents Cut: -Rs. {s['absent_cut']:>7,.2f} ({s['absent_days']} days)")
-    print(f"      Extra Leaves Cut (>2 free): -Rs. {s['extra_leave_cut']:>7,.2f} ({s['extra_leaves']} unpaid)")
-    print(f"      Extra Half-Days Cut (>4 free): -Rs. {s['extra_half_day_cut']:>7,.2f} ({s['extra_half_days']} excess)")
+    print(f"      Extra Leaves Cut (beyond {s.get('allowed_leaves', 2)} free): -Rs. {s['extra_leave_cut']:>7,.2f} ({s['extra_leaves']} unpaid)")
+    print(f"      Short Hours Deficit Cut: -Rs. {s.get('short_hours_cut', 0):>7,.2f} ({s.get('total_short_minutes', 0)} mins short)")
     print(f"      Staff Advance / Medicine Khata: -Rs. {s['advances_deducted']:>7,.2f}")
     print(f"      >>> FINAL NET PAYABLE: Rs. {s['net_payable']:>9,.2f}")
 

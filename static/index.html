@@ -591,8 +591,8 @@
                 <th class="py-3 px-4">Basic Salary</th>
                 <th class="py-3 px-4">Daily Wage</th>
                 <th class="py-3 px-4">Absent Cuts</th>
-                <th class="py-3 px-4">Extra Leaves (>2 Free)</th>
-                <th class="py-3 px-4">Extra Half-Days (>4 Free)</th>
+                <th class="py-3 px-4">Extra Leaves Cut</th>
+                <th class="py-3 px-4">Short Hours Cut</th>
                 <th class="py-3 px-4">Khata Deductions</th>
                 <th class="py-3 px-4">Net Payable</th>
                 <th class="py-3 px-4 text-center">Payment Status</th>
@@ -877,7 +877,7 @@
               <td id="slip-absent" class="py-1.5 text-right">- Rs. 0.00</td>
             </tr>
             <tr class="text-rose-600">
-              <td class="py-1.5" id="slip-leave-desc">Extra Leaves Cut (>2 Allowed)</td>
+              <td class="py-1.5" id="slip-leave-desc">Extra Leaves Cut (Beyond Quota)</td>
               <td id="slip-leave" class="py-1.5 text-right">- Rs. 0.00</td>
             </tr>
             <tr class="text-amber-700" id="slip-shorthour-row">
@@ -1801,10 +1801,16 @@
             <td class="py-3 px-4 text-xs font-mono text-slate-500">Rs. ${p.daily_wage.toFixed(2)}</td>
             <td class="py-3 px-4 text-rose-600 font-semibold">- Rs. ${p.absent_cut.toLocaleString()} <span class="text-[11px] font-normal block text-slate-400">(${p.absent_days} days)</span></td>
             <td class="py-3 px-4 ${p.extra_leaves > 0 ? 'text-rose-600' : 'text-slate-500'} font-semibold">
-              ${p.extra_leaves > 0 ? `- Rs. ${p.extra_leave_cut.toLocaleString()} <span class="text-[11px] font-normal block text-rose-500">(${p.extra_leaves} unpaid)</span>` : '<span class="text-xs text-emerald-700">Within Quota (0 cut)</span>'}
+              ${p.extra_leaves > 0 
+                ? `- Rs. ${p.extra_leave_cut.toLocaleString()} <span class="text-[11px] font-normal block text-rose-500">(${p.extra_leaves} beyond ${p.allowed_leaves !== undefined ? p.allowed_leaves : 2} free)</span>` 
+                : `<span class="text-xs text-emerald-700 font-bold">Within Limit (${p.leaves_count}/${p.allowed_leaves !== undefined ? p.allowed_leaves : 2} free)</span>`}
             </td>
-            <td class="py-3 px-4 ${p.extra_half_days > 0 ? 'text-purple-700' : 'text-slate-500'} font-semibold">
-              ${p.extra_half_days > 0 ? `- Rs. ${p.extra_half_day_cut.toLocaleString()} <span class="text-[11px] font-normal block text-purple-600">(${p.extra_half_days} excess)</span>` : '<span class="text-xs text-emerald-700">Within Quota (0 cut)</span>'}
+            <td class="py-3 px-4 ${(p.short_hours_cut > 0 || p.extra_half_day_cut > 0) ? 'text-amber-700' : 'text-slate-500'} font-semibold">
+              ${p.short_hours_cut > 0 
+                ? `- Rs. ${p.short_hours_cut.toLocaleString()} <span class="text-[11px] font-normal block text-amber-600">(${Math.floor((p.total_short_minutes || 0) / 60)}h ${(p.total_short_minutes || 0) % 60}m short)</span>` 
+                : (p.extra_half_day_cut > 0 
+                    ? `- Rs. ${p.extra_half_day_cut.toLocaleString()} <span class="text-[11px] font-normal block text-purple-600">(${p.extra_half_days} half-days)</span>` 
+                    : '<span class="text-xs text-emerald-700 font-bold">Full Hours (0 cut)</span>')}
             </td>
             <td class="py-3 px-4 text-rose-600 font-semibold">- Rs. ${p.advances_deducted.toLocaleString()}</td>
             <td class="py-3 px-4 font-black text-[#156D38] text-base">Rs. ${p.net_payable.toLocaleString()}</td>
