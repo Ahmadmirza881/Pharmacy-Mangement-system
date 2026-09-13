@@ -79,6 +79,7 @@ class AdvanceSettleRequest(BaseModel):
     settled_at: Optional[str] = None
     settlement_type: Optional[str] = "Direct Settlement"
     notes: Optional[str] = None
+    amount: Optional[float] = None # Optional: if less than advance amount, recorded as partial settlement
 
 class PayrollDisburseRequest(BaseModel):
     staff_id: int
@@ -127,11 +128,13 @@ class CustomerKhataSettle(BaseModel):
     settled_at: Optional[str] = None
     payment_method: Optional[str] = "Cash"
     notes: Optional[str] = ""
+    amount: Optional[float] = None # Optional amount: if less than invoice amount, recorded as partial payment
 
 class CustomerSettleAll(BaseModel):
     settled_at: Optional[str] = None
     payment_method: Optional[str] = "Cash"
     notes: Optional[str] = ""
+    amount: Optional[float] = None # Optional amount: if less than total balance, settled partially across pending invoices (FIFO)
 
 # --- API Endpoints ---
 
@@ -612,22 +615,83 @@ def settle_advance(advance_id: int, req: Optional[AdvanceSettleRequest] = None):
         except Exception:
             pass
 
-    cursor.execute("""
-        UPDATE advance_salaries
-        SET is_settled = 1, settled_at = ?, settlement_type = ?, notes = ?, settled_payroll_month = ?, settled_payroll_year = ?
-        WHERE id = ?
-    """, (settled_date, settlement_type, notes_val, month_val, year_val, advance_id))
+    orig_amount = float(adv["amount"])
+    if req and req.amount is not None and 0 < req.amount < orig_amount:
+        paid_amt = round(float(req.amount), 2)
+        rem_amt = round(orig_amount - paid_amt, 2)
+
+        audit_note = f"Partial payment Rs. {paid_amt:,.2f} on {settled_date} via {settlement_type}"
+        if notes_val:
+            audit_note += f" ({notes_val})"
+
+        # 1. Update this advance entry to be the settled portion
+        cursor.execute("""
+            UPDATE advance_salaries
+            SET amount = ?,
+                is_settled = 1,
+                settled_at = ?,
+                settlement_type = ?,
+                notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END,
+                settled_payroll_month = ?,
+                settled_payroll_year = ?
+            WHERE id = ?
+        """, (paid_amt, settled_date, settlement_type, audit_note, audit_note, month_val, year_val, advance_id))
+
+        # 2. Insert new entry for remaining unpaid balance
+        cursor.execute("""
+            INSERT INTO advance_salaries (staff_id, entry_type, amount, date, reason, is_settled)
+            VALUES (?, ?, ?, ?, ?, 0)
+        """, (adv["staff_id"], adv["entry_type"], rem_amt, adv["date"], f"{adv['reason']} (Baqaya / Remainder)"))
+        conn.commit()
+        conn.close()
+
+        return {
+            "success": True,
+            "partial": True,
+            "advance_id": advance_id,
+            "paid_amount": paid_amt,
+            "remaining_amount": rem_amt,
+            "settled_at": settled_date,
+            "settlement_type": settlement_type,
+            "notes": notes_val,
+            "message": f"Partial settlement of Rs. {paid_amt:,.2f} recorded for {adv['staff_name']}. Baqaya remaining: Rs. {rem_amt:,.2f}."
+        }
+    else:
+        # Full settlement
+        cursor.execute("""
+            UPDATE advance_salaries
+            SET is_settled = 1, settled_at = ?, settlement_type = ?, notes = ?, settled_payroll_month = ?, settled_payroll_year = ?
+            WHERE id = ?
+        """, (settled_date, settlement_type, notes_val, month_val, year_val, advance_id))
+        conn.commit()
+        conn.close()
+
+        return {
+            "success": True,
+            "partial": False,
+            "message": f"Advance #{advance_id} for {adv['staff_name']} (Rs. {adv['amount']:,.2f}) settled successfully via '{settlement_type}' on {settled_date}.",
+            "advance_id": advance_id,
+            "settled_at": settled_date,
+            "settlement_type": settlement_type,
+            "notes": notes_val
+        }
+
+@app.post("/api/advances/clear-settled")
+def clear_settled_advances():
+    """Permanently deletes all settled staff khata / advance records (admin purge)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM advance_salaries WHERE is_settled = 1")
+    count = cursor.fetchone()[0] or 0
+    if count == 0:
+        conn.close()
+        return {"success": True, "deleted_count": 0, "message": "Koi settled staff khata record mojood nahi hai."}
+    
+    cursor.execute("DELETE FROM advance_salaries WHERE is_settled = 1")
     conn.commit()
     conn.close()
+    return {"success": True, "deleted_count": count, "message": f"{count} settled staff khata records kamyabi se delete ho gaye."}
 
-    return {
-        "success": True,
-        "message": f"Advance #{advance_id} for {adv['staff_name']} (Rs. {adv['amount']:,.2f}) settled successfully via '{settlement_type}' on {settled_date}.",
-        "advance_id": advance_id,
-        "settled_at": settled_date,
-        "settlement_type": settlement_type,
-        "notes": notes_val
-    }
 
 @app.post("/api/leaves")
 def approve_leave(data: LeaveCreate):
@@ -647,6 +711,32 @@ def approve_leave(data: LeaveCreate):
     conn.commit()
     conn.close()
     return {"success": True, "message": f"Leave approved for date {data.date}."}
+
+@app.get("/api/leaves")
+def get_leaves():
+    """Returns all approved leaves with staff details."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT l.id, l.staff_id, s.name as staff_name, s.designation, s.role, s.allowed_leaves,
+               l.date, l.reason, l.approved_by, l.created_at
+        FROM leaves l
+        JOIN staff s ON l.staff_id = s.id
+        ORDER BY l.date DESC
+    """)
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return rows
+
+@app.delete("/api/leaves/{leave_id}")
+def delete_leave(leave_id: int):
+    """Deletes an approved leave record."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM leaves WHERE id = ?", (leave_id,))
+    conn.commit()
+    conn.close()
+    return {"success": True, "message": "Leave deleted."}
 
 @app.get("/api/payroll/calculate")
 def get_payroll(month: int = Query(..., ge=1, le=12), year: int = Query(..., ge=2020)):
@@ -932,47 +1022,105 @@ def add_customer_khata(data: CustomerKhataCreate):
 
 @app.post("/api/customer-khata/{entry_id}/settle")
 def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
-    """Marks a single customer credit invoice as settled in full."""
+    """Marks a single customer credit invoice as settled in full or in part."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM customer_khata WHERE id = ?", (entry_id,))
-    entry = cursor.fetchone()
-    if not entry:
+    entry_row = cursor.fetchone()
+    if not entry_row:
         conn.close()
         raise HTTPException(status_code=404, detail="Khata entry not found")
 
+    entry = dict(entry_row)
+    if entry["is_settled"] == 1:
+        conn.close()
+        return {"success": True, "message": "Yeh invoice pehle se settled hai.", "already_settled": True}
+
     settle_date = data.settled_at or date.today().isoformat()
     pay_method = data.payment_method or "Cash"
-    notes_val = data.notes or ""
+    notes_val = (data.notes or "").strip()
+    orig_amount = float(entry["amount"])
 
-    cursor.execute("""
-        UPDATE customer_khata
-        SET is_settled = 1,
-            settled_at = ?,
-            payment_method = ?,
-            notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
-        WHERE id = ?
-    """, (settle_date, pay_method, notes_val, notes_val, entry_id))
-    conn.commit()
+    # Determine if full or partial
+    is_partial = False
+    if data.amount is not None and 0 < data.amount < orig_amount:
+        is_partial = True
+        paid_amt = round(float(data.amount), 2)
+        rem_amt = round(orig_amount - paid_amt, 2)
 
-    # Recalculate customer balance
-    cursor.execute("SELECT SUM(amount) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (entry["customer_id"],))
-    updated_balance = cursor.fetchone()[0] or 0.0
-    conn.close()
+        audit_note = f"Partial payment Rs. {paid_amt:,.2f} received on {settle_date} via {pay_method}"
+        if notes_val:
+            audit_note += f" ({notes_val})"
 
-    return {
-        "success": True,
-        "entry_id": entry_id,
-        "settled_at": settle_date,
-        "payment_method": pay_method,
-        "amount": entry["amount"],
-        "updated_balance": updated_balance,
-        "message": f"Invoice {entry['invoice_no']} (Rs. {entry['amount']:,.2f}) settled in full via {pay_method}."
-    }
+        # 1. Update this entry to be the settled portion
+        cursor.execute("""
+            UPDATE customer_khata
+            SET amount = ?,
+                is_settled = 1,
+                settled_at = ?,
+                payment_method = ?,
+                notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
+            WHERE id = ?
+        """, (paid_amt, settle_date, pay_method, audit_note, audit_note, entry_id))
+
+        # 2. Insert new entry for remaining unpaid balance
+        cursor.execute("""
+            INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes)
+            VALUES (?, ?, ?, ?, ?, 0, ?)
+        """, (entry["customer_id"], f"{entry['invoice_no']}-REM", entry["date"], f"{entry['item_description']} (Baqaya)", rem_amt, f"Remaining baqaya from {entry['invoice_no']} after partial payment of Rs. {paid_amt:,.2f}"))
+        conn.commit()
+
+        cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (entry["customer_id"],))
+        updated_balance = float(cursor.fetchone()[0] or 0.0)
+        conn.close()
+
+        return {
+            "success": True,
+            "partial": True,
+            "entry_id": entry_id,
+            "paid_amount": paid_amt,
+            "remaining_amount": rem_amt,
+            "settled_at": settle_date,
+            "payment_method": pay_method,
+            "updated_balance": updated_balance,
+            "message": f"Partial payment of Rs. {paid_amt:,.2f} recorded for {entry['invoice_no']}. Baqaya remaining: Rs. {rem_amt:,.2f}."
+        }
+    else:
+        # Full settlement
+        audit_note = f"Full payment on {settle_date} via {pay_method}"
+        if notes_val:
+            audit_note += f" ({notes_val})"
+
+        cursor.execute("""
+            UPDATE customer_khata
+            SET is_settled = 1,
+                settled_at = ?,
+                payment_method = ?,
+                notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
+            WHERE id = ?
+        """, (settle_date, pay_method, audit_note, audit_note, entry_id))
+        conn.commit()
+
+        # Recalculate customer balance
+        cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (entry["customer_id"],))
+        updated_balance = float(cursor.fetchone()[0] or 0.0)
+        conn.close()
+
+        return {
+            "success": True,
+            "partial": False,
+            "entry_id": entry_id,
+            "settled_at": settle_date,
+            "payment_method": pay_method,
+            "amount": orig_amount,
+            "updated_balance": updated_balance,
+            "message": f"Invoice {entry['invoice_no']} (Rs. {orig_amount:,.2f}) settled in full via {pay_method}."
+        }
+
 
 @app.post("/api/customers/{customer_id}/settle-all")
 def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
-    """Marks ALL currently pending invoices of a customer as settled in full."""
+    """Settles all or partial customer balance across pending invoices (FIFO)."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM customers WHERE id = ?", (customer_id,))
@@ -981,40 +1129,120 @@ def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
         conn.close()
         raise HTTPException(status_code=404, detail="Customer not found")
 
-    cursor.execute("SELECT * FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (customer_id,))
-    pending_items = cursor.fetchall()
+    cursor.execute("SELECT * FROM customer_khata WHERE customer_id = ? AND is_settled = 0 ORDER BY date ASC, id ASC", (customer_id,))
+    pending_items = [dict(r) for r in cursor.fetchall()]
     if not pending_items:
         conn.close()
         return {"success": True, "message": "Koi pending balance mojood nahi.", "settled_count": 0, "settled_amount": 0}
 
     settle_date = data.settled_at or date.today().isoformat()
     pay_method = data.payment_method or "Cash"
-    total_cleared = sum(item["amount"] for item in pending_items)
-    audit_note = f"Full balance settled on {settle_date} via {pay_method}"
-    if data.notes:
-        audit_note += f" - {data.notes}"
+    total_due = sum(item["amount"] for item in pending_items)
+    notes_val = (data.notes or "").strip()
 
-    cursor.execute("""
-        UPDATE customer_khata
-        SET is_settled = 1,
-            settled_at = ?,
-            payment_method = ?,
-            notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
-        WHERE customer_id = ? AND is_settled = 0
-    """, (settle_date, pay_method, audit_note, audit_note, customer_id))
+    # Determine pay amount (partial or full)
+    pay_amount = round(float(data.amount), 2) if (data.amount is not None and float(data.amount) > 0) else total_due
+    if pay_amount > total_due:
+        pay_amount = total_due
+
+    is_partial = (pay_amount < total_due)
+    remaining_to_pay = pay_amount
+    settled_count = 0
+
+    for item in pending_items:
+        if remaining_to_pay <= 0:
+            break
+
+        item_amt = float(item["amount"])
+        item_id = item["id"]
+
+        if remaining_to_pay >= item_amt:
+            # Full settle of this single invoice
+            audit_note = f"Paid on {settle_date} via {pay_method}" + (f" ({notes_val})" if notes_val else "")
+            cursor.execute("""
+                UPDATE customer_khata
+                SET is_settled = 1,
+                    settled_at = ?,
+                    payment_method = ?,
+                    notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
+                WHERE id = ?
+            """, (settle_date, pay_method, audit_note, audit_note, item_id))
+            remaining_to_pay = round(remaining_to_pay - item_amt, 2)
+            settled_count += 1
+        else:
+            # Partial settle of this invoice: split item
+            paid_portion = remaining_to_pay
+            rem_portion = round(item_amt - paid_portion, 2)
+
+            audit_note = f"Partial payment Rs. {paid_portion:,.2f} on {settle_date} via {pay_method}" + (f" ({notes_val})" if notes_val else "")
+            cursor.execute("""
+                UPDATE customer_khata
+                SET amount = ?,
+                    is_settled = 1,
+                    settled_at = ?,
+                    payment_method = ?,
+                    notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
+                WHERE id = ?
+            """, (paid_portion, settle_date, pay_method, audit_note, audit_note, item_id))
+
+            # Insert remaining balance item
+            cursor.execute("""
+                INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes)
+                VALUES (?, ?, ?, ?, ?, 0, ?)
+            """, (customer_id, f"{item['invoice_no']}-REM", item['date'], f"{item['item_description']} (Baqaya)", rem_portion, f"Remaining baqaya from {item['invoice_no']} after partial payment of Rs. {paid_portion:,.2f}"))
+
+            remaining_to_pay = 0
+            settled_count += 1
+            break
+
     conn.commit()
+
+    cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (customer_id,))
+    updated_balance = float(cursor.fetchone()[0] or 0.0)
     conn.close()
 
-    return {
-        "success": True,
-        "customer_id": customer_id,
-        "customer_name": customer["name"],
-        "settled_count": len(pending_items),
-        "settled_amount": total_cleared,
-        "settled_at": settle_date,
-        "payment_method": pay_method,
-        "message": f"Full balance of Rs. {total_cleared:,.2f} ({len(pending_items)} invoices) for {customer['name']} settled via {pay_method}."
-    }
+    if is_partial:
+        return {
+            "success": True,
+            "partial": True,
+            "customer_id": customer_id,
+            "customer_name": customer["name"],
+            "settled_count": settled_count,
+            "settled_amount": pay_amount,
+            "remaining_balance": updated_balance,
+            "settled_at": settle_date,
+            "payment_method": pay_method,
+            "message": f"Juzwi Adaigi (Partial payment) of Rs. {pay_amount:,.2f} for {customer['name']} received via {pay_method}. Baqaya balance: Rs. {updated_balance:,.2f}."
+        }
+    else:
+        return {
+            "success": True,
+            "partial": False,
+            "customer_id": customer_id,
+            "customer_name": customer["name"],
+            "settled_count": settled_count,
+            "settled_amount": pay_amount,
+            "remaining_balance": updated_balance,
+            "settled_at": settle_date,
+            "payment_method": pay_method,
+            "message": f"Full balance of Rs. {pay_amount:,.2f} ({settled_count} invoices) for {customer['name']} settled via {pay_method}."
+        }
+
+@app.post("/api/customer-khata/clear-settled")
+def clear_settled_customer_khata():
+    """Permanently deletes all settled customer khata records/invoices (admin purge)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM customer_khata WHERE is_settled = 1")
+    count = cursor.fetchone()[0] or 0
+    if count == 0:
+        conn.close()
+        return {"success": True, "deleted_count": 0, "message": "Koi settled customer khata record mojood nahi hai."}
+    
+    cursor.execute("DELETE FROM customer_khata WHERE is_settled = 1")
+    conn.commit()
+    conn.close()
+    return {"success": True, "deleted_count": count, "message": f"{count} settled customer khata records kamyabi se delete ho gaye."}
 
 @app.get("/api/customer-khata/kpis")
 def get_customer_khata_kpis():

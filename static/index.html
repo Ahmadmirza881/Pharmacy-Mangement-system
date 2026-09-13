@@ -17,7 +17,7 @@
     // ==========================================
     // DEMO / DUMMY DATA ENGINE
     // ==========================================
-    let USE_DUMMY_DATA = true;
+    let USE_DUMMY_DATA = false;
 
     const MOCK_STAFF = [
       {
@@ -967,7 +967,7 @@
       </button>
 
       <!-- LEAVE MANAGEMENT TAB -->
-      <button onclick="switchTab('staff'); filterStaffByStatus('LEAVE');" id="side-tab-leaves" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+      <button onclick="switchTab('leaves')" id="side-tab-leaves" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
         <i data-lucide="calendar-off" class="w-4 h-4"></i>
         <span>Leave Management</span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
@@ -980,10 +980,10 @@
         <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
       </button>
 
-      <!-- ADVANCES & KHATA TAB -->
+      <!-- STAFF KHATA TAB -->
       <button onclick="switchTab('advances')" id="side-tab-advances" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
         <i data-lucide="banknote" class="w-4 h-4"></i>
-        <span>Advances &amp; Khata</span>
+        <span>Staff Khata</span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
       </button>
 
@@ -1087,31 +1087,19 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
           <!-- 1. LIGHT SKY BLUE STAT CARD -->
-          <div id="pulse-card-ALL" onclick="filterLiveRoster('ALL')" class="pulse-card bg-[#E0F2FE] p-4 rounded-2xl border border-sky-200/80 shadow-xs flex items-center justify-between active-filter" title="Click to view all staff">
+          <div id="pulse-card-ALL" onclick="filterLiveRoster('ALL')" class="pulse-card bg-[#E0F2FE] p-4 rounded-2xl border border-sky-200/80 shadow-xs flex items-center justify-between active-filter cursor-pointer" title="Click to view all staff">
             <div>
               <div class="w-8 h-8 rounded-full bg-[#0284C7] text-white flex items-center justify-center shadow-sm mb-2">
                 <i data-lucide="users" class="w-4 h-4"></i>
               </div>
-              <h3 id="pulse-total" class="text-2xl font-black text-slate-900 tracking-tight">6</h3>
+              <h3 id="pulse-total" class="text-2xl font-black text-slate-900 tracking-tight">0</h3>
               <p class="text-xs font-semibold text-sky-900/80 mt-0.5">Total Staff</p>
             </div>
             <i data-lucide="info" class="w-4 h-4 text-sky-600/50 self-start"></i>
           </div>
 
-          <!-- 2. SOFT CORAL / PINK STAT CARD -->
-          <div id="pulse-card-ABSENT" onclick="filterLiveRoster('ABSENT')" class="pulse-card bg-[#FFE4E6] p-4 rounded-2xl border border-rose-200/80 shadow-xs flex items-center justify-between" title="Click to filter absent staff">
-            <div>
-              <div class="w-8 h-8 rounded-full bg-[#E11D48] text-white flex items-center justify-center shadow-sm mb-2">
-                <i data-lucide="user-x" class="w-4 h-4"></i>
-              </div>
-              <h3 id="pulse-absent" class="text-2xl font-black text-slate-900 tracking-tight">0</h3>
-              <p class="text-xs font-semibold text-rose-900/80 mt-0.5">Absent Today</p>
-            </div>
-            <i data-lucide="info" class="w-4 h-4 text-rose-600/50 self-start"></i>
-          </div>
-
-          <!-- 3. SOFT MINT GREEN STAT CARD -->
-          <div id="pulse-card-PRESENT" onclick="filterLiveRoster('PRESENT')" class="pulse-card bg-[#DCFCE7] p-4 rounded-2xl border border-emerald-200/80 shadow-xs flex items-center justify-between" title="Click to filter present staff">
+          <!-- 2. SOFT MINT GREEN STAT CARD -->
+          <div id="pulse-card-PRESENT" onclick="filterLiveRoster('PRESENT')" class="pulse-card bg-[#DCFCE7] p-4 rounded-2xl border border-emerald-200/80 shadow-xs flex items-center justify-between cursor-pointer" title="Click to filter present staff">
             <div>
               <div class="w-8 h-8 rounded-full bg-[#16A34A] text-white flex items-center justify-center shadow-sm mb-2">
                 <i data-lucide="user-check" class="w-4 h-4"></i>
@@ -1122,8 +1110,8 @@
             <i data-lucide="info" class="w-4 h-4 text-emerald-600/50 self-start"></i>
           </div>
 
-          <!-- 4. SOFT LAVENDER PURPLE STAT CARD -->
-          <div id="pulse-card-LATE" onclick="filterLiveRoster('LATE')" class="pulse-card bg-[#F3E8FF] p-4 rounded-2xl border border-purple-200/80 shadow-xs flex items-center justify-between" title="Click to filter late arrivals">
+          <!-- 3. SOFT LAVENDER PURPLE STAT CARD -->
+          <div id="pulse-card-LATE" onclick="filterLiveRoster('LATE')" class="pulse-card bg-[#F3E8FF] p-4 rounded-2xl border border-purple-200/80 shadow-xs flex items-center justify-between cursor-pointer" title="Click to filter late arrivals">
             <div>
               <div class="w-8 h-8 rounded-full bg-[#9333EA] text-white flex items-center justify-center shadow-sm mb-2">
                 <i data-lucide="clock" class="w-4 h-4"></i>
@@ -1134,6 +1122,18 @@
             <i data-lucide="info" class="w-4 h-4 text-purple-600/50 self-start"></i>
           </div>
 
+          <!-- 4. SOFT CORAL / PINK STAT CARD -->
+          <div id="pulse-card-ABSENT" onclick="filterLiveRoster('ABSENT')" class="pulse-card bg-[#FFE4E6] p-4 rounded-2xl border border-rose-200/80 shadow-xs flex items-center justify-between cursor-pointer" title="Click to filter absent staff">
+            <div>
+              <div class="w-8 h-8 rounded-full bg-[#E11D48] text-white flex items-center justify-center shadow-sm mb-2">
+                <i data-lucide="user-x" class="w-4 h-4"></i>
+              </div>
+              <h3 id="pulse-absent" class="text-2xl font-black text-slate-900 tracking-tight">0</h3>
+              <p class="text-xs font-semibold text-rose-900/80 mt-0.5">Absent Today</p>
+            </div>
+            <i data-lucide="info" class="w-4 h-4 text-rose-600/50 self-start"></i>
+          </div>
+
           <!-- HIDDEN LEAVE HOOK FOR SCRIPT -->
           <div id="pulse-card-LEAVE" onclick="filterLiveRoster('LEAVE')" class="hidden">
             <span id="pulse-leave">0</span>
@@ -1142,155 +1142,43 @@
         </div>
       </div>
 
-      <!-- MIDDLE ROW: DATA TABLES WITH COLORED HEADERS & DONUT CHART (FROM SCREENSHOT) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- LEFT COLUMN: TWO TABLES WITH COLORED HEADERS (SPAN 8) -->
-        <div class="lg:col-span-8 space-y-6">
-
-          <!-- 1. BLUE HEADER BANNER CARD: TODAY'S SHIFT ATTENDANCE -->
-          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-            <div class="bg-[#0284C7] text-white px-5 py-3 flex items-center justify-between font-bold text-xs uppercase tracking-wider">
-              <div class="flex items-center gap-2">
-                <i data-lucide="activity" class="w-4 h-4"></i>
-                <span>Today's Shift Attendance Roster</span>
-              </div>
-              <div class="flex items-center gap-2">
-                <button id="live-filter-reset-btn" onclick="filterLiveRoster('ALL')" class="hidden bg-white/20 hover:bg-white/30 text-white text-[11px] py-1 px-2.5 rounded-md font-bold transition cursor-pointer">
-                  Show All
-                </button>
-                <button onclick="loadTodayAttendance()" class="bg-white/10 hover:bg-white/20 text-white text-[11px] py-1 px-2.5 rounded-md font-semibold flex items-center gap-1 transition cursor-pointer">
-                  <i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh
-                </button>
-              </div>
-            </div>
-
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse text-sm">
-                <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b border-slate-200/80">
-                  <tr>
-                    <th class="py-3 px-4">Staff Member</th>
-                    <th class="py-3 px-4">Role</th>
-                    <th class="py-3 px-4">Shift</th>
-                    <th class="py-3 px-4">Time In</th>
-                    <th class="py-3 px-4">Time Out</th>
-                    <th class="py-3 px-4 text-center">Status</th>
-                    <th class="py-3 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="live-attendance-tbody" class="divide-y divide-slate-100">
-                  <tr>
-                    <td colspan="7" class="p-8 text-center text-slate-400">Loading live shift roster...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+      <!-- TODAY'S SHIFT ATTENDANCE ROSTER (FULL-WIDTH AUTHORITATIVE LEDGER) -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div class="bg-[#0284C7] text-white px-5 py-3.5 flex items-center justify-between font-bold text-xs uppercase tracking-wider">
+          <div class="flex items-center gap-2">
+            <i data-lucide="activity" class="w-4 h-4"></i>
+            <span>Today's Shift Attendance Roster</span>
           </div>
-
-          <!-- 2. GREEN HEADER BANNER CARD: LIVE BIOMETRIC PUNCHES STREAM -->
-          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-            <div class="bg-[#16A34A] text-white px-5 py-3 flex items-center justify-between font-bold text-xs uppercase tracking-wider">
-              <div class="flex items-center gap-2">
-                <i data-lucide="history" class="w-4 h-4"></i>
-                <span>Today's Biometric Punches Stream</span>
-              </div>
-              <span class="text-[11px] bg-white/20 px-2 py-0.5 rounded font-medium">Realtime Feed</span>
-            </div>
-
-            <div id="punches-stream" class="divide-y divide-slate-100 overflow-y-auto max-h-[300px]">
-              <div class="p-8 text-center text-slate-400 text-sm">Punches load ho rahi hain...</div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- RIGHT COLUMN: CIRCULAR DONUT GAUGE & QUICK PUNCH (SPAN 4, FROM SCREENSHOT) -->
-        <div class="lg:col-span-4 space-y-6">
-
-          <!-- DONUT CHART / SHIFT GAUGE CARD (EXACTLY LIKE SCREENSHOT) -->
-          <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col items-center text-center">
-            <div class="w-full flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-              <h3 class="font-extrabold text-slate-800 text-sm">Staff Attendance Ratio</h3>
-              <i data-lucide="pie-chart" class="w-4 h-4 text-slate-400"></i>
-            </div>
-
-            <!-- SVG Donut Chart Matching Screenshot -->
-            <div class="relative w-48 h-48 my-2">
-              <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                <!-- Background track -->
-                <circle cx="50" cy="50" r="38" stroke="#E2E8F0" stroke-width="14" fill="none" />
-                <!-- Filled Ring -->
-                <circle cx="50" cy="50" r="38" stroke="#0284C7" stroke-width="14" stroke-dasharray="238.76" stroke-dashoffset="40" stroke-linecap="round" fill="none" class="transition-all duration-1000 ease-out" />
-              </svg>
-              <!-- Center Text -->
-              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Attendance</span>
-                <span class="text-2xl font-black text-slate-800 tracking-tight">85%</span>
-                <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full mt-1">On Duty</span>
-              </div>
-            </div>
-
-            <div class="w-full grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-100 text-xs">
-              <div>
-                <span class="text-slate-400 block text-[11px]">Morning Shift:</span>
-                <strong class="text-slate-700 font-mono">09:00 AM - 05:00 PM</strong>
-              </div>
-              <div>
-                <span class="text-slate-400 block text-[11px]">Evening Shift:</span>
-                <strong class="text-slate-700 font-mono">05:00 PM - 01:00 AM</strong>
-              </div>
-            </div>
-
-            <!-- Quick Punch Button -->
-            <button onclick="switchTab('kiosk')" class="w-full mt-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 transition cursor-pointer">
-              <i data-lucide="fingerprint" class="w-4 h-4 text-cyan-200"></i>
-              <span>Open Biometric Punch Terminal</span>
+          <div class="flex items-center gap-2">
+            <button id="live-filter-reset-btn" onclick="filterLiveRoster('ALL')" class="hidden bg-white/20 hover:bg-white/30 text-white text-[11px] py-1 px-2.5 rounded-md font-bold transition cursor-pointer">
+              Show All
+            </button>
+            <button onclick="loadTodayAttendance()" class="bg-white/10 hover:bg-white/20 text-white text-[11px] py-1 px-2.5 rounded-md font-semibold flex items-center gap-1.5 transition cursor-pointer">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
             </button>
           </div>
-
-          <!-- SYSTEM DYNAMICS / QUICK KHATA CARD (FROM SCREENSHOT) -->
-          <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 class="font-extrabold text-slate-800 text-sm">System Operations</h3>
-              <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">LIVE</span>
-            </div>
-
-            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="switchTab('payroll')">
-              <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center flex-shrink-0">
-                <i data-lucide="calculator" class="w-4 h-4"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-slate-800">1-Click Payroll Ready</p>
-                <p class="text-[10px] text-slate-500 truncate">Calculate net salaries & print digital slips</p>
-              </div>
-              <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
-            </div>
-
-            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="switchTab('advances')">
-              <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
-                <i data-lucide="banknote" class="w-4 h-4"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-slate-800">Staff Advance Khata</p>
-                <p class="text-[10px] text-slate-500 truncate">Counter drawer balance & auto deductions</p>
-              </div>
-              <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
-            </div>
-
-            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="switchTab('customer-khata')">
-              <div class="w-9 h-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center flex-shrink-0">
-                <i data-lucide="book-open-check" class="w-4 h-4"></i>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-bold text-slate-800">Customer Credit Khata</p>
-                <p class="text-[10px] text-slate-500 truncate">Khata parchi generator & WhatsApp alerts</p>
-              </div>
-              <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
-            </div>
-          </div>
-
         </div>
 
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b border-slate-200/80">
+              <tr>
+                <th class="py-3 px-4">Staff Member</th>
+                <th class="py-3 px-4">Role</th>
+                <th class="py-3 px-4">Shift</th>
+                <th class="py-3 px-4">Time In</th>
+                <th class="py-3 px-4">Time Out</th>
+                <th class="py-3 px-4 text-center">Status</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="live-attendance-tbody" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="7" class="p-8 text-center text-slate-400">Loading live shift roster...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
     </section>
@@ -1329,58 +1217,6 @@
         </div>
       </div>
 
-      <!-- 4 COMPACT SUMMARY CARDS (MATCHING SAAS SCREENSHOT STYLE) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
-        <!-- Card 1: Total Staff -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <p class="text-xs font-medium text-slate-500">Total Staff</p>
-            <h4 id="staff-summary-total" class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">0</h4>
-            <p class="text-[11px] font-medium text-slate-400 mt-0.5">Active Employees</p>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200/80">
-            <i data-lucide="users" class="w-5 h-5"></i>
-          </div>
-        </div>
-
-        <!-- Card 2: Present Today -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <p class="text-xs font-medium text-slate-500">Present Today</p>
-            <h4 id="staff-summary-present" class="text-2xl font-black text-emerald-600 tracking-tight mt-0.5">0</h4>
-            <p id="staff-summary-attendance-pct" class="text-[11px] font-medium text-emerald-600 mt-0.5">100% Attendance</p>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
-            <i data-lucide="user-check" class="w-5 h-5"></i>
-          </div>
-        </div>
-
-        <!-- Card 3: On Leave -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <p class="text-xs font-medium text-slate-500">On Leave</p>
-            <h4 id="staff-summary-leave" class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">0</h4>
-            <p class="text-[11px] font-medium text-slate-400 mt-0.5">No Leave Today</p>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
-            <i data-lucide="calendar" class="w-5 h-5"></i>
-          </div>
-        </div>
-
-        <!-- Card 4: Late -->
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
-          <div>
-            <p class="text-xs font-medium text-slate-500">Late</p>
-            <h4 id="staff-summary-late" class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">0</h4>
-            <p class="text-[11px] font-medium text-slate-400 mt-0.5">On Time</p>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
-            <i data-lucide="clock" class="w-5 h-5"></i>
-          </div>
-        </div>
-
-      </div>
 
       <!-- SEARCH + FILTER BAR -->
       <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
@@ -1469,41 +1305,122 @@
 
     </section>
 
+    <!-- ================================================================= -->
+    <!-- TAB: LEAVE MANAGEMENT & QUOTAS                                    -->
+    <!-- ================================================================= -->
+    <section id="view-leaves" class="space-y-6 hidden">
+      <!-- TOP BAR -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Leave Management &amp; Approvals</h3>
+          <p class="text-xs text-slate-500">Official pharmacy staff leave register &amp; automatic payroll deduction audit</p>
+        </div>
+        <div class="flex items-center gap-2.5 self-start sm:self-auto">
+          <button onclick="openApplyLeaveModal()" class="bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm transition cursor-pointer">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Approve New Leave</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI METRIC CARDS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500">This Month Leaves</p>
+            <h4 id="leaves-kpi-month" class="text-2xl font-black text-indigo-600 tracking-tight mt-0.5">0</h4>
+            <p class="text-[11px] font-medium text-indigo-600 mt-0.5">September 2026</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+            <i data-lucide="calendar" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500">On Leave Today</p>
+            <h4 id="leaves-kpi-today" class="text-2xl font-black text-rose-600 tracking-tight mt-0.5">0</h4>
+            <p id="leaves-kpi-today-names" class="text-[11px] font-medium text-rose-500 mt-0.5 truncate max-w-[150px]">None today</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
+            <i data-lucide="user-x" class="w-5 h-5"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEAVES FILTER & SEARCH -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+        <div class="relative w-full md:w-80">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+          <input type="text" id="leaves-search-input" oninput="filterLeavesTable()" placeholder="Search staff name or leave reason..." class="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+        </div>
+        <div class="flex items-center gap-2.5 w-full md:w-auto">
+          <select id="leaves-filter-month" onchange="filterLeavesTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <option value="ALL">All Months</option>
+            <option value="2026-09" selected>September 2026</option>
+            <option value="2026-08">August 2026</option>
+            <option value="2026-07">July 2026</option>
+          </select>
+          <button onclick="loadLeaves()" class="text-xs text-slate-500 hover:text-slate-800 font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- LEAVES TABLE -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4 w-12 text-slate-400">#</th>
+                <th class="py-3 px-4 min-w-[180px]">Staff Member</th>
+                <th class="py-3 px-4 min-w-[130px]">Role</th>
+                <th class="py-3 px-4 min-w-[110px]">Leave Date</th>
+                <th class="py-3 px-4 min-w-[220px]">Reason &amp; Description</th>
+                <th class="py-3 px-4 min-w-[120px]">Approved By</th>
+                <th class="py-3 px-4 text-center min-w-[90px]">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leaves-tbody" class="divide-y divide-slate-100">
+              <tr><td colspan="7" class="py-8 text-center text-slate-400">Loading approved leaves...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
           <!-- ================================================================= -->
     <!-- TAB 3: CUSTOMER CREDIT KHATA (REDESIGNED SAAS DASHBOARD)          -->
     <!-- ================================================================= -->
     <section id="view-customer-khata" class="space-y-6 hidden">
 
-      <!-- TOP ACTIONS BAR -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
-        <div>
-          <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Customer Credit Khata (Gahak Hisab Kitab)</h3>
-          <p class="text-xs text-slate-500">Udhar series ledger, 1-click WhatsApp payment reminders &amp; digital parchi generator</p>
-        </div>
-
-        <!-- Page Action Buttons -->
-        <div class="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
-          <!-- WhatsApp All Pending -->
-          <button onclick="openBatchWhatsAppModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer">
+      <!-- CLEAN TOP ACTIONS BAR -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
+        <!-- Left: Quick Utilities -->
+        <div class="flex items-center gap-2">
+          <button onclick="openBatchWhatsAppModal()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer">
             <i data-lucide="send" class="w-3.5 h-3.5"></i>
             <span>WhatsApp All</span>
           </button>
-
-          <!-- Add Credit Purchase -->
-          <button onclick="openAddCustomerKhataModal()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer">
-            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-indigo-600"></i>
-            <span>+ Add Credit Purchase</span>
-          </button>
-
-          <!-- Weekly Report -->
-          <button onclick="openWeeklyKhataReportModal()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer">
+          <button onclick="openWeeklyKhataReportModal()" class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer">
             <i data-lucide="printer" class="w-3.5 h-3.5 text-slate-500"></i>
             <span>Weekly Report</span>
           </button>
+          <button onclick="clearAllSettledCustomerKhata()" title="Delete old settled/cleared records to keep ledger clean" class="bg-slate-50 hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-300 text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span>Clear Settled Records</span>
+          </button>
+        </div>
 
-          <!-- New Customer -->
-          <button onclick="openCustomerModal()" class="bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-sm shadow-slate-900/20 transition cursor-pointer">
-            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+        <!-- Right: Primary Add Actions -->
+        <div class="flex items-center gap-2">
+          <button onclick="openAddCustomerKhataModal()" class="bg-white hover:bg-indigo-50 text-[#232272] border border-indigo-200 hover:border-indigo-300 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-2xs transition cursor-pointer">
+            <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-600"></i>
+            <span>+ Add Credit Purchase</span>
+          </button>
+          <button onclick="openCustomerModal()" class="bg-[#232272] hover:bg-indigo-900 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm shadow-indigo-950/20 transition cursor-pointer">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
             <span>+ New Customer</span>
           </button>
         </div>
@@ -1575,13 +1492,13 @@
 
           <!-- Filter Pills -->
           <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-            <button onclick="setCustomerFilter('all')" id="btn-cust-filter-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0F172A] text-white shadow-xs cursor-pointer transition">
+            <button onclick="setCustomerFilter('all')" id="btn-cust-filter-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer transition">
               All (<span id="count-cust-all">0</span>)
             </button>
-            <button onclick="setCustomerFilter('pending')" id="btn-cust-filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700 cursor-pointer transition">
+            <button onclick="setCustomerFilter('pending')" id="btn-cust-filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#232272] text-white shadow-xs cursor-pointer transition">
               Has Pending Balance (<span id="count-cust-pending">0</span>)
             </button>
-            <button onclick="setCustomerFilter('cleared')" id="btn-cust-filter-cleared" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer transition">
+            <button onclick="setCustomerFilter('cleared')" id="btn-cust-filter-cleared" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer transition">
               All Clear (<span id="count-cust-cleared">0</span>)
             </button>
           </div>
@@ -1665,163 +1582,258 @@
             <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded font-medium">Live Activity</span>
           </div>
 
-          <div id="punches-stream" class="flex-1 divide-y divide-slate-100 overflow-y-auto max-h-[420px] mt-2">
+          <div id="kiosk-punches-stream" class="flex-1 divide-y divide-slate-100 overflow-y-auto max-h-[420px] mt-2">
             <div class="p-8 text-center text-slate-400 text-sm">Punches load ho rahi hain...</div>
           </div>
         </div>
 
       </div>
     </section>
-      <section id="view-payroll" class="space-y-6 hidden">
-      <!-- HEADER CONTROLLER -->
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-            <i data-lucide="calculator" class="w-5 h-5 text-[#232272]"></i>
-            Month-End Automated Payroll Calculator
-          </h3>
-          <p class="text-xs text-slate-500">Auto-deducts absent days, late penalties, and advances taken from counter till.</p>
-        </div>
-
-        <div class="flex items-center gap-3">
-          <select id="payroll-month" onchange="generatePayroll()" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold">
-            <option value="1">January 2026</option>
-            <option value="2">February 2026</option>
-            <option value="3">March 2026</option>
-            <option value="4">April 2026</option>
-            <option value="5">May 2026</option>
-            <option value="6">June 2026</option>
-            <option value="7">July 2026</option>
-            <option value="8">August 2026 (Last Month)</option>
-            <option value="9" selected>September 2026 (Current)</option>
-            <option value="10">October 2026</option>
-            <option value="11">November 2026</option>
-            <option value="12">December 2026</option>
-          </select>
-          <select id="payroll-year" onchange="generatePayroll()" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold">
-            <option value="2026" selected>2026</option>
-            <option value="2027">2027</option>
-          </select>
-          <button onclick="generatePayroll()" class="bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-2 shadow">
-            <i data-lucide="zap" class="w-4 h-4"></i>
-            Calculate Payroll
-          </button>
-        </div>
-      </div>
-
-      <!-- PAYROLL SUMMARY CARDS -->
-      <div id="payroll-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-4 hidden">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <span class="text-xs text-slate-500 font-bold uppercase">Total Net Salary Payable</span>
-          <h4 id="summary-net" class="text-2xl font-black text-[#156D38] mt-1">Rs. 0</h4>
-        </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <span class="text-xs text-slate-500 font-bold uppercase">Total Deduction Savings</span>
-          <h4 id="summary-deductions" class="text-2xl font-black text-rose-600 mt-1">Rs. 0</h4>
-          <span class="text-[11px] text-slate-400">Absents, Lates &amp; Advance deductions</span>
-        </div>
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-          <span class="text-xs text-slate-500 font-bold uppercase">Payroll Status</span>
-          <h4 class="text-2xl font-black text-slate-700 mt-1">Calculated ✅</h4>
-        </div>
-      </div>
-
-      <!-- PAYROLL BREAKDOWN TABLE -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
-              <tr>
-                <th class="py-3 px-4">Staff Member</th>
-                <th class="py-3 px-4">Basic Salary</th>
-                <th class="py-3 px-4">Daily Wage</th>
-                <th class="py-3 px-4">Absent Cuts</th>
-                <th class="py-3 px-4">Extra Leaves Cut</th>
-                <th class="py-3 px-4">Short Hours Cut</th>
-                <th class="py-3 px-4">Khata Deductions</th>
-                <th class="py-3 px-4">Net Payable</th>
-                <th class="py-3 px-4 text-center">Payment Status</th>
-                <th class="py-3 px-4 text-center">Slip</th>
-              </tr>
-            </thead>
-            <tbody id="payroll-tbody" class="divide-y divide-slate-100">
-              <tr>
-                <td colspan="10" class="p-8 text-center text-slate-400">Pehle month select kar ke "Calculate Payroll" dabayein.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-      <section id="view-advances" class="space-y-6 hidden">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- RECORD NEW ADVANCE FORM -->
-        <div class="lg:col-span-5 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 class="font-bold text-[#232272] text-base mb-1 flex items-center gap-2">
-            <i data-lucide="hand-coins" class="w-5 h-5 text-[#156D38]"></i>
-            Staff Khata Outflow Entry
-          </h3>
-          <p class="text-xs text-slate-500 mb-4">Counter daraz cash advance ya pharmacy medicine credit purchase enter karein. Month-end salary se khud minus hon ge.</p>
-
-          <form onsubmit="submitAdvance(event)" class="space-y-3">
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Select Staff *</label>
-              <select id="advance-staff" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800">
-                <!-- Populated via JS -->
-              </select>
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-              <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Khata Type *</label>
-                <select id="advance-type" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
-                  <option value="ADVANCE">Cash Advance (Counter)</option>
-                  <option value="MEDICINE_CREDIT">Medicine Credit (Store)</option>
-                </select>
+      <section id="view-payroll" class="space-y-5 hidden">
+        <!-- HEADER CONTROLLER -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center">
+                <i data-lucide="calculator" class="w-4 h-4"></i>
               </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Amount (PKR) *</label>
-                <input type="number" id="advance-amount" required placeholder="e.g. 2000" min="10" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800">
-              </div>
+              <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Monthly Salary &amp; Payroll Register</h3>
             </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Reason / Medicine Description</label>
-              <input type="text" id="advance-reason" placeholder="e.g. Family Emergency or Panadol + Surbex Z" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800">
-            </div>
-            <button type="submit" class="w-full bg-[#156D38] hover:bg-emerald-800 text-white font-bold py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 shadow">
-              <i data-lucide="plus-circle" class="w-4 h-4"></i>
-              Record Khata Entry
+            <p class="text-xs text-slate-500 mt-1">Automatic wage calculations, attendance cuts, khata deductions &amp; official payslips</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto justify-end">
+            <select id="payroll-month" onchange="generatePayroll()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer">
+              <option value="1">January 2026</option>
+              <option value="2">February 2026</option>
+              <option value="3">March 2026</option>
+              <option value="4">April 2026</option>
+              <option value="5">May 2026</option>
+              <option value="6">June 2026</option>
+              <option value="7">July 2026</option>
+              <option value="8">August 2026</option>
+              <option value="9" selected>September 2026</option>
+              <option value="10">October 2026</option>
+              <option value="11">November 2026</option>
+              <option value="12">December 2026</option>
+            </select>
+            <select id="payroll-year" onchange="generatePayroll()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer">
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+            </select>
+            <button onclick="generatePayroll()" class="bg-[#0F172A] hover:bg-slate-800 active:scale-95 text-white text-xs font-bold py-2 px-3.5 rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Recalculate</span>
             </button>
-          </form>
+          </div>
         </div>
 
-        <!-- ADVANCE LEDGER TABLE -->
-        <div class="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 class="font-bold text-slate-800 text-base mb-1">Staff Khata &amp; Advance Ledger</h3>
-          <p class="text-xs text-slate-500 mb-4">Cash advances &amp; medicine credits pending auto-deduction in monthly payroll</p>
+        <!-- PAYROLL SUMMARY CARDS -->
+        <div id="payroll-summary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 hidden">
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-500 font-semibold">Total Net Payable</span>
+              <h4 id="summary-net" class="text-2xl font-black text-emerald-600 mt-0.5 tracking-tight">Rs. 0</h4>
+              <p class="text-[11px] text-slate-400 font-medium">Final net disbursement amount</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+              <i data-lucide="banknote" class="w-5 h-5"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-500 font-semibold">Total Deduction Savings</span>
+              <h4 id="summary-deductions" class="text-2xl font-black text-rose-600 mt-0.5 tracking-tight">Rs. 0</h4>
+              <p class="text-[11px] text-slate-400 font-medium">Attendance penalties &amp; staff khata</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
+              <i data-lucide="trending-down" class="w-5 h-5"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex items-center justify-between">
+            <div>
+              <span class="text-xs text-slate-500 font-semibold">Disbursement Status</span>
+              <h4 id="summary-paid-count" class="text-2xl font-black text-slate-900 mt-0.5 tracking-tight">0 Paid</h4>
+              <p id="summary-paid-pct" class="text-[11px] text-slate-400 font-medium">0 of 0 staff cleared</p>
+            </div>
+            <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200">
+              <i data-lucide="check-check" class="w-5 h-5"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAYROLL BREAKDOWN TABLE -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div class="p-3 bg-slate-50/70 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="relative w-full sm:w-72">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input type="text" id="payroll-search-input" oninput="filterPayrollTable()" placeholder="Search staff name or role..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10">
+            </div>
+            <span id="payroll-records-badge" class="text-xs text-slate-500 font-semibold">0 Staff Records</span>
+          </div>
 
           <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm border-collapse">
-              <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold border-b border-slate-200 tracking-wider">
                 <tr>
-                  <th class="py-2.5 px-3">Date</th>
-                  <th class="py-2.5 px-3">Staff</th>
-                  <th class="py-2.5 px-3">Type</th>
-                  <th class="py-2.5 px-3">Amount</th>
-                  <th class="py-2.5 px-3">Reason</th>
-                  <th class="py-2.5 px-3">Settlement / Status</th>
-                  <th class="py-2.5 px-3 text-center">Action</th>
+                  <th class="py-3 px-4">Staff Member</th>
+                  <th class="py-3 px-4">Basic Salary</th>
+                  <th class="py-3 px-4">Attendance Cuts</th>
+                  <th class="py-3 px-4">Khata Cuts</th>
+                  <th class="py-3 px-4">Total Deductions</th>
+                  <th class="py-3 px-4">Net Payable</th>
+                  <th class="py-3 px-4 text-center">Status</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody id="advances-tbody" class="divide-y divide-slate-100">
-                <!-- Rendered via JS -->
+              <tbody id="payroll-tbody" class="divide-y divide-slate-100">
+                <tr>
+                  <td colspan="8" class="p-8 text-center text-slate-400">Pehle month select kar ke "Calculate Payroll" dabayein.</td>
+                </tr>
               </tbody>
             </table>
           </div>
         </div>
+      </section>
+      <section id="view-advances" class="space-y-4 hidden">
 
-      </div>
-    </section>
+        <!-- TOP ACTION BAR (CLEAN & MINIMALIST) -->
+        <div class="flex items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
+          <div class="flex items-center gap-2">
+            <button onclick="clearAllSettledStaffKhata()" title="Delete old settled records to save space" class="bg-slate-50 hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-300 text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5 text-slate-400"></i>
+              <span>Clear Settled Records</span>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="openRecordAdvanceModal()" class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm shadow-emerald-900/20 transition cursor-pointer">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
+              <span>+ Record Khata Entry</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2 COMPACT ACTIONABLE KPI METRIC CARDS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- KPI 1: PENDING SALARY DEDUCTION -->
+          <div class="bg-white rounded-xl px-4 py-3 border border-slate-200/90 shadow-2xs flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center flex-shrink-0 border border-rose-100/80">
+                <i data-lucide="alert-circle" class="w-4.5 h-4.5"></i>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-slate-400 leading-tight">Pending Khata (To Deduct / Collect)</p>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                  <h4 id="adv-kpi-pending-amt" class="text-base font-black text-rose-600 tracking-tight">Rs. 0</h4>
+                  <span class="text-xs text-slate-400 font-medium">(<span id="adv-kpi-pending-count" class="font-bold text-rose-600">0</span> active records)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- KPI 2: ACTIVE STAFF IN KHATA -->
+          <div class="bg-white rounded-xl px-4 py-3 border border-slate-200/90 shadow-2xs flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-indigo-50 text-[#232272] flex items-center justify-center flex-shrink-0 border border-indigo-100/80">
+                <i data-lucide="users" class="w-4.5 h-4.5"></i>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-slate-400 leading-tight">Staff with Active Khata</p>
+                <div class="flex items-baseline gap-2 mt-0.5">
+                  <h4 id="adv-kpi-staff-count" class="text-base font-black text-[#232272] tracking-tight">0 Staff</h4>
+                  <span class="text-xs text-slate-400 font-medium">with pending balance</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAIN ZERO-SCROLL LEDGER CARD -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+
+          <!-- CLEAN UNCLUTTERED TOOLBAR -->
+          <div class="p-3 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+            
+            <!-- SEGMENTED TABS (SLEEK PILL SWITCH) -->
+            <div class="inline-flex p-1 bg-slate-200/70 rounded-xl w-full sm:w-auto">
+              <button onclick="setAdvanceStatusFilter('pending')" id="btn-adv-filter-pending" class="flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-[#232272] text-white shadow-xs">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                <span>Pending</span>
+                <span id="adv-tab-pending-count" class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20">0</span>
+              </button>
+              <button onclick="setAdvanceStatusFilter('settled')" id="btn-adv-filter-settled" class="flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <span>Settled</span>
+                <span id="adv-tab-settled-count" class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-slate-300/80">0</span>
+              </button>
+              <button onclick="setAdvanceStatusFilter('all')" id="btn-adv-filter-all" class="flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <span>All</span>
+                <span id="adv-tab-all-count" class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-slate-300/80">0</span>
+              </button>
+            </div>
+
+            <!-- ONLY SEARCH BAR (PREMIUM POLISHED CSS) -->
+            <div class="relative w-full sm:w-72">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <input type="text" 
+                     id="adv-search-input" 
+                     oninput="handleAdvanceFilterChange()" 
+                     placeholder="Search staff, reason, medicine..." 
+                     class="w-full pl-9 pr-8 py-2 bg-white border border-slate-200 hover:border-slate-300 focus:border-[#232272] rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#232272]/15 transition shadow-2xs">
+              <button type="button" 
+                      id="adv-search-clear" 
+                      onclick="clearAdvanceSearch()" 
+                      class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer p-0.5">
+                <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- FULL-WIDTH COMPACT ZERO-SCROLL TABLE -->
+          <div class="overflow-x-auto min-h-[220px]">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead class="bg-slate-50 text-slate-500 uppercase font-bold text-[11px] tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="py-2.5 px-3.5">Date</th>
+                  <th class="py-2.5 px-3.5">Staff Member</th>
+                  <th class="py-2.5 px-3.5">Khata Type</th>
+                  <th class="py-2.5 px-3.5">Amount</th>
+                  <th class="py-2.5 px-3.5">Reason / Description</th>
+                  <th class="py-2.5 px-3.5">Settlement Status</th>
+                  <th class="py-2.5 px-3.5 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody id="advances-tbody" class="divide-y divide-slate-100 text-slate-700">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- ZERO-SCROLL PAGINATION FOOTER -->
+          <div class="p-3 border-t border-slate-200 bg-slate-50/70 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+            <div id="adv-pagination-info" class="text-slate-500 font-medium">
+              Showing <span class="font-bold text-slate-800">1</span> to <span class="font-bold text-slate-800">5</span> of <span class="font-bold text-slate-800">13</span> entries
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button onclick="changeAdvancePage(-1)" id="adv-btn-prev" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition">
+                <i data-lucide="chevron-left" class="w-3.5 h-3.5"></i> Previous
+              </button>
+              <div id="adv-page-numbers" class="flex items-center gap-1">
+                <!-- Dynamically generated page buttons -->
+              </div>
+              <button onclick="changeAdvancePage(1)" id="adv-btn-next" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 transition">
+                Next <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
       <section id="view-reports" class="space-y-6 hidden">
       <!-- HEADER CONTROLLER -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -2321,6 +2333,69 @@
   </div>
 
   <!-- ================================================================= -->
+  <!-- MODAL: RECORD NEW STAFF KHATA ENTRY (CASH ADVANCE / MEDICINE CREDIT) -->
+  <!-- ================================================================= -->
+  <div id="record-advance-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200">
+      <button onclick="closeRecordAdvanceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 cursor-pointer">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center border border-emerald-100">
+          <i data-lucide="hand-coins" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-[#232272]">Record Staff Khata Entry</h3>
+          <p class="text-xs text-slate-500">Counter daraz cash advance ya store medicine credit purchase</p>
+        </div>
+      </div>
+
+      <form onsubmit="submitAdvance(event)" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Select Staff Member *</label>
+          <select id="advance-staff" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Khata Type *</label>
+            <select id="advance-type" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
+              <option value="ADVANCE">Cash Advance (Till)</option>
+              <option value="MEDICINE_CREDIT">Medicine Credit (Store)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Amount (PKR) *</label>
+            <input type="number" id="advance-amount" required placeholder="e.g. 2000" min="10" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Date *</label>
+          <input type="date" id="advance-date" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Reason / Medicine Description</label>
+          <input type="text" id="advance-reason" placeholder="e.g. Urgent family emergency or Panadol + Surbex Z" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
+        </div>
+
+        <div class="flex gap-2.5 pt-2">
+          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow transition cursor-pointer">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> Save Khata Entry
+          </button>
+          <button type="button" onclick="closeRecordAdvanceModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer transition">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
   <!-- MODAL: SETTLE ADVANCE / KHATA ENTRY -->
   <!-- ================================================================= -->
   <div id="settle-advance-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
@@ -2351,6 +2426,20 @@
             <span class="text-slate-400 block text-[11px]" id="settle-entry-label">Khata Amount</span>
             <strong id="settle-amount-display" class="text-rose-600 font-black text-sm">Rs. 0</strong>
           </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-slate-600 uppercase">Amount to Settle / Katoti Raqam *</label>
+            <span id="settle-advance-balance-preview" class="text-[11px] font-bold text-emerald-700">Full Settlement</span>
+          </div>
+          <div class="relative">
+            <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-500">Rs.</span>
+            <input type="number" id="settle-advance-amount" step="1" min="1" required class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#156D38]" oninput="updateAdvanceSettlePreview()">
+          </div>
+          <p id="settle-advance-partial-help" class="text-[11px] text-emerald-700 mt-1 font-medium hidden">
+            ⚡ Juzwi Adaigi: Adaigi record ho jayegi aur bacha hua baqaya naye advance record mein save rahega.
+          </p>
         </div>
 
         <div>
@@ -2544,7 +2633,7 @@
           <i data-lucide="receipt" class="w-5 h-5"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-800">Record Credit Purchase (Naya Udhar Entry)</h3>
+          <h3 class="text-base font-bold text-slate-800">Record Credit Purchase</h3>
           <p class="text-xs text-slate-500">Append new invoice into customer's continuous series khata</p>
         </div>
       </div>
@@ -2561,10 +2650,10 @@
       <!-- MODE TOGGLE: EXISTING vs NEW CUSTOMER -->
       <div id="khata-mode-toggle-container" class="flex items-center p-1 bg-slate-100 rounded-xl mb-3">
         <button type="button" id="toggle-khata-mode-existing" onclick="setAddKhataMode('existing')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-[#232272] shadow-xs transition-all cursor-pointer">
-          Existing Customer (Mojooda)
+          Existing Customer
         </button>
         <button type="button" id="toggle-khata-mode-new" onclick="setAddKhataMode('new')" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer">
-          + Naya Customer (1-Step Register &amp; Bill)
+          + New Customer
         </button>
       </div>
 
@@ -2610,7 +2699,7 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Invoice / Parchi # (Optional)</label>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Invoice / Receipt # (Optional)</label>
             <input type="text" id="khata-invoice-no" placeholder="Auto (e.g. INV-1082)" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
           </div>
           <div>
@@ -2624,15 +2713,9 @@
           <textarea id="khata-items" required rows="2" placeholder="e.g. Augmentin 625mg (2 boxes), Panadol CF (1 leaf), Surbex Z" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800"></textarea>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Bill Amount (PKR) *</label>
-            <input type="number" id="khata-amount" required min="1" step="0.5" placeholder="e.g. 2450" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-bold text-rose-600 focus:outline-none focus:ring-2 focus:ring-[#232272]">
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Notes / Prescriber (Optional)</label>
-            <input type="text" id="khata-notes" placeholder="e.g. Monthly heart medicine" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
-          </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Bill Amount (PKR) *</label>
+          <input type="number" id="khata-amount" required min="1" step="0.5" placeholder="e.g. 2450" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-bold text-rose-600 focus:outline-none focus:ring-2 focus:ring-[#232272]">
         </div>
 
         <div class="flex gap-3 pt-3">
@@ -2660,12 +2743,17 @@
       <!-- CUSTOMER HEADER & SUMMARY -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-bold px-2 py-0.5 rounded bg-indigo-50 text-[#232272]">Customer Khata Book (Mukammal Hisab)</span>
-            <span id="ledger-modal-phone" class="text-xs font-mono text-slate-500">0300-1234567</span>
+          <div class="flex items-center gap-2.5">
+            <h3 id="ledger-modal-name" class="text-xl font-black text-slate-800">Haji Abdul Rehman</h3>
+            <button onclick="openCustomerModal(currentOpenLedgerCustomerId)" title="Edit Customer Details (Naam, Phone, Address, Limit)" class="text-xs px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold border border-blue-200 flex items-center gap-1 cursor-pointer transition">
+              <i data-lucide="pencil" class="w-3 h-3"></i> Edit Details
+            </button>
           </div>
-          <h3 id="ledger-modal-name" class="text-xl font-black text-slate-800 mt-1">Haji Abdul Rehman</h3>
-          <p id="ledger-modal-address" class="text-xs text-slate-500">House 22, Model Town, Lahore</p>
+          <div class="flex items-center gap-2.5 mt-1">
+            <span id="ledger-modal-phone" class="text-xs font-mono font-bold text-slate-600">0300-1234567</span>
+            <span class="text-slate-300">•</span>
+            <span id="ledger-modal-address" class="text-xs text-slate-500">House 22, Model Town, Lahore</span>
+          </div>
         </div>
 
         <div class="flex items-center gap-3">
@@ -2686,41 +2774,41 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <button id="btn-ledger-add-bill" onclick="openAddCreditForCurrentCustomer()" class="bg-[#156D38] hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow cursor-pointer">
-            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Bill
-          </button>
           <button id="btn-ledger-settle-all" onclick="settleAllBalanceForCurrentCustomer()" class="bg-[#232272] hover:bg-indigo-950 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow cursor-pointer">
             <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Settle Full Balance
           </button>
           <button id="btn-ledger-print-parchi" onclick="printParchiForCurrentCustomer()" class="bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 border border-slate-300 shadow-xs cursor-pointer">
-            <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print Parchi
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print Receipt
           </button>
         </div>
       </div>
 
       <!-- INLINE QUICK ADD BILL BAR -->
-      <div class="bg-indigo-50/70 border border-indigo-100 p-3 rounded-xl mt-3">
-        <div class="flex items-center justify-between mb-1.5">
+      <div class="bg-indigo-50/70 border border-indigo-100 p-3.5 rounded-xl mt-3">
+        <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-bold text-[#232272] flex items-center gap-1.5">
             <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500"></i> Quick Add Bill to Khata Book
           </span>
           <span class="text-[11px] text-slate-500 font-medium">Bina window tabdeel kiye foran khata mein bill darj karein</span>
         </div>
-        <form onsubmit="submitInlineLedgerBill(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
-          <div class="sm:col-span-3">
-            <input type="date" id="inline-ledger-date" required class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+        <form onsubmit="submitInlineLedgerBill(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+          <div class="sm:col-span-2">
+            <input type="date" id="inline-ledger-date" required title="Bill Date" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
           </div>
-          <div class="sm:col-span-5">
-            <input type="text" id="inline-ledger-items" required placeholder="Medicines / Items description..." class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+          <div class="sm:col-span-2">
+            <input type="text" id="inline-ledger-invoice-no" placeholder="Invoice # (Auto)" title="Invoice Number (Optional)" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+          </div>
+          <div class="sm:col-span-4">
+            <input type="text" id="inline-ledger-items" required placeholder="Medicines / Items description..." class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
           </div>
           <div class="sm:col-span-2">
             <div class="relative">
               <span class="absolute left-2.5 top-2 text-xs font-bold text-rose-600">Rs.</span>
-              <input type="number" id="inline-ledger-amount" required min="1" step="0.5" placeholder="Amount" class="w-full pl-8 pr-2 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-rose-600 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+              <input type="number" id="inline-ledger-amount" required min="1" step="0.5" placeholder="Amount" class="w-full pl-8 pr-2.5 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-rose-600 focus:outline-none focus:ring-1 focus:ring-[#232272]">
             </div>
           </div>
           <div class="sm:col-span-2">
-            <button type="submit" class="w-full bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center gap-1 shadow cursor-pointer">
+            <button type="submit" class="w-full bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center gap-1 shadow-sm cursor-pointer transition">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Bill
             </button>
           </div>
@@ -2778,6 +2866,20 @@
         </div>
 
         <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-slate-600 uppercase">Amount to Pay / Wasool Shuda *</label>
+            <span id="settle-entry-balance-preview" class="text-[11px] font-bold text-emerald-700">Full Settlement</span>
+          </div>
+          <div class="relative">
+            <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-500">Rs.</span>
+            <input type="number" id="settle-entry-amount-to-pay" step="0.5" min="1" required class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#156D38]" oninput="updateSingleInvoiceSettlePreview()">
+          </div>
+          <p id="settle-entry-partial-help" class="text-[11px] text-emerald-700 mt-1 font-medium hidden">
+            ⚡ Juzwi Adaigi: Adaigi record ho jayegi aur bacha hua baqaya naye bill mein save rahega.
+          </p>
+        </div>
+
+        <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Settlement Date *</label>
           <input type="date" id="settle-entry-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
         </div>
@@ -2800,7 +2902,8 @@
 
         <div class="flex gap-3 pt-3">
           <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
-            <i data-lucide="check" class="w-4 h-4"></i> Confirm Settlement
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span id="settle-entry-btn-text">Confirm Settlement</span>
           </button>
           <button type="button" onclick="closeSettleCustomerKhataModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer">
             Cancel
@@ -2824,8 +2927,8 @@
           <i data-lucide="check-check" class="w-5 h-5"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-800">Clear Full Baqaya (Settle Balance)</h3>
-          <p class="text-xs text-slate-500">Mukammal series khata balance settlement</p>
+          <h3 class="text-base font-bold text-slate-800">Wasooli / Settle Baqaya (Full or Partial)</h3>
+          <p class="text-xs text-slate-500">Mukammal ya juzwi payment (partial) asani se darj karein</p>
         </div>
       </div>
 
@@ -2847,6 +2950,33 @@
               <div id="quick-settle-invoices-count" class="text-[10px] text-slate-400 mt-0.5">1 pending invoice</div>
             </div>
           </div>
+        </div>
+
+        <!-- PAYMENT AMOUNT INPUT (PARTIAL OR FULL) -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-bold text-slate-600 uppercase">Wasool Shuda Raqam (Payment Amount) *</label>
+            <span id="quick-settle-balance-preview" class="text-[11px] font-bold text-emerald-700">Mukammal Settle (All Clear)</span>
+          </div>
+          <div class="relative">
+            <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-500">Rs.</span>
+            <input type="number" id="quick-settle-amount" step="0.5" min="1" required class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-black text-emerald-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#156D38]" oninput="updateQuickSettlePreview()">
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="flex items-center gap-2 mt-1.5">
+            <span class="text-[11px] text-slate-400 font-medium">Quick Presets:</span>
+            <button type="button" onclick="setQuickSettleAmountPreset('full')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-[#232272] hover:bg-indigo-100 border border-indigo-100 cursor-pointer">
+              100% Full Balance
+            </button>
+            <button type="button" onclick="setQuickSettleAmountPreset('half')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 cursor-pointer">
+              50% Half
+            </button>
+          </div>
+
+          <p id="quick-settle-partial-help" class="text-[11px] text-emerald-700 mt-1.5 font-medium hidden">
+            ⚡ Juzwi Adaigi: Jitne paise mile hain utne adjust ho jayenge aur baqi baqaya customer khata mein due rahega.
+          </p>
         </div>
 
         <!-- PAYMENT METHOD PILLS (QUICK 1-CLICK SELECT, NO TYPING NEEDED) -->
@@ -2941,11 +3071,11 @@
       <div id="printable-parchi" class="bg-white p-4 border border-slate-300 rounded-xl font-sans text-slate-800 overflow-y-auto">
         <!-- PHARMACY LOGO & HEADER -->
         <div class="text-center pb-3 border-b border-slate-300">
-          <div class="text-xs font-bold uppercase tracking-widest text-[#156D38]">Official Customer Khata Statement (Hisab Parchi)</div>
+          <div class="text-xs font-bold uppercase tracking-widest text-[#156D38]">Official Customer Khata Statement (Hisab Receipt)</div>
           <h2 class="text-xl font-black text-[#232272] tracking-wide mt-0.5">MUMTAZ PHARMACY &amp; WELLNESS</h2>
           <div class="text-[11px] text-slate-500 mt-0.5">Model Town, Lahore • Phone: 0300-0000000</div>
           <div class="inline-block mt-1 px-2.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[11px] font-bold text-slate-700">
-            Customer Udhar Khata Parchi (Series Khata Statement)
+            Customer Udhar Khata Receipt (Series Khata Statement)
           </div>
         </div>
 
@@ -3013,7 +3143,7 @@
       <!-- ACTION BUTTONS -->
       <div class="flex gap-3 mt-4">
         <button onclick="executePrintCustomerParchi()" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
-          <i data-lucide="printer" class="w-4 h-4"></i> Print Statement Parchi
+          <i data-lucide="printer" class="w-4 h-4"></i> Print Statement Receipt
         </button>
         <button onclick="closeCustomerParchiModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-xs cursor-pointer">
           Close
@@ -3095,6 +3225,8 @@
       loadStaff();
       loadTodayAttendance();
       generatePayroll();
+      loadAdvances();
+      loadLeaves();
       loadCustomers();
       loadCustomerKpis();
     });
@@ -3110,7 +3242,7 @@
 
     // 2. Navigation Tabs
     function switchTab(tabId) {
-      const allTabs = ['kiosk', 'live', 'payroll', 'advances', 'customer-khata', 'staff', 'reports'];
+      const allTabs = ['kiosk', 'live', 'payroll', 'advances', 'customer-khata', 'staff', 'leaves', 'reports'];
       allTabs.forEach(t => {
         const viewEl = document.getElementById(`view-${t}`);
         const sideEl = document.getElementById(`side-tab-${t}`);
@@ -3137,7 +3269,10 @@
       const titleEl = document.getElementById('page-title');
       const subtitleEl = document.getElementById('page-subtitle');
       if (titleEl && subtitleEl) {
-        if (tabId === 'staff') {
+        if (tabId === 'leaves') {
+          titleEl.innerText = 'Leave Management & Quotas';
+          subtitleEl.innerText = 'Official staff leave register, 2-day monthly quotas & automatic salary deduction audit';
+        } else if (tabId === 'staff') {
           titleEl.innerText = 'Staff Management';
           subtitleEl.innerText = 'Manage your pharmacy staff, profiles and employment details';
         } else if (tabId === 'live') {
@@ -3150,11 +3285,11 @@
           titleEl.innerText = 'Salary & Payroll Engine';
           subtitleEl.innerText = '1-click net salary calculation, deductions, and digital payslips';
         } else if (tabId === 'advances') {
-          titleEl.innerText = 'Staff Advance Khata';
-          subtitleEl.innerText = 'Counter drawer salary advances tracking and automatic deductions';
+          titleEl.innerText = 'Staff Khata';
+          subtitleEl.innerText = 'Staff advances, medicine credits and automatic salary deductions';
         } else if (tabId === 'customer-khata') {
           titleEl.innerText = 'Customer Credit Khata';
-          subtitleEl.innerText = 'Customer ledger, baqaya recovery, thermal parchi and WhatsApp alerts';
+          subtitleEl.innerText = 'Customer ledger, baqaya recovery, thermal receipt and WhatsApp alerts';
         } else if (tabId === 'reports') {
           titleEl.innerText = 'Monthly Attendance Register';
           subtitleEl.innerText = 'Full 31-day biometric register with PDF & landscape print view';
@@ -3169,6 +3304,7 @@
         loadCustomerKpis();
       }
       if (tabId === 'staff') renderStaffDirectory();
+      if (tabId === 'leaves') loadLeaves();
       if (tabId === 'reports') loadMonthlyReport();
       lucide.createIcons();
     }
@@ -3192,8 +3328,9 @@
           opt.innerText = `${s.name} (${s.role}) - ${s.shift_name}`;
           select.appendChild(opt);
         });
+        renderStaffDirectory();
 
-        // Populate advance select
+        // Populate advance select & filter
         const advSelect = document.getElementById('advance-staff');
         if (advSelect) {
           advSelect.innerHTML = '';
@@ -3203,6 +3340,18 @@
             opt.innerText = `${s.name} (${s.role})`;
             advSelect.appendChild(opt);
           });
+        }
+        const advFilterStaffEl = document.getElementById('adv-filter-staff');
+        if (advFilterStaffEl) {
+          const currentVal = advFilterStaffEl.value || 'ALL';
+          advFilterStaffEl.innerHTML = '<option value="ALL">All Staff (Sab Staff)</option>';
+          staffList.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.innerText = `${s.name}`;
+            advFilterStaffEl.appendChild(opt);
+          });
+          advFilterStaffEl.value = currentVal;
         }
       } catch (err) {
         console.error("Failed to load staff", err);
@@ -3276,23 +3425,48 @@
     }
 
     function renderPunchesStream() {
-      const container = document.getElementById('punches-stream');
-      if (recentPunches.length === 0) return;
+      const containers = [
+        document.getElementById('punches-stream'),
+        document.getElementById('kiosk-punches-stream')
+      ].filter(Boolean);
 
-      container.innerHTML = recentPunches.map(p => `
-        <div class="py-3 flex items-center justify-between">
-          <div class="flex items-center space-x-3">
-            <div class="w-9 h-9 rounded-full ${p.type === 'IN' ? 'bg-emerald-100 text-[#156D38]' : 'bg-indigo-100 text-[#232272]'} flex items-center justify-center font-bold text-xs">
+      if (containers.length === 0) return;
+
+      if (!recentPunches || recentPunches.length === 0) {
+        containers.forEach(c => {
+          c.innerHTML = `
+            <div class="py-6 px-3 text-center">
+              <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+              </div>
+              <p class="text-xs font-bold text-slate-700">No punches today yet</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">Live check-ins will stream here</p>
+            </div>
+          `;
+        });
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      const html = recentPunches.slice(0, 10).map(p => `
+        <div class="py-2.5 px-2 flex items-center justify-between border-b border-slate-100 last:border-0 hover:bg-slate-50/80 transition rounded-lg">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-7 h-7 rounded-lg ${p.type === 'IN' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'} flex items-center justify-center font-black text-[10px] flex-shrink-0">
               ${p.type}
             </div>
-            <div>
-              <p class="text-xs font-bold text-slate-800">${p.name}</p>
-              <p class="text-[11px] text-slate-500">${p.type === 'IN' ? (p.status === 'LATE' ? '⚠️ Late Arrival' : '✅ On-Time') : 'Shift Complete'}</p>
+            <div class="min-w-0">
+              <p class="text-xs font-bold text-slate-800 truncate">${p.name}</p>
+              <p class="text-[10px] text-slate-500">${p.type === 'IN' ? (p.status === 'LATE' ? '⚠️ Late Arrival' : '✅ On-Time') : 'Shift Complete'}</p>
             </div>
           </div>
-          <span class="text-xs font-mono font-bold text-slate-600">${p.time}</span>
+          <span class="text-[11px] font-mono font-bold text-slate-600 flex-shrink-0">${p.time}</span>
         </div>
       `).join('');
+
+      containers.forEach(c => {
+        c.innerHTML = html;
+      });
+      if (window.lucide) lucide.createIcons();
     }
 
     // 5. Today's Attendance & Interactive Live Filter
@@ -3313,13 +3487,41 @@
           data = await res.json();
         }
 
-        document.getElementById('pulse-total').innerText = data.total_staff;
-        document.getElementById('pulse-present').innerText = data.present_count;
-        document.getElementById('pulse-late').innerText = data.late_count;
+        const totalStaff = data.total_staff || 0;
+        const presentCount = data.present_count || 0;
+
+        document.getElementById('pulse-total').innerText = totalStaff;
+        document.getElementById('pulse-present').innerText = presentCount;
+        document.getElementById('pulse-late').innerText = data.late_count || 0;
         document.getElementById('pulse-leave').innerText = data.leave_count || 0;
-        document.getElementById('pulse-absent').innerText = data.absent_count;
+        document.getElementById('pulse-absent').innerText = data.absent_count || 0;
 
         rawTodayRoster = data.roster || [];
+
+        // Build live punches stream from today's real attendance logs
+        const livePunches = [];
+        rawTodayRoster.forEach(s => {
+          if (s.time_in) {
+            livePunches.push({
+              name: s.name,
+              type: 'IN',
+              time: s.time_in,
+              status: s.status || 'ON_TIME'
+            });
+          }
+          if (s.time_out) {
+            livePunches.push({
+              name: s.name,
+              type: 'OUT',
+              time: s.time_out,
+              status: 'COMPLETED'
+            });
+          }
+        });
+        livePunches.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+        recentPunches = livePunches;
+        renderPunchesStream();
+
         renderLiveRosterTable();
       } catch (err) {
         console.error("Failed to load today attendance", err);
@@ -3578,66 +3780,153 @@
         }
         currentPayrollData = data.sheet;
 
+        const totalStaff = data.sheet ? data.sheet.length : 0;
+        const paidCount = (data.sheet || []).filter(x => x.status === 'PAID').length;
+        const paidPct = totalStaff > 0 ? Math.round((paidCount / totalStaff) * 100) : 0;
+
         document.getElementById('payroll-summary').classList.remove('hidden');
-        document.getElementById('summary-net').innerText = `Rs. ${data.total_payout.toLocaleString()}`;
-        document.getElementById('summary-deductions').innerText = `Rs. ${data.total_deductions.toLocaleString()}`;
+        document.getElementById('summary-net').innerText = `Rs. ${(data.total_payout || 0).toLocaleString()}`;
+        document.getElementById('summary-deductions').innerText = `Rs. ${(data.total_deductions || 0).toLocaleString()}`;
 
-        const tbody = document.getElementById('payroll-tbody');
-        tbody.innerHTML = data.sheet.map(p => {
-          let paymentCell = '';
-          if (p.status === 'PAID') {
-            paymentCell = `
-              <div class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-[#156D38]"></i> Paid
-              </div>
-              <div class="text-[10px] text-slate-600 font-semibold mt-0.5">${p.paid_at || ''}</div>
-              <div class="text-[9px] text-slate-400 font-medium">(${p.payment_method || 'Cash'})</div>
-            `;
-          } else {
-            paymentCell = `
-              <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
-                Pending
-              </span>
-              <button onclick="openDisburseModal(${p.staff_id})" class="mt-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white text-[11px] px-2.5 py-1 rounded-md font-bold flex items-center gap-1 shadow mx-auto transition-all cursor-pointer">
-                <i data-lucide="banknote" class="w-3.5 h-3.5"></i> Mark Paid
-              </button>
-            `;
-          }
+        const paidCountEl = document.getElementById('summary-paid-count');
+        if (paidCountEl) paidCountEl.innerText = `${paidCount} Paid`;
+        const paidPctEl = document.getElementById('summary-paid-pct');
+        if (paidPctEl) paidPctEl.innerText = `${paidCount} of ${totalStaff} staff cleared (${paidPct}%)`;
 
-          return `
-          <tr class="hover:bg-slate-50 font-medium">
-            <td class="py-3 px-4 font-bold text-slate-800">${p.staff_name} <br><span class="text-[11px] font-normal text-slate-400">${p.designation || p.role}</span></td>
-            <td class="py-3 px-4">Rs. ${p.basic_salary.toLocaleString()}</td>
-            <td class="py-3 px-4 text-xs font-mono text-slate-500">Rs. ${p.daily_wage.toFixed(2)}</td>
-            <td class="py-3 px-4 text-rose-600 font-semibold">- Rs. ${p.absent_cut.toLocaleString()} <span class="text-[11px] font-normal block text-slate-400">(${p.absent_days} days)</span></td>
-            <td class="py-3 px-4 ${p.extra_leaves > 0 ? 'text-rose-600' : 'text-slate-500'} font-semibold">
-              ${p.extra_leaves > 0 
-                ? `- Rs. ${p.extra_leave_cut.toLocaleString()} <span class="text-[11px] font-normal block text-rose-500">(${p.extra_leaves} beyond ${p.allowed_leaves !== undefined ? p.allowed_leaves : 2} free)</span>` 
-                : `<span class="text-xs text-emerald-700 font-bold">Within Limit (${p.leaves_count}/${p.allowed_leaves !== undefined ? p.allowed_leaves : 2} free)</span>`}
-            </td>
-            <td class="py-3 px-4 ${(p.short_hours_cut > 0 || p.extra_half_day_cut > 0) ? 'text-amber-700' : 'text-slate-500'} font-semibold">
-              ${p.short_hours_cut > 0 
-                ? `- Rs. ${p.short_hours_cut.toLocaleString()} <span class="text-[11px] font-normal block text-amber-600">(${Math.floor((p.total_short_minutes || 0) / 60)}h ${(p.total_short_minutes || 0) % 60}m short)</span>` 
-                : (p.extra_half_day_cut > 0 
-                    ? `- Rs. ${p.extra_half_day_cut.toLocaleString()} <span class="text-[11px] font-normal block text-purple-600">(${p.extra_half_days} half-days)</span>` 
-                    : '<span class="text-xs text-emerald-700 font-bold">Full Hours (0 cut)</span>')}
-            </td>
-            <td class="py-3 px-4 text-rose-600 font-semibold">- Rs. ${p.advances_deducted.toLocaleString()}</td>
-            <td class="py-3 px-4 font-black text-[#156D38] text-base">Rs. ${p.net_payable.toLocaleString()}</td>
-            <td class="py-3 px-4 text-center">${paymentCell}</td>
-            <td class="py-3 px-4 text-center">
-              <button onclick="openSlipModal(${p.staff_id})" class="bg-[#232272] hover:bg-indigo-900 text-white text-xs px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 shadow mx-auto cursor-pointer">
-                <i data-lucide="file-text" class="w-3.5 h-3.5"></i> Payslip
-              </button>
-            </td>
-          </tr>
-        `;
-        }).join('');
-
-        lucide.createIcons();
+        renderPayrollTable();
       } catch (err) {
         console.error("Payroll calculation error", err);
       }
+    }
+
+    function filterPayrollTable() {
+      renderPayrollTable();
+    }
+
+    function renderPayrollTable() {
+      const tbody = document.getElementById('payroll-tbody');
+      if (!tbody) return;
+
+      const q = (document.getElementById('payroll-search-input')?.value || '').toLowerCase().trim();
+      const recordsBadge = document.getElementById('payroll-records-badge');
+
+      const filtered = (currentPayrollData || []).filter(p => {
+        if (!q) return true;
+        const name = (p.staff_name || '').toLowerCase();
+        const role = (p.designation || p.role || '').toLowerCase();
+        return name.includes(q) || role.includes(q);
+      });
+
+      if (recordsBadge) {
+        recordsBadge.innerText = `${filtered.length} Staff ${filtered.length === 1 ? 'Record' : 'Records'}`;
+      }
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="p-8 text-center text-slate-400">
+              Koi record nahi mila.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => {
+        // Attendance cuts calculation
+        const absentCut = p.absent_cut || 0;
+        const extraLeaveCut = p.extra_leave_cut || 0;
+        const shortHoursCut = (p.short_hours_cut || 0) + (p.extra_half_day_cut || 0);
+        const attendanceCut = absentCut + extraLeaveCut + shortHoursCut;
+
+        let attDetails = [];
+        if (p.absent_days > 0) attDetails.push(`${p.absent_days}d absent`);
+        if (p.extra_leaves > 0) attDetails.push(`${p.extra_leaves} extra leave`);
+        if ((p.total_short_minutes || 0) > 0) {
+          const h = Math.floor(p.total_short_minutes / 60);
+          const m = p.total_short_minutes % 60;
+          attDetails.push(h > 0 ? `${h}h ${m}m short` : `${m}m short`);
+        } else if (p.extra_half_days > 0) {
+          attDetails.push(`${p.extra_half_days} half-day`);
+        }
+
+        const attCutHtml = attendanceCut > 0 ? `
+          <div class="text-rose-600 font-bold text-xs">- Rs. ${attendanceCut.toLocaleString()}</div>
+          <div class="text-[10px] text-slate-400 font-medium">${attDetails.join(' • ')}</div>
+        ` : `<span class="text-slate-400 font-normal">—</span>`;
+
+        // Khata cuts
+        const khataCut = p.advances_deducted || 0;
+        const khataCutHtml = khataCut > 0 ? `
+          <div class="text-amber-600 font-bold text-xs">- Rs. ${khataCut.toLocaleString()}</div>
+          <div class="text-[10px] text-slate-400 font-medium">Khata auto-cut</div>
+        ` : `<span class="text-slate-400 font-normal">—</span>`;
+
+        // Total deductions
+        const totalCut = attendanceCut + khataCut;
+        const totalCutHtml = totalCut > 0 ? `
+          <span class="text-rose-600 font-black text-xs">- Rs. ${totalCut.toLocaleString()}</span>
+        ` : `<span class="text-slate-400 font-normal">Rs. 0</span>`;
+
+        // Status pill
+        const statusHtml = p.status === 'PAID' ? `
+          <div class="flex flex-col items-center">
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-600"></i> Paid
+            </span>
+            ${p.paid_at ? `<span class="text-[10px] text-slate-400 font-medium mt-0.5">${p.paid_at.split(' ')[0]}</span>` : ''}
+          </div>
+        ` : `
+          <div class="flex flex-col items-center">
+            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending
+            </span>
+          </div>
+        `;
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition font-medium">
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-800 text-xs">${p.staff_name}</div>
+              <div class="text-[11px] text-slate-400 font-normal mt-0.5">${p.designation || p.role}</div>
+            </td>
+            <td class="py-3 px-4 font-mono text-xs font-semibold text-slate-700">
+              Rs. ${(p.basic_salary || 0).toLocaleString()}
+            </td>
+            <td class="py-3 px-4">
+              ${attCutHtml}
+            </td>
+            <td class="py-3 px-4">
+              ${khataCutHtml}
+            </td>
+            <td class="py-3 px-4">
+              ${totalCutHtml}
+            </td>
+            <td class="py-3 px-4">
+              <span class="text-emerald-700 font-black text-sm">Rs. ${(p.net_payable || 0).toLocaleString()}</span>
+            </td>
+            <td class="py-3 px-4 text-center">
+              ${statusHtml}
+            </td>
+            <td class="py-3 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                ${p.status !== 'PAID' ? `
+                  <button onclick="openDisburseModal(${p.staff_id})" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs transition cursor-pointer" title="Disburse salary">
+                    <i data-lucide="banknote" class="w-3.5 h-3.5"></i>
+                    <span>Pay</span>
+                  </button>
+                ` : ''}
+                <button onclick="openSlipModal(${p.staff_id})" class="bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 border border-slate-200 shadow-2xs transition cursor-pointer" title="View official payslip">
+                  <i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-500"></i>
+                  <span>Slip</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
     }
     const loadPayroll = generatePayroll;
 
@@ -3894,64 +4183,294 @@
           advances = await res.json();
         }
         allAdvances = advances || [];
-        const tbody = document.getElementById('advances-tbody');
-        if (!advances || advances.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-400">Koi advance ya medicine credit record mojood nahi.</td></tr>';
-          return;
+        renderAdvancesTable();
+      } catch (err) {
+        console.error("Failed to load advances", err);
+      }
+    }
+
+    // =========================================================================
+    // STAFF ADVANCE & KHATA LEDGER: ZERO-SCROLL PAGINATED HUB & MODAL
+    // =========================================================================
+    let advFilterStatus = 'pending'; // 'pending', 'settled', 'all'
+    let advFilterStaff = 'ALL';
+    let advFilterType = 'ALL';
+    let advSearchQuery = '';
+    let advCurrentPage = 1;
+    const advPageSize = 5;
+
+    function openRecordAdvanceModal() {
+      const modal = document.getElementById('record-advance-modal');
+      if (!modal) return;
+      document.getElementById('advance-amount').value = '';
+      document.getElementById('advance-reason').value = '';
+      const dateEl = document.getElementById('advance-date');
+      if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+      setTimeout(() => document.getElementById('advance-amount')?.focus(), 50);
+    }
+
+    function closeRecordAdvanceModal() {
+      const modal = document.getElementById('record-advance-modal');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function setAdvanceStatusFilter(status) {
+      advFilterStatus = status;
+      advCurrentPage = 1;
+      renderAdvancesTable();
+    }
+
+    function handleAdvanceFilterChange() {
+      advSearchQuery = (document.getElementById('adv-search-input')?.value || '').toLowerCase().trim();
+      const clearBtn = document.getElementById('adv-search-clear');
+      if (clearBtn) {
+        if (advSearchQuery) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+      advCurrentPage = 1;
+      renderAdvancesTable();
+    }
+
+    function clearAdvanceSearch() {
+      const input = document.getElementById('adv-search-input');
+      if (input) input.value = '';
+      handleAdvanceFilterChange();
+    }
+
+    function changeAdvancePage(delta) {
+      advCurrentPage += delta;
+      renderAdvancesTable();
+    }
+
+    function goToAdvancePage(page) {
+      advCurrentPage = page;
+      renderAdvancesTable();
+    }
+
+    function renderAdvancesTable() {
+      const tbody = document.getElementById('advances-tbody');
+      if (!tbody) return;
+
+      const list = allAdvances || [];
+
+      // 1. Calculate KPI Metrics
+      let pendingTotal = 0;
+      let pendingCount = 0;
+      let settledTotal = 0;
+      let settledCount = 0;
+      const pendingStaffSet = new Set();
+
+      list.forEach(a => {
+        const amt = Number(a.amount || 0);
+        if (a.is_settled) {
+          settledTotal += amt;
+          settledCount++;
+        } else {
+          pendingTotal += amt;
+          pendingCount++;
+          if (a.staff_id) pendingStaffSet.add(a.staff_id);
+          else if (a.staff_name) pendingStaffSet.add(a.staff_name);
         }
-        tbody.innerHTML = advances.map(a => {
-          const typeBadge = a.entry_type === 'MEDICINE_CREDIT' 
-            ? '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-800">Medicine Credit</span>'
-            : '<span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-800">Cash Advance</span>';
-          
+      });
+
+      // Update KPI DOM Elements
+      const pendingAmtEl = document.getElementById('adv-kpi-pending-amt');
+      if (pendingAmtEl) pendingAmtEl.innerText = `Rs. ${pendingTotal.toLocaleString()}`;
+
+      const pendingCountEl = document.getElementById('adv-kpi-pending-count');
+      if (pendingCountEl) pendingCountEl.innerText = pendingCount;
+
+      const settledAmtEl = document.getElementById('adv-kpi-settled-amt');
+      if (settledAmtEl) settledAmtEl.innerText = `Rs. ${settledTotal.toLocaleString()}`;
+
+      const settledCountEl = document.getElementById('adv-kpi-settled-count');
+      if (settledCountEl) settledCountEl.innerText = settledCount;
+
+      const staffCountEl = document.getElementById('adv-kpi-staff-count');
+      if (staffCountEl) staffCountEl.innerText = `${pendingStaffSet.size} Staff`;
+
+      // Update Tab Badges
+      const tabPendingEl = document.getElementById('adv-tab-pending-count');
+      if (tabPendingEl) tabPendingEl.innerText = pendingCount;
+
+      const tabSettledEl = document.getElementById('adv-tab-settled-count');
+      if (tabSettledEl) tabSettledEl.innerText = settledCount;
+
+      const tabAllEl = document.getElementById('adv-tab-all-count');
+      if (tabAllEl) tabAllEl.innerText = list.length;
+
+      // Update Status Switch Buttons Styling
+      const btnPending = document.getElementById('btn-adv-filter-pending');
+      const btnSettled = document.getElementById('btn-adv-filter-settled');
+      const btnAll = document.getElementById('btn-adv-filter-all');
+
+      if (btnPending && btnSettled && btnAll) {
+        const inactiveClass = "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5 cursor-pointer";
+        btnPending.className = inactiveClass;
+        btnSettled.className = inactiveClass;
+        btnAll.className = inactiveClass;
+
+        if (tabPendingEl) tabPendingEl.className = "ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-slate-300/80 text-slate-700";
+        if (tabSettledEl) tabSettledEl.className = "ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-slate-300/80 text-slate-700";
+        if (tabAllEl) tabAllEl.className = "ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-slate-300/80 text-slate-700";
+
+        if (advFilterStatus === 'pending') {
+          btnPending.className = "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-[#232272] text-white shadow-xs";
+          if (tabPendingEl) tabPendingEl.className = "ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 text-white";
+        } else if (advFilterStatus === 'settled') {
+          btnSettled.className = "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-[#156D38] text-white shadow-xs";
+          if (tabSettledEl) tabSettledEl.className = "ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 text-white";
+        } else {
+          btnAll.className = "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-slate-800 text-white shadow-xs";
+          if (tabAllEl) tabAllEl.className = "ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 text-white";
+        }
+      }
+
+      // 2. Filter records
+      let filtered = list.filter(a => {
+        // Status filter
+        if (advFilterStatus === 'pending' && a.is_settled) return false;
+        if (advFilterStatus === 'settled' && !a.is_settled) return false;
+
+        // Live Search query
+        if (advSearchQuery) {
+          const isMedicine = (a.entry_type || '').toUpperCase().includes('MEDICINE');
+          const typeName = isMedicine ? 'medicine credit dawa dawai' : 'cash advance counter till';
+          const matchTarget = `${a.staff_name || ''} ${a.role || ''} ${a.reason || ''} ${a.date || ''} ${typeName} ${a.settlement_type || ''} ${a.notes || ''}`.toLowerCase();
+          if (!matchTarget.includes(advSearchQuery)) return false;
+        }
+
+        return true;
+      });
+
+      // 3. Pagination math
+      const totalItems = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / advPageSize));
+      if (advCurrentPage > totalPages) advCurrentPage = totalPages;
+      if (advCurrentPage < 1) advCurrentPage = 1;
+
+      const startIndex = (advCurrentPage - 1) * advPageSize;
+      const pagedItems = filtered.slice(startIndex, startIndex + advPageSize);
+
+      // 4. Render Table Rows
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-8 text-center text-slate-400">
+              <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+              <p class="font-medium text-xs">Koi khata record mojood nahi is filter mein.</p>
+              ${advFilterStatus === 'pending' ? '<p class="text-[11px] text-emerald-600 mt-1 font-semibold">SubhanAllah! Koi pending advance ya credit baqi nahi hai.</p>' : ''}
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = pagedItems.map(a => {
+          const isMedicine = (a.entry_type || '').toUpperCase().includes('MEDICINE');
+          const typeBadge = isMedicine
+            ? `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200"><i data-lucide="pill" class="w-3 h-3"></i> Medicine</span>`
+            : `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200"><i data-lucide="banknote" class="w-3 h-3"></i> Cash Advance</span>`;
+
           let statusCell = '';
           let actionCell = '';
 
           if (a.is_settled) {
             statusCell = `
-              <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
-                <i data-lucide="check-circle" class="w-3 h-3"></i> Settled
-              </span>
-              <div class="text-[10px] text-slate-500 font-medium mt-1">
-                ${a.settled_at ? `<span class="font-semibold text-slate-700">${a.settled_at}</span>` : ''}
-                ${a.settlement_type ? `<div class="truncate max-w-[160px] text-slate-600" title="${a.settlement_type}">${a.settlement_type}</div>` : ''}
-                ${a.notes ? `<div class="truncate max-w-[160px] text-slate-400 italic text-[9px]" title="${a.notes}">Note: ${a.notes}</div>` : ''}
+              <div>
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  <i data-lucide="check-circle-2" class="w-3 h-3"></i> Settled
+                </span>
+                <div class="text-[10px] text-slate-500 font-medium mt-0.5">
+                  ${a.settled_at ? `<span class="font-semibold text-slate-700">${a.settled_at}</span>` : ''}
+                  ${a.settlement_type ? `<span class="text-slate-500"> • ${a.settlement_type}</span>` : ''}
+                </div>
               </div>
             `;
-            actionCell = `<span class="text-xs text-slate-300 font-bold">—</span>`;
+            actionCell = `
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-400" title="Settled">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-slate-400"></i>
+              </span>
+            `;
           } else {
             statusCell = `
-              <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200">
-                Pending Deduction
-              </span>
-              <div class="text-[10px] text-slate-400 mt-1">Salary deduction</div>
+              <div>
+                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Pending Cut
+                </span>
+                <div class="text-[10px] text-slate-400 mt-0.5">Will deduct in payroll</div>
+              </div>
             `;
             actionCell = `
-              <button onclick="openSettleAdvanceModal(${a.id})" 
-                      class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow-sm transition-all flex items-center gap-1.5 mx-auto cursor-pointer"
-                      title="Direct Settlement Now">
-                <i data-lucide="check" class="w-3.5 h-3.5"></i> Settle Now
+              <button onclick="openSettleAdvanceModal(${a.id})"
+                      class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg shadow-xs transition flex items-center gap-1 mx-auto cursor-pointer"
+                      title="Direct Counter Cash Settlement">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i> Settle
               </button>
             `;
           }
 
           return `
-          <tr class="hover:bg-slate-50 transition-colors">
-            <td class="py-2.5 px-3 font-mono text-xs text-slate-500">${a.date}</td>
-            <td class="py-2.5 px-3 font-bold text-slate-800">${a.staff_name}</td>
-            <td class="py-2.5 px-3">${typeBadge}</td>
-            <td class="py-2.5 px-3 font-black text-rose-600">Rs. ${a.amount.toLocaleString()}</td>
-            <td class="py-2.5 px-3 text-xs text-slate-600">${a.reason || '—'}</td>
-            <td class="py-2.5 px-3">${statusCell}</td>
-            <td class="py-2.5 px-3 text-center">${actionCell}</td>
-          </tr>
-        `;
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <td class="py-2.5 px-3.5 font-mono text-xs text-slate-500 whitespace-nowrap">${a.date}</td>
+              <td class="py-2.5 px-3.5">
+                <div class="font-bold text-slate-800 text-xs">${a.staff_name}</div>
+                <div class="text-[10px] text-slate-400">${a.role || 'Staff'}</div>
+              </td>
+              <td class="py-2.5 px-3.5 whitespace-nowrap">${typeBadge}</td>
+              <td class="py-2.5 px-3.5 font-black text-xs ${a.is_settled ? 'text-slate-600' : 'text-rose-600'} whitespace-nowrap">
+                Rs. ${Number(a.amount || 0).toLocaleString()}
+              </td>
+              <td class="py-2.5 px-3.5 text-xs text-slate-600 max-w-xs truncate" title="${a.reason || ''}">
+                ${a.reason || '<span class="text-slate-300">—</span>'}
+              </td>
+              <td class="py-2.5 px-3.5">${statusCell}</td>
+              <td class="py-2.5 px-3.5 text-center whitespace-nowrap">${actionCell}</td>
+            </tr>
+          `;
         }).join('');
-        lucide.createIcons();
-      } catch (err) {
-        console.error("Failed to load advances", err);
       }
+
+      // 5. Update Pagination Info and Controls
+      const infoEl = document.getElementById('adv-pagination-info');
+      if (infoEl) {
+        if (totalItems === 0) {
+          infoEl.innerHTML = 'Showing <span class="font-bold text-slate-800">0</span> entries';
+        } else {
+          const from = startIndex + 1;
+          const to = Math.min(startIndex + advPageSize, totalItems);
+          infoEl.innerHTML = `Showing <span class="font-bold text-slate-800">${from}</span> to <span class="font-bold text-slate-800">${to}</span> of <span class="font-bold text-slate-800">${totalItems}</span> entries`;
+        }
+      }
+
+      const prevBtn = document.getElementById('adv-btn-prev');
+      if (prevBtn) prevBtn.disabled = (advCurrentPage <= 1);
+
+      const nextBtn = document.getElementById('adv-btn-next');
+      if (nextBtn) nextBtn.disabled = (advCurrentPage >= totalPages);
+
+      const pageNumbersEl = document.getElementById('adv-page-numbers');
+      if (pageNumbersEl) {
+        let pagesHtml = '';
+        for (let p = 1; p <= totalPages; p++) {
+          const isActive = (p === advCurrentPage);
+          pagesHtml += `
+            <button onclick="goToAdvancePage(${p})" 
+                    class="w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${isActive ? 'bg-[#232272] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}">
+              ${p}
+            </button>
+          `;
+        }
+        pageNumbersEl.innerHTML = pagesHtml;
+      }
+
+      lucide.createIcons();
     }
+
+    let currentSettleAdvanceTotal = 0;
 
     function openSettleAdvanceModal(advanceId, staffName, amount, entryType) {
       const a = (allAdvances || []).find(item => item.id === advanceId);
@@ -3959,10 +4478,20 @@
       const amt = (amount !== undefined && amount !== null) ? amount : (a ? a.amount : 0);
       const type = entryType || (a ? a.entry_type : 'ADVANCE');
 
+      currentSettleAdvanceTotal = Number(amt) || 0;
+
       document.getElementById('settle-advance-id').value = advanceId;
       document.getElementById('settle-staff-name').innerText = name;
-      document.getElementById('settle-amount-display').innerText = `Rs. ${Number(amt).toLocaleString()}`;
+      document.getElementById('settle-amount-display').innerText = `Rs. ${currentSettleAdvanceTotal.toLocaleString()}`;
       document.getElementById('settle-entry-label').innerText = type === 'MEDICINE_CREDIT' ? 'Medicine Credit' : 'Cash Advance';
+      
+      const amtInput = document.getElementById('settle-advance-amount');
+      if (amtInput) {
+        amtInput.value = currentSettleAdvanceTotal;
+        amtInput.max = currentSettleAdvanceTotal;
+      }
+      updateAdvanceSettlePreview();
+
       document.getElementById('settle-date').value = new Date().toISOString().split('T')[0];
       document.getElementById('settle-notes').value = '';
       
@@ -3970,6 +4499,35 @@
       modal.classList.remove('hidden');
       modal.classList.add('flex');
       lucide.createIcons();
+    }
+
+    function updateAdvanceSettlePreview() {
+      const amtInput = document.getElementById('settle-advance-amount');
+      const previewEl = document.getElementById('settle-advance-balance-preview');
+      const helpEl = document.getElementById('settle-advance-partial-help');
+      if (!amtInput || !previewEl) return;
+
+      const paying = parseFloat(amtInput.value) || 0;
+      const total = currentSettleAdvanceTotal;
+
+      if (paying <= 0) {
+        previewEl.innerText = "Enter valid amount";
+        previewEl.className = "text-[11px] font-bold text-rose-600";
+        if (helpEl) helpEl.classList.add('hidden');
+      } else if (paying < total) {
+        const remaining = total - paying;
+        previewEl.innerText = `Partial (Baqaya: Rs. ${remaining.toLocaleString()})`;
+        previewEl.className = "text-[11px] font-bold text-amber-600";
+        if (helpEl) helpEl.classList.remove('hidden');
+      } else if (paying === total) {
+        previewEl.innerText = "Full Settlement (100% Cleared)";
+        previewEl.className = "text-[11px] font-bold text-emerald-700";
+        if (helpEl) helpEl.classList.add('hidden');
+      } else {
+        previewEl.innerText = `Exceeds Total (Max: Rs. ${total.toLocaleString()})`;
+        previewEl.className = "text-[11px] font-bold text-rose-600";
+        if (helpEl) helpEl.classList.add('hidden');
+      }
     }
 
     function closeSettleAdvanceModal() {
@@ -3984,6 +4542,16 @@
       const settledAt = document.getElementById('settle-date').value;
       const settlementType = document.getElementById('settle-type').value;
       const notes = document.getElementById('settle-notes').value.trim();
+      const amountVal = parseFloat(document.getElementById('settle-advance-amount')?.value) || currentSettleAdvanceTotal;
+
+      if (amountVal <= 0) {
+        alert("Baraye meherbani durust raqam darj karein.");
+        return;
+      }
+      if (amountVal > currentSettleAdvanceTotal) {
+        alert(`Adaigi kul raqam (Rs. ${currentSettleAdvanceTotal.toLocaleString()}) se barh nahi sakti.`);
+        return;
+      }
 
       try {
         const res = await fetch(`/api/advances/${advanceId}/settle`, {
@@ -3992,7 +4560,8 @@
           body: JSON.stringify({
             settled_at: settledAt,
             settlement_type: settlementType,
-            notes: notes
+            notes: notes,
+            amount: amountVal
           })
         });
         const data = await res.json();
@@ -4017,23 +4586,64 @@
       const type = document.getElementById('advance-type').value;
       const amount = document.getElementById('advance-amount').value;
       const reason = document.getElementById('advance-reason').value;
+      const dateStr = document.getElementById('advance-date')?.value || null;
 
-      await fetch('/api/advances', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          staff_id: parseInt(staffId),
-          entry_type: type,
-          amount: parseFloat(amount),
-          reason: reason
-        })
-      });
+      try {
+        const res = await fetch('/api/advances', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            staff_id: parseInt(staffId),
+            entry_type: type,
+            amount: parseFloat(amount),
+            date_str: dateStr,
+            reason: reason
+          })
+        });
+        const data = await res.json();
+        
+        closeRecordAdvanceModal();
+        advFilterStatus = 'pending';
+        advCurrentPage = 1;
+        await loadAdvances();
+        await generatePayroll();
+        if (typeof loadStaff === 'function') loadStaff();
+        alert(data.message || (type === 'MEDICINE_CREDIT' ? "Medicine Credit entry recorded successfully!" : "Cash Advance recorded successfully!"));
+      } catch (err) {
+        console.error("Failed to record advance", err);
+        alert("Server error occurred while recording khata entry");
+      }
+    }
 
-      document.getElementById('advance-amount').value = '';
-      document.getElementById('advance-reason').value = '';
-      await loadAdvances();
-      await generatePayroll();
-      alert(type === 'MEDICINE_CREDIT' ? "Medicine Credit entry recorded successfully!" : "Cash Advance recorded successfully!");
+    async function clearAllSettledStaffKhata() {
+      const settledCount = (allAdvances || []).filter(a => a.is_settled).length;
+      if (settledCount === 0) {
+        alert("ℹ️ Koi settled staff khata record mojood nahi hai.");
+        return;
+      }
+
+      const confirmed = confirm(
+        "⚠️ ADMIN CONFIRMATION:\n\n" +
+        `Kya aap waqai tamam ${settledCount} PURANE SETTLED staff khata records delete karna chahte hain?\n\n` +
+        "• Sirf settled (clear shuda) records delete honge.\n" +
+        "• Active / Pending khata aur salary balance bilkul mehfooz rahega.\n\n" +
+        "Delete karne ke liye OK dabaiye."
+      );
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch('/api/advances/clear-settled', { method: 'POST' });
+        const result = await res.json();
+        if (result.success) {
+          alert(`✅ ${result.message}`);
+          await loadAdvances();
+        } else {
+          alert(`❌ Error: ${result.message || 'Records clear nahi ho sake.'}`);
+        }
+      } catch (err) {
+        console.error("Failed to clear settled advances", err);
+        alert("Server error a gaya hai.");
+      }
     }
     
     // =========================================================================
@@ -4741,7 +5351,7 @@
     // 9. CUSTOMER UDHAR & SERIES KHATA LEDGER MODULE
     // =================================================================
     let allCustomers = [];
-    let currentCustomerFilter = 'all';
+    let currentCustomerFilter = 'pending';
     let currentOpenLedgerCustomerId = null;
     let currentOpenParchiCustomerId = null;
     let currentAddKhataMode = 'existing';
@@ -4837,26 +5447,39 @@
       }
 
       tbody.innerHTML = list.map(c => {
-        const hasBalance = c.current_balance > 0;
+        const creditLimit = Number(c.credit_limit || 0);
+        const currentBalance = Number(c.current_balance || 0);
+        const totalCredit = Number(c.total_credit != null ? c.total_credit : (c.total_credit_taken || 0));
+        const totalSettled = Number(c.total_settled != null ? c.total_settled : (c.total_paid || 0));
+        const hasBalance = currentBalance > 0;
+        const pendingCount = c.pending_invoices_count || 0;
+        const percentUsed = creditLimit > 0 ? Math.round((currentBalance / creditLimit) * 100) : 0;
+
         const statusBadge = hasBalance 
-          ? `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> ${c.pending_invoices_count} Pending</span>`
+          ? `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> ${pendingCount} Pending</span>`
           : `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check" class="w-3 h-3"></i> All Clear</span>`;
 
+        const waPhone = c.wa_phone || (c.phone || '').replace(/[^0-9]/g, '');
         const waMessage = encodeURIComponent(`Assalam-o-Alaikum ${c.name} Sahab!
-Mumtaz Pharmacy ki janib se reminder hai ke aap ke Series Khata mein Kul Baqaya Raqam Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} due hai.
+Mumtaz Pharmacy ki janib se reminder hai ke aap ke Series Khata mein Kul Baqaya Raqam Rs. ${currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} due hai.
 Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 — Mumtaz Pharmacy, Model Town, Lahore`);
 
         return `
-          <tr class="hover:bg-slate-50 transition-colors">
+          <tr onclick="openCustomerLedgerModal(${c.id})" class="hover:bg-indigo-50/50 transition-colors cursor-pointer group">
             <!-- 1. Customer Details -->
             <td class="py-3 px-4">
               <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-full bg-indigo-50 text-[#232272] border border-indigo-100 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                  ${c.name.charAt(0).toUpperCase()}
+                <div class="w-8 h-8 rounded-full bg-indigo-50 text-[#232272] border border-indigo-100 flex items-center justify-center font-bold text-xs flex-shrink-0 group-hover:bg-[#232272] group-hover:text-white transition-colors">
+                  ${(c.name || 'C').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <div class="font-bold text-slate-800 text-xs">${c.name}</div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-slate-800 text-xs group-hover:text-[#232272] transition-colors">${c.name}</span>
+                    <button onclick="event.stopPropagation(); openCustomerModal(${c.id})" title="Edit Customer Details" class="text-slate-400 hover:text-blue-600 transition-colors p-0.5 rounded cursor-pointer">
+                      <i data-lucide="pencil" class="w-3 h-3"></i>
+                    </button>
+                  </div>
                   <div class="text-[11px] text-slate-400 font-mono">${c.phone}</div>
                   <div class="text-[10px] text-slate-400 truncate max-w-[140px]">${c.address || '—'}</div>
                 </div>
@@ -4865,26 +5488,26 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
             <!-- 2. Credit Limit & Usage -->
             <td class="py-3 px-4">
-              <div class="text-xs font-mono font-bold text-slate-700">Rs. ${c.credit_limit.toLocaleString('en-US', {minimumFractionDigits: 0})}</div>
+              <div class="text-xs font-mono font-bold text-slate-700">Rs. ${creditLimit.toLocaleString('en-US', {minimumFractionDigits: 0})}</div>
               <div class="w-24 bg-slate-100 rounded-full h-1.5 mt-1 overflow-hidden">
-                <div class="h-1.5 rounded-full ${c.current_balance > c.credit_limit ? 'bg-rose-500' : 'bg-emerald-500'}" style="width: ${Math.min(100, Math.round((c.current_balance / (c.credit_limit || 1)) * 100))}%"></div>
+                <div class="h-1.5 rounded-full ${currentBalance > creditLimit ? 'bg-rose-500' : 'bg-emerald-500'}" style="width: ${Math.min(100, percentUsed)}%"></div>
               </div>
-              <div class="text-[10px] text-slate-400 mt-0.5 font-mono">${Math.round((c.current_balance / (c.credit_limit || 1)) * 100)}% Used</div>
+              <div class="text-[10px] text-slate-400 mt-0.5 font-mono">${percentUsed}% Used</div>
             </td>
 
             <!-- 3. Total Credit Taken -->
             <td class="py-3 px-4 font-mono text-xs text-slate-600">
-              Rs. ${c.total_credit_taken.toLocaleString('en-US', {minimumFractionDigits: 0})}
+              Rs. ${totalCredit.toLocaleString('en-US', {minimumFractionDigits: 0})}
             </td>
 
             <!-- 4. Total Paid -->
             <td class="py-3 px-4 font-mono text-xs text-emerald-700 font-semibold">
-              Rs. ${c.total_paid.toLocaleString('en-US', {minimumFractionDigits: 0})}
+              Rs. ${totalSettled.toLocaleString('en-US', {minimumFractionDigits: 0})}
             </td>
 
             <!-- 5. Current Baqaya -->
             <td class="py-3 px-4 font-mono font-bold text-xs ${hasBalance ? 'text-rose-600' : 'text-slate-400'}">
-              Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              Rs. ${currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
             </td>
 
             <!-- 6. Status -->
@@ -4893,18 +5516,18 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
             </td>
 
             <!-- 7. Actions -->
-            <td class="py-3 px-4 text-center">
+            <td class="py-3 px-4 text-center" onclick="event.stopPropagation()">
               <div class="flex items-center justify-center gap-1.5">
-                <button onclick="openCustomerLedgerModal(${c.id})" title="View Ledger" class="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-[#232272] transition-colors cursor-pointer">
-                  <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                <button onclick="event.stopPropagation(); openCustomerModal(${c.id})" title="Edit Customer Details (Naam / Phone / Address / Limit)" class="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors cursor-pointer">
+                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                 </button>
-                <button onclick="openCustomerParchi(${c.id})" title="Print Parchi" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer">
+                <button onclick="event.stopPropagation(); openCustomerParchiModal(${c.id})" title="Print Receipt" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer">
                   <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                 </button>
-                <a href="https://wa.me/${c.phone.replace(/[^0-9]/g, '')}?text=${waMessage}" target="_blank" title="Send WhatsApp Reminder" class="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors cursor-pointer">
+                <a href="https://wa.me/${waPhone}?text=${waMessage}" target="_blank" onclick="event.stopPropagation()" title="Send WhatsApp Reminder" class="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors cursor-pointer ${hasBalance ? '' : 'opacity-40 pointer-events-none'}">
                   <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
                 </a>
-                <button onclick="openSettleCustomerModal(${c.id})" title="Settle Invoice" class="p-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 transition-colors cursor-pointer">
+                <button onclick="event.stopPropagation(); ${hasBalance ? `quickSettleCustomerMaster(${c.id})` : `openCustomerLedgerModal(${c.id})`}" title="${hasBalance ? 'Wasooli / Settle Baqaya (Full or Partial)' : 'View Khata Book'}" class="p-1.5 rounded-lg ${hasBalance ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'} transition-colors cursor-pointer">
                   <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
@@ -4999,6 +5622,10 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           closeCustomerModal();
           await loadCustomers();
           await loadCustomerKpis();
+          if (currentOpenLedgerCustomerId && parseInt(currentOpenLedgerCustomerId) === parseInt(id)) {
+            await openCustomerLedgerModal(parseInt(id));
+          }
+          alert(data.message || "Customer record saved successfully!");
         } else {
           alert(data.detail || "Customer save karne mein masla aaya.");
         }
@@ -5081,7 +5708,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       document.getElementById('khata-date').value = new Date().toISOString().split('T')[0];
       document.getElementById('khata-items').value = '';
       document.getElementById('khata-amount').value = '';
-      document.getElementById('khata-notes').value = '';
+      if (document.getElementById('khata-notes')) document.getElementById('khata-notes').value = '';
       const newName = document.getElementById('khata-new-name');
       if (newName) newName.value = '';
       const newPhone = document.getElementById('khata-new-phone');
@@ -5161,7 +5788,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         const dateVal = document.getElementById('khata-date').value;
         const items = document.getElementById('khata-items').value.trim();
         const amount = parseFloat(document.getElementById('khata-amount').value);
-        const notes = document.getElementById('khata-notes').value.trim();
+        const notes = (document.getElementById('khata-notes')?.value || '').trim();
 
         const khataRes = await fetch('/api/customer-khata', {
           method: 'POST',
@@ -5279,6 +5906,8 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         if (inlineItems) inlineItems.value = '';
         const inlineAmount = document.getElementById('inline-ledger-amount');
         if (inlineAmount) inlineAmount.value = '';
+        const inlineInv = document.getElementById('inline-ledger-invoice-no');
+        if (inlineInv) inlineInv.value = '';
 
         const settleAllBtn = document.getElementById('btn-ledger-settle-all');
         if (summary.current_balance <= 0) {
@@ -5348,6 +5977,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         return;
       }
       const dateVal = document.getElementById('inline-ledger-date').value;
+      const invoiceNo = (document.getElementById('inline-ledger-invoice-no')?.value || '').trim();
       const items = document.getElementById('inline-ledger-items').value.trim();
       const amount = parseFloat(document.getElementById('inline-ledger-amount').value);
 
@@ -5362,7 +5992,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             customer_id: currentOpenLedgerCustomerId,
-            invoice_no: '',
+            invoice_no: invoiceNo,
             date: dateVal,
             item_description: items,
             amount: amount,
@@ -5371,6 +6001,9 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         });
         const data = await res.json();
         if (data.success) {
+          if (document.getElementById('inline-ledger-invoice-no')) {
+            document.getElementById('inline-ledger-invoice-no').value = '';
+          }
           document.getElementById('inline-ledger-items').value = '';
           document.getElementById('inline-ledger-amount').value = '';
           await openCustomerLedgerModal(currentOpenLedgerCustomerId);
@@ -5381,7 +6014,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         }
       } catch (err) {
         console.error("Error submitting inline ledger bill", err);
-        alert("Server error.");
+        alert("Failed to record bill.");
       }
     }
 
@@ -5393,21 +6026,57 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       }
     }
 
-    // Settle Single Invoice Modal (With auto-return to ledger)
+    // Settle Single Invoice Modal (With auto-return to ledger & Partial Payment Support)
     function openSettleCustomerKhataModal(entryId, invoiceNo, amount, customerId, customerName) {
       returnToLedgerCustomerId = customerId;
       document.getElementById('customer-ledger-modal').classList.add('hidden');
 
+      const numAmt = parseFloat(amount) || 0;
       document.getElementById('settle-entry-id').value = entryId;
       document.getElementById('settle-entry-customer-id').value = customerId;
       document.getElementById('settle-entry-inv-label').innerText = invoiceNo;
       document.getElementById('settle-entry-customer-label').innerText = customerName;
-      document.getElementById('settle-entry-amount-label').innerText = `Rs. ${parseFloat(amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      
+      const amtLabel = document.getElementById('settle-entry-amount-label');
+      amtLabel.innerText = `Rs. ${numAmt.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      amtLabel.dataset.maxAmount = numAmt;
+
+      const amtInp = document.getElementById('settle-entry-amount-to-pay');
+      if (amtInp) {
+        amtInp.value = numAmt;
+        amtInp.max = numAmt;
+      }
+      updateSingleInvoiceSettlePreview();
+
       document.getElementById('settle-entry-date').value = new Date().toISOString().split('T')[0];
       document.getElementById('settle-entry-notes').value = '';
 
       document.getElementById('settle-customer-khata-modal').classList.remove('hidden');
       lucide.createIcons();
+    }
+
+    function updateSingleInvoiceSettlePreview() {
+      const maxAmt = parseFloat(document.getElementById('settle-entry-amount-label')?.dataset.maxAmount || 0);
+      const input = document.getElementById('settle-entry-amount-to-pay');
+      const preview = document.getElementById('settle-entry-balance-preview');
+      const help = document.getElementById('settle-entry-partial-help');
+      const btnText = document.getElementById('settle-entry-btn-text');
+      if (!input || !preview) return;
+
+      let val = parseFloat(input.value) || 0;
+      if (val >= maxAmt) {
+        preview.innerHTML = '<span class="text-emerald-700 font-bold">Mukammal Adaigi (Full Settlement)</span>';
+        if (help) help.classList.add('hidden');
+        if (btnText) btnText.innerText = `Confirm Full Settlement (Rs. ${maxAmt.toLocaleString()})`;
+      } else if (val > 0) {
+        const rem = Math.round((maxAmt - val) * 100) / 100;
+        preview.innerHTML = `<span class="text-amber-600 font-bold">Juzwi Adaigi (Baqaya: Rs. ${rem.toLocaleString()})</span>`;
+        if (help) help.classList.remove('hidden');
+        if (btnText) btnText.innerText = `Confirm Partial Rs. ${val.toLocaleString()} (Baqaya: Rs. ${rem.toLocaleString()})`;
+      } else {
+        preview.innerHTML = '<span class="text-rose-600 font-bold">Baraye meherbani raqam darj karein</span>';
+        if (help) help.classList.add('hidden');
+      }
     }
 
     function closeSettleCustomerKhataModal() {
@@ -5423,6 +6092,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       e.preventDefault();
       const entryId = document.getElementById('settle-entry-id').value;
       const customerId = parseInt(document.getElementById('settle-entry-customer-id').value);
+      const payAmount = parseFloat(document.getElementById('settle-entry-amount-to-pay')?.value) || null;
       const settleDate = document.getElementById('settle-entry-date').value;
       const method = document.getElementById('settle-entry-method').value;
       const notes = document.getElementById('settle-entry-notes').value.trim();
@@ -5432,6 +6102,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            amount: payAmount,
             settled_at: settleDate,
             payment_method: method,
             notes: notes
@@ -5451,7 +6122,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           } else if (currentOpenLedgerCustomerId === customerId) {
             await openCustomerLedgerModal(customerId);
           }
-          alert(data.message || "Invoice settled successfully!");
+          alert(data.message || "Payment recorded successfully!");
         } else {
           alert(data.detail || "Settlement failed.");
         }
@@ -5462,7 +6133,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     }
 
     // =================================================================
-    // Quick Full Settlement Modal Handlers (No native prompt / confirm!)
+    // Quick Settlement Modal Handlers (Full or Partial Payment)
     // =================================================================
     function selectQuickSettleMethod(method) {
       const input = document.getElementById('quick-settle-payment-method');
@@ -5499,9 +6170,20 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       document.getElementById('quick-settle-customer-id').value = c.id;
       document.getElementById('quick-settle-customer-name').innerText = c.name;
       document.getElementById('quick-settle-customer-phone').innerText = c.phone || '—';
-      document.getElementById('quick-settle-balance-amount').innerText = `Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      
+      const balLabel = document.getElementById('quick-settle-balance-amount');
+      balLabel.innerText = `Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      balLabel.dataset.totalBalance = c.current_balance;
+
       document.getElementById('quick-settle-invoices-count').innerText = `${c.pending_invoices_count || 1} pending invoice(s)`;
-      document.getElementById('quick-settle-btn-text').innerText = `Confirm & Clear Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+      const amtInp = document.getElementById('quick-settle-amount');
+      if (amtInp) {
+        amtInp.value = c.current_balance;
+        amtInp.max = c.current_balance;
+      }
+      updateQuickSettlePreview();
+
       document.getElementById('quick-settle-date').value = new Date().toISOString().split('T')[0];
       document.getElementById('quick-settle-notes').value = '';
 
@@ -5509,6 +6191,42 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
       document.getElementById('quick-settle-all-modal').classList.remove('hidden');
       lucide.createIcons();
+    }
+
+    function updateQuickSettlePreview() {
+      const totalBal = parseFloat(document.getElementById('quick-settle-balance-amount')?.dataset.totalBalance || 0);
+      const input = document.getElementById('quick-settle-amount');
+      const preview = document.getElementById('quick-settle-balance-preview');
+      const help = document.getElementById('quick-settle-partial-help');
+      const btnText = document.getElementById('quick-settle-btn-text');
+      if (!input || !preview) return;
+
+      let val = parseFloat(input.value) || 0;
+      if (val >= totalBal) {
+        preview.innerHTML = '<span class="text-emerald-700 font-bold">Mukammal Settle (All Clear)</span>';
+        if (help) help.classList.add('hidden');
+        if (btnText) btnText.innerText = `Confirm & Clear Rs. ${totalBal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      } else if (val > 0) {
+        const rem = Math.round((totalBal - val) * 100) / 100;
+        preview.innerHTML = `<span class="text-amber-600 font-bold">Juzwi Adaigi (Baqaya: Rs. ${rem.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</span>`;
+        if (help) help.classList.remove('hidden');
+        if (btnText) btnText.innerText = `Record Rs. ${val.toLocaleString()} (Remaining Baqaya: Rs. ${rem.toLocaleString()})`;
+      } else {
+        preview.innerHTML = '<span class="text-rose-600 font-bold">Baraye meherbani raqam darj karein</span>';
+        if (help) help.classList.add('hidden');
+      }
+    }
+
+    function setQuickSettleAmountPreset(type) {
+      const totalBal = parseFloat(document.getElementById('quick-settle-balance-amount')?.dataset.totalBalance || 0);
+      const input = document.getElementById('quick-settle-amount');
+      if (!input) return;
+      if (type === 'full') {
+        input.value = totalBal;
+      } else if (type === 'half') {
+        input.value = Math.round(totalBal / 2);
+      }
+      updateQuickSettlePreview();
     }
 
     function closeQuickSettleModal() {
@@ -5524,9 +6242,10 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     async function submitQuickSettleModal(e) {
       e.preventDefault();
       const customerId = parseInt(document.getElementById('quick-settle-customer-id').value);
+      const payAmount = parseFloat(document.getElementById('quick-settle-amount')?.value) || null;
       const settleDate = document.getElementById('quick-settle-date').value;
       const method = document.getElementById('quick-settle-payment-method').value;
-      const notes = (document.getElementById('quick-settle-notes').value || '').trim() || 'Full balance clearance';
+      const notes = (document.getElementById('quick-settle-notes').value || '').trim() || 'Balance settlement';
       const fromLedger = document.getElementById('quick-settle-from-ledger').value === '1';
       const submitBtn = document.getElementById('quick-settle-submit-btn');
 
@@ -5537,6 +6256,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            amount: payAmount,
             settled_at: settleDate,
             payment_method: method,
             notes: notes
@@ -5556,7 +6276,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           } else if (currentOpenLedgerCustomerId === customerId) {
             await openCustomerLedgerModal(customerId);
           }
-          alert(data.message || "Mukammal balance settle ho gaya!");
+          alert(data.message || "Payment successfully recorded!");
         } else {
           alert(data.detail || "Settlement failed.");
         }
@@ -5615,6 +6335,42 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
     function closeBatchWhatsAppModal() {
       document.getElementById('batch-whatsapp-modal').classList.add('hidden');
+    }
+
+    async function clearAllSettledCustomerKhata() {
+      const confirmed = confirm(
+        "⚠️ ADMIN CONFIRMATION:\n\n" +
+        "Kya aap waqai tamam PURANE SETTLED customer khata / parchi records delete karna chahte hain?\n\n" +
+        "• Sirf fully settled (adaa shuda) parchiyan delete hongi.\n" +
+        "• Kisi bhi customer ka Baqaya / Pending balance delete NAHI hoga.\n\n" +
+        "Delete karne ke liye OK dabaiye."
+      );
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch('/api/customer-khata/clear-settled', { method: 'POST' });
+        if (!res.ok) {
+          throw new Error(`Server returned HTTP ${res.status}`);
+        }
+        const result = await res.json();
+        if (result.success) {
+          if (result.deleted_count > 0) {
+            alert(`✅ Kamyabi: ${result.message}`);
+          } else {
+            alert("ℹ️ Customer Khata mein koi settled / adaa shuda parchi mojood nahi hai.\n\n(Tamam mojooda records active baqaya hain jo mehfooz rahenge).");
+          }
+          await loadCustomers();
+          await loadCustomerKpis();
+          if (currentOpenLedgerCustomerId) {
+            await openCustomerLedgerModal(currentOpenLedgerCustomerId);
+          }
+        } else {
+          alert(`❌ Error: ${result.message || 'Records clear nahi ho sake.'}`);
+        }
+      } catch (err) {
+        console.error("Failed to clear settled customer khata", err);
+        alert("Server error: " + err.message);
+      }
     }
 
     // Customer Parchi / Statement Modal
@@ -5760,7 +6516,212 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         }
       }
     });
+  
+    // ==========================================
+    // LEAVE MANAGEMENT CLIENT LOGIC
+    // ==========================================
+    let allLeaves = [];
+
+    async function loadLeaves() {
+      try {
+        const res = await fetch('/api/leaves');
+        if (res.ok) {
+          allLeaves = await res.json();
+        } else {
+          allLeaves = [];
+        }
+        renderLeavesTable();
+        updateLeavesKpis();
+      } catch (err) {
+        console.error("Failed to load leaves", err);
+      }
+    }
+
+    function updateLeavesKpis() {
+      const monthEl = document.getElementById('leaves-kpi-month');
+      const todayEl = document.getElementById('leaves-kpi-today');
+      const todayNamesEl = document.getElementById('leaves-kpi-today-names');
+      const totalEl = document.getElementById('leaves-kpi-total');
+      if (totalEl) totalEl.innerText = (allLeaves || []).length;
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const curMonthStr = todayStr.substring(0, 7);
+
+      if (monthEl) {
+        const monthLeaves = (allLeaves || []).filter(l => l.date && l.date.startsWith(curMonthStr));
+        monthEl.innerText = monthLeaves.length;
+      }
+
+      if (todayEl) {
+        const todayLeaves = (allLeaves || []).filter(l => l.date === todayStr);
+        todayEl.innerText = todayLeaves.length;
+        if (todayNamesEl) {
+          if (todayLeaves.length > 0) {
+            todayNamesEl.innerText = todayLeaves.map(l => l.staff_name).join(', ');
+          } else {
+            todayNamesEl.innerText = 'None today';
+          }
+        }
+      }
+    }
+
+    function filterLeavesTable() {
+      const q = (document.getElementById('leaves-search-input')?.value || '').toLowerCase().trim();
+      const m = document.getElementById('leaves-filter-month')?.value || 'ALL';
+
+      const filtered = (allLeaves || []).filter(l => {
+        const matchText = !q || (l.staff_name || '').toLowerCase().includes(q) || (l.reason || '').toLowerCase().includes(q);
+        const matchMonth = m === 'ALL' || (l.date && l.date.startsWith(m));
+        return matchText && matchMonth;
+      });
+
+      renderLeavesTable(filtered);
+    }
+
+    function renderLeavesTable(list = null) {
+      const tbody = document.getElementById('leaves-tbody');
+      if (!tbody) return;
+      const data = list !== null ? list : allLeaves;
+      if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">Koi approved leave record nahi mila.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = data.map((l, idx) => `
+        <tr class="hover:bg-slate-50/80 transition-colors">
+          <td class="py-3 px-4 font-mono font-bold text-slate-400">#${l.id || (idx + 1)}</td>
+          <td class="py-3 px-4">
+            <div class="font-bold text-slate-900 text-xs">${l.staff_name || 'Staff #' + l.staff_id}</div>
+            <div class="text-[10px] text-slate-400 font-medium">${l.designation || l.role || 'Staff'}</div>
+          </td>
+          <td class="py-3 px-4">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700">${l.role || 'Staff'}</span>
+          </td>
+          <td class="py-3 px-4 font-mono font-bold text-slate-700 text-xs">${l.date}</td>
+          <td class="py-3 px-4 text-xs text-slate-600">
+            <div class="font-medium text-slate-800">${l.reason}</div>
+          </td>
+          <td class="py-3 px-4 text-xs">
+            <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <i data-lucide="check" class="w-3 h-3"></i> ${l.approved_by || 'Owner'}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-center">
+            <button onclick="deleteLeaveRecord(${l.id}, '${(l.staff_name || '').replace(/'/g, "\\'")}', '${l.date}')" title="Cancel Leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition cursor-pointer">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function openApplyLeaveModal() {
+      const sel = document.getElementById('leave-staff-select');
+      if (sel && staffList && staffList.length > 0) {
+        sel.innerHTML = staffList.map(s => `<option value="${s.id}">${s.name} (${s.designation || s.role || 'Staff'})</option>`).join('');
+      }
+      const dateInp = document.getElementById('leave-date-input');
+      if (dateInp) dateInp.value = new Date().toISOString().split('T')[0];
+      document.getElementById('apply-leave-modal').classList.remove('hidden');
+    }
+
+    function closeApplyLeaveModal() {
+      document.getElementById('apply-leave-modal').classList.add('hidden');
+    }
+
+    async function submitApplyLeave(e) {
+      e.preventDefault();
+      const staffId = parseInt(document.getElementById('leave-staff-select').value);
+      const dateVal = document.getElementById('leave-date-input').value;
+      const reasonVal = document.getElementById('leave-reason-input').value.trim();
+
+      try {
+        const res = await fetch('/api/leaves', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            staff_id: staffId,
+            date: dateVal,
+            reason: reasonVal
+          })
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+          closeApplyLeaveModal();
+          document.getElementById('leave-reason-input').value = '';
+          await loadLeaves();
+          await loadTodayAttendance();
+          if (typeof generatePayroll === 'function') generatePayroll();
+          alert("Leave successfully approved and attendance register updated!");
+        } else {
+          alert("Error: " + (result.detail || result.message || "Failed to approve leave"));
+        }
+      } catch (err) {
+        console.error("Leave approval error", err);
+        alert("Leave approve nahi ho saki: " + err.message);
+      }
+    }
+
+    async function deleteLeaveRecord(leaveId, staffName, dateVal) {
+      if (!confirm(`${staffName} ki ${dateVal} ki leave cancel/delete karni hai?`)) return;
+      try {
+        const res = await fetch(`/api/leaves/${leaveId}`, { method: 'DELETE' });
+        if (res.ok) {
+          await loadLeaves();
+          await loadTodayAttendance();
+          if (typeof generatePayroll === 'function') generatePayroll();
+        } else {
+          alert("Failed to delete leave");
+        }
+      } catch (err) {
+        console.error("Delete leave error", err);
+      }
+    }
+
   </script>
+
+    <!-- APPLY LEAVE MODAL -->
+    <div id="apply-leave-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative animate-in fade-in zoom-in duration-150">
+        <button onclick="closeApplyLeaveModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+            <i data-lucide="calendar-plus" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-base">Approve Staff Leave</h3>
+            <p class="text-xs text-slate-500">Record an emergency or approved casual leave</p>
+          </div>
+        </div>
+        <form onsubmit="submitApplyLeave(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Select Staff Member</label>
+            <select id="leave-staff-select" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Leave Date</label>
+            <input type="date" id="leave-date-input" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Reason for Leave</label>
+            <textarea id="leave-reason-input" rows="2" placeholder="e.g. Severe viral flu, Family wedding, Urgent personal work..." required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+          </div>
+          <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px] leading-relaxed">
+            <span class="font-bold">Policy Notice:</span> Staff ko har mahine <strong>2 leaves free</strong> milti hain. 2 se zyada chhuttiyon par payroll engine automatically 1 din ki tankhwah cut karega.
+          </div>
+          <div class="flex items-center justify-end gap-2.5 pt-2">
+            <button type="button" onclick="closeApplyLeaveModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0F172A] hover:bg-slate-800 transition cursor-pointer shadow-sm">Save &amp; Approve</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
 </body>
 </html>
 

@@ -165,6 +165,89 @@ class TestCustomerKhataModule(unittest.TestCase):
         self.assertIn('period', data)
         self.assertIn('summary', data)
         self.assertIn('debtors', data)
+
+    def test_7_customer_update(self):
+        c_res = client.post('/api/customers', json={
+            'name': 'Testing Update Client',
+            'phone': '0300-1112233',
+            'address': 'Street 1, Lahore',
+            'credit_limit': 10000.0
+        })
+        cust_id = c_res.json()['id']
+
+        put_res = client.put(f'/api/customers/{cust_id}', json={
+            'name': 'Testing Update Client (Renamed)',
+            'phone': '0300-9990011',
+            'address': 'Model Town C Block',
+            'credit_limit': 20000.0
+        })
+        self.assertEqual(put_res.status_code, 200)
+        self.assertTrue(put_res.json()['success'])
+
+        ledger = client.get(f'/api/customers/{cust_id}/ledger').json()
+        self.assertEqual(ledger['customer']['name'], 'Testing Update Client (Renamed)')
+        self.assertEqual(ledger['customer']['phone'], '0300-9990011')
+        self.assertEqual(ledger['customer']['address'], 'Model Town C Block')
+        self.assertEqual(ledger['customer']['credit_limit'], 20000.0)
+
+    def test_8_partial_payments(self):
+        c_res = client.post('/api/customers', json={
+            'name': 'Testing Partial Payment Client',
+            'phone': '0311-2223344',
+            'credit_limit': 15000.0
+        })
+        cust_id = c_res.json()['id']
+
+        # Bill 1: 2000
+        b1 = client.post('/api/customer-khata', json={
+            'customer_id': cust_id,
+            'invoice_no': 'INV-PARTIAL-1',
+            'date': '2026-09-13',
+            'item_description': 'Medicine 1',
+            'amount': 2000.0
+        }).json()
+
+        # Partial settle bill 1: pay 600 out of 2000
+        p_res = client.post(f'/api/customer-khata/{b1["id"]}/settle', json={
+            'amount': 600.0,
+            'payment_method': 'Cash',
+            'notes': 'Partial cash'
+        })
+        self.assertEqual(p_res.status_code, 200)
+        p_data = p_res.json()
+        self.assertTrue(p_data['success'])
+        self.assertTrue(p_data['partial'])
+        self.assertEqual(p_data['paid_amount'], 600.0)
+        self.assertEqual(p_data['remaining_amount'], 1400.0)
+        self.assertEqual(p_data['updated_balance'], 1400.0)
+
+        # Bill 2: 1600 (Total due now = 1400 + 1600 = 3000)
+        client.post('/api/customer-khata', json={
+            'customer_id': cust_id,
+            'invoice_no': 'INV-PARTIAL-2',
+            'date': '2026-09-13',
+            'item_description': 'Medicine 2',
+            'amount': 1600.0
+        })
+
+        # Partial settle customer balance: pay 2000 out of 3000
+        sa_res = client.post(f'/api/customers/{cust_id}/settle-all', json={
+            'amount': 2000.0,
+            'payment_method': 'EasyPaisa',
+            'notes': 'Customer paid 2000'
+        })
+        self.assertEqual(sa_res.status_code, 200)
+        sa_data = sa_res.json()
+        self.assertTrue(sa_data['success'])
+        self.assertTrue(sa_data['partial'])
+        self.assertEqual(sa_data['settled_amount'], 2000.0)
+        self.assertEqual(sa_data['remaining_balance'], 1000.0)
+
+        ledger = client.get(f'/api/customers/{cust_id}/ledger').json()
+        self.assertEqual(ledger['summary']['current_balance'], 1000.0)
+        self.assertEqual(ledger['summary']['total_credit'], 3600.0) # 2000 + 1600
+        self.assertEqual(ledger['summary']['total_settled'], 2600.0) # 600 + 2000
+
     @classmethod
     def tearDownClass(cls):
         conn = database.get_db_connection()
@@ -173,6 +256,9 @@ class TestCustomerKhataModule(unittest.TestCase):
             'Testing Series Client',
             'Testing Settlement Client',
             'Testing Settle All Client',
+            'Testing Update Client',
+            'Testing Update Client (Renamed)',
+            'Testing Partial Payment Client',
             'Naveed Iqbal Test'
         ]
         for name in test_names:
