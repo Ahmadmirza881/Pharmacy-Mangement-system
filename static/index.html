@@ -4,21 +4,503 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mumtaz Pharmacy — Biometric Attendance &amp; Payroll System</title>
+    <!-- Google Fonts: Plus Jakarta Sans, Inter, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
+    <script>
+
+    // ==========================================
+    // DEMO / DUMMY DATA ENGINE
+    // ==========================================
+    let USE_DUMMY_DATA = true;
+
+    const MOCK_STAFF = [
+      {
+        id: 1,
+        name: "Dr. Farhan Akhtar",
+        phone: "0300-1234567",
+        cnic: "35201-1234567-1",
+        role: "Chief Pharmacist",
+        designation: "Chief Pharmacist & Store Head",
+        monthly_salary: 85000,
+        shift_id: 1,
+        shift_name: "Morning Shift",
+        start_time: "09:00",
+        end_time: "17:00",
+        joining_date: "2023-03-10",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "House 14, St 3, Model Town, Lahore",
+        police_report: 1,
+        is_active: 1
+      },
+      {
+        id: 2,
+        name: "Dr. Ayesha Khan",
+        phone: "0321-9876543",
+        cnic: "35202-9876543-2",
+        role: "Retail Pharmacist",
+        designation: "Retail & Patient Care Pharmacist",
+        monthly_salary: 65000,
+        shift_id: 1,
+        shift_name: "Morning Shift",
+        start_time: "09:00",
+        end_time: "17:00",
+        joining_date: "2024-01-15",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "Plot 88, Block B, Faisal Town, Lahore",
+        police_report: 1,
+        is_active: 1
+      },
+      {
+        id: 3,
+        name: "Muhammad Usman",
+        phone: "0312-4567890",
+        cnic: "35201-4567890-3",
+        role: "Senior Sales Executive",
+        designation: "Senior Sales & Dispenser",
+        monthly_salary: 45000,
+        shift_id: 2,
+        shift_name: "Evening Shift",
+        start_time: "17:00",
+        end_time: "01:00",
+        joining_date: "2023-08-01",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "Main Bazar, Kot Lakhpat, Lahore",
+        police_report: 1,
+        is_active: 1
+      },
+      {
+        id: 4,
+        name: "Bilal Ahmed",
+        phone: "0333-1122334",
+        cnic: "35202-1122334-5",
+        role: "Inventory Manager",
+        designation: "Inventory & Stock Officer",
+        monthly_salary: 50000,
+        shift_id: 1,
+        shift_name: "Morning Shift",
+        start_time: "09:00",
+        end_time: "17:00",
+        joining_date: "2023-11-20",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "Sector J, Phase 2, Johar Town, Lahore",
+        police_report: 1,
+        is_active: 1
+      },
+      {
+        id: 5,
+        name: "Zainab Bibi",
+        phone: "0305-6677889",
+        cnic: "35201-6677889-6",
+        role: "Accounts & Cashier",
+        designation: "Accounts & Billing Incharge",
+        monthly_salary: 38000,
+        shift_id: 1,
+        shift_name: "Morning Shift",
+        start_time: "09:00",
+        end_time: "17:00",
+        joining_date: "2024-04-10",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "Raza Block, Allama Iqbal Town, Lahore",
+        police_report: 1,
+        is_active: 1
+      },
+      {
+        id: 6,
+        name: "Tariq Mehmood",
+        phone: "0345-2233445",
+        cnic: "35202-2233445-7",
+        role: "Dispenser Technician",
+        designation: "Senior Pharmacy Technician",
+        monthly_salary: 40000,
+        shift_id: 2,
+        shift_name: "Evening Shift",
+        start_time: "17:00",
+        end_time: "01:00",
+        joining_date: "2023-06-18",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "Sector B-1, Township, Lahore",
+        police_report: 1,
+        is_active: 1
+      },
+      {
+        id: 7,
+        name: "Hamza Malik",
+        phone: "0315-7788990",
+        cnic: "35201-7788990-8",
+        role: "Sales Assistant",
+        designation: "Counter Sales Assistant",
+        monthly_salary: 32000,
+        shift_id: 2,
+        shift_name: "Evening Shift",
+        start_time: "17:00",
+        end_time: "01:00",
+        joining_date: "2024-06-01",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "Main Market, Gulberg III, Lahore",
+        police_report: 1,
+        is_active: 1
+      },
+      {
+        id: 8,
+        name: "Sanaullah Riaz",
+        phone: "0302-3344556",
+        cnic: "35202-3344556-9",
+        role: "Store Helper",
+        designation: "Store & Delivery Helper",
+        monthly_salary: 28000,
+        shift_id: 1,
+        shift_name: "Morning Shift",
+        start_time: "09:00",
+        end_time: "17:00",
+        joining_date: "2024-08-15",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "Pakki Thathi, Samanabad, Lahore",
+        police_report: 1,
+        is_active: 1
+      },
+      {
+        id: 9,
+        name: "Rabia Noor",
+        phone: "0324-5566778",
+        cnic: "35201-5566778-0",
+        role: "Billing Officer",
+        designation: "Computer Operator & Cashier",
+        monthly_salary: 35000,
+        shift_id: 2,
+        shift_name: "Evening Shift",
+        start_time: "17:00",
+        end_time: "01:00",
+        joining_date: "2024-09-01",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "Civic Centre, Garden Town, Lahore",
+        police_report: 1,
+        is_active: 1
+      },
+      {
+        id: 10,
+        name: "Rashid Minhas",
+        phone: "0331-8899001",
+        cnic: "35202-8899001-1",
+        role: "Night Incharge",
+        designation: "Night Shift Pharmacist",
+        monthly_salary: 52000,
+        shift_id: 2,
+        shift_name: "Evening Shift",
+        start_time: "17:00",
+        end_time: "01:00",
+        joining_date: "2023-12-10",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "Defence Road, Walton, Lahore",
+        police_report: 1,
+        is_active: 1
+      },
+      {
+        id: 11,
+        name: "Kashif Gujjar",
+        phone: "0308-9988776",
+        cnic: "35201-9988776-3",
+        role: "Delivery Rider",
+        designation: "Home Delivery Executive",
+        monthly_salary: 25000,
+        shift_id: 1,
+        shift_name: "Morning Shift",
+        start_time: "09:00",
+        end_time: "17:00",
+        joining_date: "2024-10-01",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "Ferozepur Road, Chungi, Lahore",
+        police_report: 1,
+        is_active: 1
+      },
+      {
+        id: 12,
+        name: "Naveed Qureshi",
+        phone: "0346-4433221",
+        cnic: "35202-4433221-4",
+        role: "Housekeeping",
+        designation: "Pharmacy Sanitation & Office Boy",
+        monthly_salary: 22000,
+        shift_id: 1,
+        shift_name: "Morning Shift",
+        start_time: "09:00",
+        end_time: "17:00",
+        joining_date: "2024-11-15",
+        daily_hours: 8,
+        allowed_leaves: 2,
+        address: "Nishtar Colony, Lahore",
+        police_report: 1,
+        is_active: 1
+      }
+    ];
+
+    const MOCK_ATTENDANCE_DATA = {
+      date: new Date().toISOString().split('T')[0],
+      total_staff: 12,
+      present_count: 10,
+      late_count: 2,
+      absent_count: 0,
+      leave_count: 1,
+      pending_count: 1,
+      roster: [
+        { id: 1, name: "Dr. Farhan Akhtar", role: "Chief Pharmacist", shift_name: "Morning Shift", time_in: "08:52:14", time_out: null, status: "ON_TIME", late_minutes: 0, worked_minutes: 360, required_minutes: 480, target_out: "17:00", monthly_salary: 85000 },
+        { id: 2, name: "Dr. Ayesha Khan", role: "Retail Pharmacist", shift_name: "Morning Shift", time_in: "08:58:30", time_out: null, status: "ON_TIME", late_minutes: 0, worked_minutes: 350, required_minutes: 480, target_out: "17:00", monthly_salary: 65000 },
+        { id: 3, name: "Muhammad Usman", role: "Senior Sales Executive", shift_name: "Evening Shift", time_in: "17:28:10", time_out: null, status: "LATE", late_minutes: 28, worked_minutes: 240, required_minutes: 480, target_out: "01:28", monthly_salary: 45000 },
+        { id: 4, name: "Bilal Ahmed", role: "Inventory Manager", shift_name: "Morning Shift", time_in: "08:45:00", time_out: null, status: "ON_TIME", late_minutes: 0, worked_minutes: 370, required_minutes: 480, target_out: "17:00", monthly_salary: 50000 },
+        { id: 5, name: "Zainab Bibi", role: "Accounts & Cashier", shift_name: "Morning Shift", time_in: null, time_out: null, status: "LEAVE", late_minutes: 0, worked_minutes: 0, required_minutes: 480, target_out: "—", leave_reason: "Medical Checkup (Approved)", monthly_salary: 38000 },
+        { id: 6, name: "Tariq Mehmood", role: "Dispenser Technician", shift_name: "Evening Shift", time_in: "16:55:20", time_out: null, status: "ON_TIME", late_minutes: 0, worked_minutes: 270, required_minutes: 480, target_out: "01:00", monthly_salary: 40000 },
+        { id: 7, name: "Hamza Malik", role: "Sales Assistant", shift_name: "Evening Shift", time_in: "17:15:45", time_out: null, status: "LATE", late_minutes: 15, worked_minutes: 250, required_minutes: 480, target_out: "01:15", monthly_salary: 32000 },
+        { id: 8, name: "Sanaullah Riaz", role: "Store Helper", shift_name: "Morning Shift", time_in: "08:50:00", time_out: null, status: "ON_TIME", late_minutes: 0, worked_minutes: 365, required_minutes: 480, target_out: "17:00", monthly_salary: 28000 },
+        { id: 9, name: "Rabia Noor", role: "Billing Officer", shift_name: "Evening Shift", time_in: "16:58:00", time_out: null, status: "ON_TIME", late_minutes: 0, worked_minutes: 260, required_minutes: 480, target_out: "01:00", monthly_salary: 35000 },
+        { id: 10, name: "Rashid Minhas", role: "Night Incharge", shift_name: "Evening Shift", time_in: null, time_out: null, status: "PENDING", late_minutes: 0, worked_minutes: 0, required_minutes: 480, target_out: "—", monthly_salary: 52000 },
+        { id: 11, name: "Kashif Gujjar", role: "Delivery Rider", shift_name: "Morning Shift", time_in: "08:48:12", time_out: null, status: "ON_TIME", late_minutes: 0, worked_minutes: 368, required_minutes: 480, target_out: "17:00", monthly_salary: 25000 },
+        { id: 12, name: "Naveed Qureshi", role: "Housekeeping", shift_name: "Morning Shift", time_in: "08:40:00", time_out: null, status: "ON_TIME", late_minutes: 0, worked_minutes: 375, required_minutes: 480, target_out: "17:00", monthly_salary: 22000 }
+      ]
+    };
+
+    const MOCK_PUNCHES_INITIAL = [
+      { name: "Muhammad Usman", type: "IN", time: "17:28:10", status: "LATE", message: "Time-IN recorded (28m Late)" },
+      { name: "Hamza Malik", type: "IN", time: "17:15:45", status: "LATE", message: "Time-IN recorded (15m Late)" },
+      { name: "Rabia Noor", type: "IN", time: "16:58:00", status: "ON_TIME", message: "Time-IN recorded" },
+      { name: "Tariq Mehmood", type: "IN", time: "16:55:20", status: "ON_TIME", message: "Time-IN recorded" },
+      { name: "Dr. Ayesha Khan", type: "IN", time: "08:58:30", status: "ON_TIME", message: "Time-IN recorded" },
+      { name: "Dr. Farhan Akhtar", type: "IN", time: "08:52:14", status: "ON_TIME", message: "Time-IN recorded" },
+      { name: "Sanaullah Riaz", type: "IN", time: "08:50:00", status: "ON_TIME", message: "Time-IN recorded" },
+      { name: "Bilal Ahmed", type: "IN", time: "08:45:00", status: "ON_TIME", message: "Time-IN recorded" }
+    ];
+
+    const MOCK_CUSTOMERS = [
+      {
+        id: 1,
+        name: "Haji Abdul Rehman",
+        phone: "0300-5551234",
+        address: "House 12, St 4, Model Town, Lahore",
+        credit_limit: 50000,
+        current_balance: 32400,
+        pending_invoices_count: 3,
+        last_payment_date: "2026-09-08",
+        status: "ACTIVE"
+      },
+      {
+        id: 2,
+        name: "Dr. Tariq Clinic & Maternity Home",
+        phone: "0321-4445566",
+        address: "Shop 4, Main Commercial Market, Faisal Town, Lahore",
+        credit_limit: 100000,
+        current_balance: 58900,
+        pending_invoices_count: 5,
+        last_payment_date: "2026-09-12",
+        status: "ACTIVE"
+      },
+      {
+        id: 3,
+        name: "Chaudhry Munir Ahmed",
+        phone: "0313-7778899",
+        address: "Bungalow 71, Block G, Gulberg III, Lahore",
+        credit_limit: 30000,
+        current_balance: 28500,
+        pending_invoices_count: 2,
+        last_payment_date: "2026-08-30",
+        status: "ACTIVE"
+      },
+      {
+        id: 4,
+        name: "Al-Shifa Family Care Hospital",
+        phone: "0333-8889911",
+        address: "12-A Jail Road, Near Shadman, Lahore",
+        credit_limit: 150000,
+        current_balance: 44100,
+        pending_invoices_count: 4,
+        last_payment_date: "2026-09-10",
+        status: "ACTIVE"
+      },
+      {
+        id: 5,
+        name: "Malik Zubair Auto Workshop",
+        phone: "0301-2223344",
+        address: "Lorry Adda Road, Badami Bagh, Lahore",
+        credit_limit: 25000,
+        current_balance: 18850,
+        pending_invoices_count: 2,
+        last_payment_date: "2026-08-08",
+        status: "OVERDUE"
+      },
+      {
+        id: 6,
+        name: "Rana Kamran Akhtar",
+        phone: "0345-6667788",
+        address: "Street 19, Sector C, DHA Phase 5, Lahore",
+        credit_limit: 40000,
+        current_balance: 0,
+        pending_invoices_count: 0,
+        last_payment_date: "2026-09-11",
+        status: "CLEARED"
+      },
+      {
+        id: 7,
+        name: "Mian Nawazish Ali",
+        phone: "0312-3334455",
+        address: "Flat 2, Civic Centre, Johar Town, Lahore",
+        credit_limit: 35000,
+        current_balance: 0,
+        pending_invoices_count: 0,
+        last_payment_date: "2026-09-05",
+        status: "CLEARED"
+      },
+      {
+        id: 8,
+        name: "Sheikh Irfan Medical Store",
+        phone: "0322-9990011",
+        address: "Main Circular Road, Shah Alam Market, Lahore",
+        credit_limit: 80000,
+        current_balance: 0,
+        pending_invoices_count: 0,
+        last_payment_date: "2026-09-09",
+        status: "CLEARED"
+      },
+      {
+        id: 9,
+        name: "Begum Shahnaz Akhtar",
+        phone: "0306-1112233",
+        address: "House 55, Block B, Garden Town, Lahore",
+        credit_limit: 20000,
+        current_balance: 2000,
+        pending_invoices_count: 1,
+        last_payment_date: "2026-09-04",
+        status: "ACTIVE"
+      },
+      {
+        id: 10,
+        name: "Master Aslam Tailors",
+        phone: "0334-4443322",
+        address: "Moon Market, Allama Iqbal Town, Lahore",
+        credit_limit: 15000,
+        current_balance: 0,
+        pending_invoices_count: 0,
+        last_payment_date: "2026-09-01",
+        status: "CLEARED"
+      }
+    ];
+
+    const MOCK_CUSTOMER_KPIS = {
+      total_outstanding: 184750,
+      this_week_credit: 42000,
+      this_week_recovered: 28500,
+      active_debtors_count: 6,
+      total_customers_count: 10,
+      since_date: "2026-09-06"
+    };
+
+    const MOCK_ADVANCES = [
+      {
+        id: 101,
+        staff_id: 4,
+        staff_name: "Bilal Ahmed",
+        amount: 10000,
+        remaining_amount: 5000,
+        reason: "Family Medical Support",
+        created_at: "2026-09-04 11:20:00",
+        status: "PARTIAL"
+      },
+      {
+        id: 102,
+        staff_id: 7,
+        staff_name: "Hamza Malik",
+        amount: 8000,
+        remaining_amount: 4000,
+        reason: "Eid Shopping Advance",
+        created_at: "2026-09-06 15:40:00",
+        status: "PARTIAL"
+      },
+      {
+        id: 103,
+        staff_id: 8,
+        staff_name: "Sanaullah Riaz",
+        amount: 5000,
+        remaining_amount: 0,
+        reason: "Motorcycle Tyre Repair",
+        created_at: "2026-08-25 10:15:00",
+        status: "SETTLED"
+      },
+      {
+        id: 104,
+        staff_id: 3,
+        staff_name: "Muhammad Usman",
+        amount: 15000,
+        remaining_amount: 15000,
+        reason: "House Rent Advance",
+        created_at: "2026-09-10 14:00:00",
+        status: "ACTIVE"
+      }
+    ];
+
+    function toggleDummyData() {
+      USE_DUMMY_DATA = !USE_DUMMY_DATA;
+      const badge = document.getElementById('demo-mode-badge');
+      if (badge) {
+        if (USE_DUMMY_DATA) {
+          badge.className = 'hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-600 text-xs font-semibold shadow-xs';
+          badge.innerHTML = `
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <span>Demo Mode: Dummy Data</span>
+            <button onclick="toggleDummyData()" class="ml-1 text-[11px] underline text-amber-700 hover:text-amber-900 font-bold cursor-pointer" title="Click to switch to Live Database data">Switch</button>
+          `;
+        } else {
+          badge.className = 'hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 text-xs font-semibold shadow-xs';
+          badge.innerHTML = `
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Live DB Connected</span>
+            <button onclick="toggleDummyData()" class="ml-1 text-[11px] underline text-emerald-700 hover:text-emerald-900 font-bold cursor-pointer" title="Click to switch to Dummy Demo Data">Switch</button>
+          `;
+        }
+      }
+      // Reload current tab data
+      loadStaff();
+      loadTodayAttendance();
+      loadCustomers();
+      loadCustomerKpis();
+      if (typeof generatePayroll === 'function') generatePayroll();
+      if (typeof loadAdvances === 'function') loadAdvances();
+    }
+
     tailwind.config = {
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
           colors: {
-            mumtaz: {
-              indigo: '#232272',
-              green: '#156D38',
-              lightgreen: '#F0FDF4',
-              lightindigo: '#EEF2FF',
-              dark: '#0F172A'
+            pm: {
+              sidebar: '#0F172A',
+              sidebarhover: '#1E293B',
+              canvas: '#F4F7FC',
+              card: '#FFFFFF',
+              border: '#E2E8F0',
+              blue: '#0284C7',
+              rose: '#E11D48',
+              emerald: '#16A34A',
+              purple: '#9333EA',
+              amber: '#D97706',
+              teal: '#0D9488',
+              indigo: '#4F46E5',
             }
           }
         }
@@ -351,89 +833,785 @@
       }
     }
   </style>
+<style>
+    /* ============================================================ */
+    /* PHARMACY MANAGER SAAS THEME (MATCHING USER SCREENSHOT)       */
+    /* ============================================================ */
+    body {
+      font-family: 'Inter', sans-serif !important;
+      background-color: #F4F7FC !important;
+      color: #1E293B !important;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Plus Jakarta Sans', sans-serif !important;
+      letter-spacing: -0.02em;
+    }
+    .font-mono, #live-time, .currency-amount, td.time-cell, .stat-num {
+      font-family: 'JetBrains Mono', monospace !important;
+      font-variant-numeric: tabular-nums !important;
+    }
+
+    /* Print media hiding sidebar & header */
+    @media print {
+      #sidebar, header, .no-print {
+        display: none !important;
+        visibility: hidden !important;
+      }
+    }
+
+    /* Pulse Card Interactions (Reports Colorful Badges) */
+    .pulse-card {
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .pulse-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.08);
+    }
+    .pulse-card.active-filter {
+      transform: translateY(-2px);
+    }
+    #pulse-card-ALL.active-filter {
+      box-shadow: 0 0 0 2px #0284C7, 0 8px 16px -2px rgba(2, 132, 199, 0.3) !important;
+      border-color: #0284C7 !important;
+    }
+    #pulse-card-PRESENT.active-filter {
+      box-shadow: 0 0 0 2px #16A34A, 0 8px 16px -2px rgba(22, 163, 74, 0.3) !important;
+      border-color: #16A34A !important;
+    }
+    #pulse-card-LATE.active-filter {
+      box-shadow: 0 0 0 2px #D97706, 0 8px 16px -2px rgba(217, 119, 6, 0.3) !important;
+      border-color: #D97706 !important;
+    }
+    #pulse-card-LEAVE.active-filter {
+      box-shadow: 0 0 0 2px #4F46E5, 0 8px 16px -2px rgba(79, 70, 229, 0.3) !important;
+      border-color: #4F46E5 !important;
+    }
+    #pulse-card-ABSENT.active-filter {
+      box-shadow: 0 0 0 2px #E11D48, 0 8px 16px -2px rgba(225, 29, 72, 0.3) !important;
+      border-color: #E11D48 !important;
+    }
+
+    /* Laser Scanner & Pulse */
+    @keyframes scan-sweep {
+      0% { top: 6%; opacity: 0.2; }
+      50% { top: 88%; opacity: 1; filter: drop-shadow(0 0 10px #0284c7); }
+      100% { top: 6%; opacity: 0.2; }
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.96); opacity: 0.8; }
+      50% { transform: scale(1.08); opacity: 0.35; }
+      100% { transform: scale(0.96); opacity: 0.8; }
+    }
+    .scanner-pulse {
+      animation: pulse-ring 2.5s infinite ease-in-out;
+    }
+
+    /* Custom Sleek Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+</style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col font-sans">
 
-  <!-- TOP HEADER WITH MUMTAZ BRANDING -->
-  <header class="bg-[#232272] text-white shadow-md sticky top-0 z-50">
-    <!-- BRAND & STATUS BAR -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between border-b border-indigo-900/40">
-      <!-- Left: Logo & Clean Title -->
-      <div class="flex items-center space-x-3">
-        <div class="bg-white p-1 rounded-xl shadow-sm border border-indigo-100 flex-shrink-0 flex items-center justify-center">
-          <img src="/logo.jpg" alt="Mumtaz Pharmacy" class="h-9 w-auto object-contain">
+<body class="bg-[#F4F7FC] text-slate-800 min-h-screen flex font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- ================================================================= -->
+  <!-- 1. LEFT SIDEBAR (DARK ROYAL BLUE / NAVY - MATCHING SCREENSHOT)   -->
+  <!-- ================================================================= -->
+  <aside id="sidebar" class="w-64 bg-[#0F172A] text-slate-300 flex-shrink-0 min-h-screen flex flex-col border-r border-slate-800 sticky top-0 h-screen z-40 transition-all duration-300">
+    <!-- Brand Header -->
+    <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-lg shadow-sm shadow-emerald-900/30 flex-shrink-0">
+        <i data-lucide="cross" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h1 class="font-display font-extrabold text-white text-sm tracking-tight leading-tight">Mumtaz Pharmacy</h1>
+        <p class="text-[10px] text-slate-400 font-medium tracking-wider uppercase">HR &amp; Payroll Management</p>
+      </div>
+    </div>
+
+    <!-- Navigation Menu Items (Matching Screenshot) -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <!-- DASHBOARD TAB (ACTIVE BY DEFAULT) -->
+      <button onclick="switchTab('live')" id="side-tab-live" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 shadow-sm shadow-indigo-900/30 transition-colors cursor-pointer">
+        <i data-lucide="layout-dashboard" class="w-4 h-4 text-white"></i>
+        <span>Dashboard</span>
+        <span class="ml-auto w-2 h-2 rounded-full bg-emerald-400"></span>
+      </button>
+
+      <!-- STAFF MANAGEMENT TAB -->
+      <button onclick="switchTab('staff')" id="side-tab-staff" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+        <i data-lucide="users" class="w-4 h-4"></i>
+        <span>Staff Management</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
+      </button>
+
+      <!-- ATTENDANCE TAB -->
+      <button onclick="switchTab('kiosk')" id="side-tab-kiosk" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+        <i data-lucide="fingerprint" class="w-4 h-4"></i>
+        <span>Attendance (Kiosk)</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
+      </button>
+
+      <!-- LEAVE MANAGEMENT TAB -->
+      <button onclick="switchTab('staff'); filterStaffByStatus('LEAVE');" id="side-tab-leaves" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+        <i data-lucide="calendar-off" class="w-4 h-4"></i>
+        <span>Leave Management</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
+      </button>
+
+      <!-- SALARY & PAYROLL TAB -->
+      <button onclick="switchTab('payroll')" id="side-tab-payroll" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+        <i data-lucide="calculator" class="w-4 h-4"></i>
+        <span>Salary &amp; Payroll</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
+      </button>
+
+      <!-- ADVANCES & KHATA TAB -->
+      <button onclick="switchTab('advances')" id="side-tab-advances" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+        <i data-lucide="banknote" class="w-4 h-4"></i>
+        <span>Advances &amp; Khata</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
+      </button>
+
+      <!-- CUSTOMER KHATA TAB -->
+      <button onclick="switchTab('customer-khata')" id="side-tab-customer-khata" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+        <i data-lucide="book-open-check" class="w-4 h-4"></i>
+        <span>Customer Khata</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
+      </button>
+
+      <!-- REPORTS TAB -->
+      <button onclick="switchTab('reports')" id="side-tab-reports" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+        <span>Monthly Reports</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
+      </button>
+    </nav>
+
+    <!-- Bottom Section: Admin Profile & Version Info -->
+    <div class="p-4 border-t border-slate-800 bg-slate-950/40">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-slate-700 text-white flex items-center justify-center font-bold text-xs border border-slate-600">
+          AD
         </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base sm:text-lg font-black tracking-tight text-white leading-tight">
-              MUMTAZ PHARMACY
-            </h1>
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              CORE SYSTEM
-            </span>
+        <div class="text-[11px] leading-tight min-w-0 flex-1">
+          <p class="font-bold text-white truncate">Mumtaz Pharmacy</p>
+          <p class="text-slate-400 text-[10px]">Admin • v2.4</p>
+        </div>
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500" title="System Online"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ================================================================= -->
+  <!-- 2. MAIN CONTENT AREA (FLEX-1)                                    -->
+  <!-- ================================================================= -->
+  <div class="flex-1 flex flex-col min-w-0 min-h-screen">
+    
+    <!-- TOP HEADER BAR (MATCHING SCREENSHOT) -->
+    <header class="bg-white border-b border-slate-200 px-6 py-3.5 sticky top-0 z-30 flex items-center justify-between shadow-xs">
+      <!-- Left: Dynamic Page Title & Subtitle -->
+      <div>
+        <h2 id="page-title" class="text-lg font-extrabold text-slate-900 tracking-tight leading-tight">Executive Dashboard</h2>
+        <p id="page-subtitle" class="text-xs text-slate-500 font-medium">Real-time staff pulse, attendance and pharmacy operations</p>
+      </div>
+
+      <!-- Right: Search, Clock, Notifications, Admin Profile -->
+      <div class="flex items-center gap-4 sm:gap-5">
+        <!-- Add New Pill Button (from screenshot) -->
+        <button onclick="openStaffModal()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-sm shadow-indigo-600/30 flex items-center gap-1.5 transition cursor-pointer">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Add New</span>
+        </button>
+
+        <!-- Top Search Input -->
+        <div class="relative hidden md:block w-56 lg:w-64">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+          <input type="text" id="top-staff-search" oninput="syncStaffSearch(this.value)" placeholder="Search staff by name, CNIC..." class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-1.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
+        </div>
+
+        <!-- Live Time & Date in JetBrains Mono -->
+        <div class="text-right hidden lg:block">
+          <div id="live-time" class="text-xs font-black font-mono text-slate-800">00:00:00 AM</div>
+          <div id="live-date" class="text-[10px] text-slate-400 font-medium">Wednesday, 10 Sept 2026</div>
+        </div>
+
+        <!-- Notification Bell with Badge (from screenshot) -->
+        <div class="relative text-slate-500 hover:text-slate-700 cursor-pointer p-1">
+          <i data-lucide="bell" class="w-5 h-5"></i>
+          <span class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full"></span>
+        </div>
+
+        <!-- Admin Profile Pill (from prompt) -->
+        <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200 cursor-pointer">
+          <div class="w-8 h-8 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            AD
           </div>
-          <p class="text-[11px] text-indigo-200/90 font-medium">Biometric Staff Attendance &amp; Payroll Engine</p>
+          <div class="hidden sm:block text-left leading-tight">
+            <p class="text-xs font-bold text-slate-800">Admin</p>
+            <p class="text-[10px] text-slate-400">Mumtaz HR</p>
+          </div>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
         </div>
       </div>
+    </header>
 
-      <!-- Right: Live Clock & Device Status -->
-      <div class="flex items-center gap-3 sm:gap-5">
-        <div class="text-right hidden sm:block leading-tight">
-          <div id="live-time" class="text-base sm:text-lg font-black font-mono tracking-wide text-emerald-400">00:00:00 AM</div>
-          <div id="live-date" class="text-[11px] text-indigo-200/80 font-medium">Wednesday, 10 Sept 2026</div>
-        </div>
-        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-semibold shadow-sm">
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-          </span>
-          <span class="text-[11px] font-bold">Biometric Active</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- NAVIGATION TABS -->
-    <div class="bg-[#1b1959]">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 flex space-x-1 sm:space-x-2 overflow-x-auto text-xs sm:text-sm font-semibold">
-        <button onclick="switchTab('kiosk')" id="tab-kiosk" class="py-2.5 px-3.5 border-b-2 border-emerald-400 text-white bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
-          <i data-lucide="fingerprint" class="w-4 h-4 text-emerald-400"></i>
-          <span>Punch Terminal</span>
-        </button>
-        <button onclick="switchTab('live')" id="tab-live" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
-          <i data-lucide="activity" class="w-4 h-4"></i>
-          <span>Live Roster</span>
-        </button>
-        <button onclick="switchTab('payroll')" id="tab-payroll" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
-          <i data-lucide="calculator" class="w-4 h-4"></i>
-          <span>Payroll &amp; Slips</span>
-        </button>
-        <button onclick="switchTab('advances')" id="tab-advances" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
-          <i data-lucide="banknote" class="w-4 h-4"></i>
-          <span>Advance Khata</span>
-        </button>
-        <button onclick="switchTab('customer-khata')" id="tab-customer-khata" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
-          <i data-lucide="book-open-check" class="w-4 h-4"></i>
-          <span>Customer Khata</span>
-        </button>
-        <button onclick="switchTab('staff')" id="tab-staff" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
-          <i data-lucide="users" class="w-4 h-4"></i>
-          <span>Staff Directory</span>
-        </button>
-        <button onclick="switchTab('reports')" id="tab-reports" class="py-2.5 px-3.5 border-b-2 border-transparent text-indigo-200/80 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer">
-          <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-          <span>Monthly Register</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full">
-
+    <!-- MAIN SCROLLABLE CONTENT VIEW -->
+    <main class="flex-1 p-6 space-y-6 max-w-7xl w-full mx-auto">
+          <!-- ================================================================= -->
+    <!-- TAB 1: EXECUTIVE DASHBOARD (MATCHING USER SCREENSHOT)              -->
     <!-- ================================================================= -->
-    <!-- TAB 1: BIOMETRIC PUNCH TERMINAL -->
+    <section id="view-live" class="space-y-6">
+
+      <!-- TOP REPORTS HEADER & 4 COLORFUL STAT CARDS (FROM SCREENSHOT) -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-base font-extrabold text-slate-800 tracking-tight">Reports</h2>
+          <span id="live-filter-badge" class="text-xs bg-slate-100 text-slate-600 font-semibold px-2.5 py-1 rounded-full">Showing All Staff</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+          <!-- 1. LIGHT SKY BLUE STAT CARD -->
+          <div id="pulse-card-ALL" onclick="filterLiveRoster('ALL')" class="pulse-card bg-[#E0F2FE] p-4 rounded-2xl border border-sky-200/80 shadow-xs flex items-center justify-between active-filter" title="Click to view all staff">
+            <div>
+              <div class="w-8 h-8 rounded-full bg-[#0284C7] text-white flex items-center justify-center shadow-sm mb-2">
+                <i data-lucide="users" class="w-4 h-4"></i>
+              </div>
+              <h3 id="pulse-total" class="text-2xl font-black text-slate-900 tracking-tight">6</h3>
+              <p class="text-xs font-semibold text-sky-900/80 mt-0.5">Total Staff</p>
+            </div>
+            <i data-lucide="info" class="w-4 h-4 text-sky-600/50 self-start"></i>
+          </div>
+
+          <!-- 2. SOFT CORAL / PINK STAT CARD -->
+          <div id="pulse-card-ABSENT" onclick="filterLiveRoster('ABSENT')" class="pulse-card bg-[#FFE4E6] p-4 rounded-2xl border border-rose-200/80 shadow-xs flex items-center justify-between" title="Click to filter absent staff">
+            <div>
+              <div class="w-8 h-8 rounded-full bg-[#E11D48] text-white flex items-center justify-center shadow-sm mb-2">
+                <i data-lucide="user-x" class="w-4 h-4"></i>
+              </div>
+              <h3 id="pulse-absent" class="text-2xl font-black text-slate-900 tracking-tight">0</h3>
+              <p class="text-xs font-semibold text-rose-900/80 mt-0.5">Absent Today</p>
+            </div>
+            <i data-lucide="info" class="w-4 h-4 text-rose-600/50 self-start"></i>
+          </div>
+
+          <!-- 3. SOFT MINT GREEN STAT CARD -->
+          <div id="pulse-card-PRESENT" onclick="filterLiveRoster('PRESENT')" class="pulse-card bg-[#DCFCE7] p-4 rounded-2xl border border-emerald-200/80 shadow-xs flex items-center justify-between" title="Click to filter present staff">
+            <div>
+              <div class="w-8 h-8 rounded-full bg-[#16A34A] text-white flex items-center justify-center shadow-sm mb-2">
+                <i data-lucide="user-check" class="w-4 h-4"></i>
+              </div>
+              <h3 id="pulse-present" class="text-2xl font-black text-slate-900 tracking-tight">0</h3>
+              <p class="text-xs font-semibold text-emerald-900/80 mt-0.5">Present On-Time</p>
+            </div>
+            <i data-lucide="info" class="w-4 h-4 text-emerald-600/50 self-start"></i>
+          </div>
+
+          <!-- 4. SOFT LAVENDER PURPLE STAT CARD -->
+          <div id="pulse-card-LATE" onclick="filterLiveRoster('LATE')" class="pulse-card bg-[#F3E8FF] p-4 rounded-2xl border border-purple-200/80 shadow-xs flex items-center justify-between" title="Click to filter late arrivals">
+            <div>
+              <div class="w-8 h-8 rounded-full bg-[#9333EA] text-white flex items-center justify-center shadow-sm mb-2">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+              </div>
+              <h3 id="pulse-late" class="text-2xl font-black text-slate-900 tracking-tight">0</h3>
+              <p class="text-xs font-semibold text-purple-900/80 mt-0.5">Late Arrivals</p>
+            </div>
+            <i data-lucide="info" class="w-4 h-4 text-purple-600/50 self-start"></i>
+          </div>
+
+          <!-- HIDDEN LEAVE HOOK FOR SCRIPT -->
+          <div id="pulse-card-LEAVE" onclick="filterLiveRoster('LEAVE')" class="hidden">
+            <span id="pulse-leave">0</span>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MIDDLE ROW: DATA TABLES WITH COLORED HEADERS & DONUT CHART (FROM SCREENSHOT) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- LEFT COLUMN: TWO TABLES WITH COLORED HEADERS (SPAN 8) -->
+        <div class="lg:col-span-8 space-y-6">
+
+          <!-- 1. BLUE HEADER BANNER CARD: TODAY'S SHIFT ATTENDANCE -->
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="bg-[#0284C7] text-white px-5 py-3 flex items-center justify-between font-bold text-xs uppercase tracking-wider">
+              <div class="flex items-center gap-2">
+                <i data-lucide="activity" class="w-4 h-4"></i>
+                <span>Today's Shift Attendance Roster</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button id="live-filter-reset-btn" onclick="filterLiveRoster('ALL')" class="hidden bg-white/20 hover:bg-white/30 text-white text-[11px] py-1 px-2.5 rounded-md font-bold transition cursor-pointer">
+                  Show All
+                </button>
+                <button onclick="loadTodayAttendance()" class="bg-white/10 hover:bg-white/20 text-white text-[11px] py-1 px-2.5 rounded-md font-semibold flex items-center gap-1 transition cursor-pointer">
+                  <i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm">
+                <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b border-slate-200/80">
+                  <tr>
+                    <th class="py-3 px-4">Staff Member</th>
+                    <th class="py-3 px-4">Role</th>
+                    <th class="py-3 px-4">Shift</th>
+                    <th class="py-3 px-4">Time In</th>
+                    <th class="py-3 px-4">Time Out</th>
+                    <th class="py-3 px-4 text-center">Status</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="live-attendance-tbody" class="divide-y divide-slate-100">
+                  <tr>
+                    <td colspan="7" class="p-8 text-center text-slate-400">Loading live shift roster...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 2. GREEN HEADER BANNER CARD: LIVE BIOMETRIC PUNCHES STREAM -->
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+            <div class="bg-[#16A34A] text-white px-5 py-3 flex items-center justify-between font-bold text-xs uppercase tracking-wider">
+              <div class="flex items-center gap-2">
+                <i data-lucide="history" class="w-4 h-4"></i>
+                <span>Today's Biometric Punches Stream</span>
+              </div>
+              <span class="text-[11px] bg-white/20 px-2 py-0.5 rounded font-medium">Realtime Feed</span>
+            </div>
+
+            <div id="punches-stream" class="divide-y divide-slate-100 overflow-y-auto max-h-[300px]">
+              <div class="p-8 text-center text-slate-400 text-sm">Punches load ho rahi hain...</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: CIRCULAR DONUT GAUGE & QUICK PUNCH (SPAN 4, FROM SCREENSHOT) -->
+        <div class="lg:col-span-4 space-y-6">
+
+          <!-- DONUT CHART / SHIFT GAUGE CARD (EXACTLY LIKE SCREENSHOT) -->
+          <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs flex flex-col items-center text-center">
+            <div class="w-full flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <h3 class="font-extrabold text-slate-800 text-sm">Staff Attendance Ratio</h3>
+              <i data-lucide="pie-chart" class="w-4 h-4 text-slate-400"></i>
+            </div>
+
+            <!-- SVG Donut Chart Matching Screenshot -->
+            <div class="relative w-48 h-48 my-2">
+              <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <!-- Background track -->
+                <circle cx="50" cy="50" r="38" stroke="#E2E8F0" stroke-width="14" fill="none" />
+                <!-- Filled Ring -->
+                <circle cx="50" cy="50" r="38" stroke="#0284C7" stroke-width="14" stroke-dasharray="238.76" stroke-dashoffset="40" stroke-linecap="round" fill="none" class="transition-all duration-1000 ease-out" />
+              </svg>
+              <!-- Center Text -->
+              <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Attendance</span>
+                <span class="text-2xl font-black text-slate-800 tracking-tight">85%</span>
+                <span class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full mt-1">On Duty</span>
+              </div>
+            </div>
+
+            <div class="w-full grid grid-cols-2 gap-2 text-left pt-3 border-t border-slate-100 text-xs">
+              <div>
+                <span class="text-slate-400 block text-[11px]">Morning Shift:</span>
+                <strong class="text-slate-700 font-mono">09:00 AM - 05:00 PM</strong>
+              </div>
+              <div>
+                <span class="text-slate-400 block text-[11px]">Evening Shift:</span>
+                <strong class="text-slate-700 font-mono">05:00 PM - 01:00 AM</strong>
+              </div>
+            </div>
+
+            <!-- Quick Punch Button -->
+            <button onclick="switchTab('kiosk')" class="w-full mt-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 transition cursor-pointer">
+              <i data-lucide="fingerprint" class="w-4 h-4 text-cyan-200"></i>
+              <span>Open Biometric Punch Terminal</span>
+            </button>
+          </div>
+
+          <!-- SYSTEM DYNAMICS / QUICK KHATA CARD (FROM SCREENSHOT) -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 class="font-extrabold text-slate-800 text-sm">System Operations</h3>
+              <span class="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">LIVE</span>
+            </div>
+
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="switchTab('payroll')">
+              <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="calculator" class="w-4 h-4"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold text-slate-800">1-Click Payroll Ready</p>
+                <p class="text-[10px] text-slate-500 truncate">Calculate net salaries & print digital slips</p>
+              </div>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+            </div>
+
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="switchTab('advances')">
+              <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="banknote" class="w-4 h-4"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold text-slate-800">Staff Advance Khata</p>
+                <p class="text-[10px] text-slate-500 truncate">Counter drawer balance & auto deductions</p>
+              </div>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+            </div>
+
+            <div class="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition cursor-pointer" onclick="switchTab('customer-khata')">
+              <div class="w-9 h-9 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="book-open-check" class="w-4 h-4"></i>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold text-slate-800">Customer Credit Khata</p>
+                <p class="text-[10px] text-slate-500 truncate">Khata parchi generator & WhatsApp alerts</p>
+              </div>
+              <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+          <!-- ================================================================= -->
+    <!-- TAB 2: STAFF MANAGEMENT (REDESIGNED SAAS DASHBOARD)              -->
     <!-- ================================================================= -->
-    <section id="view-kiosk" class="space-y-6">
+    <section id="view-staff" class="space-y-6 hidden">
+
+      <!-- TOP ACTIONS BAR -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Staff Directory</h3>
+          <p class="text-xs text-slate-500">Active employees, duty shifts, basic salary, and biometric enrollment</p>
+        </div>
+
+        <!-- Page Action Buttons -->
+        <div class="flex items-center gap-2.5 self-start sm:self-auto">
+          <!-- Secondary: Export -->
+          <button onclick="exportStaffCSV()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Export staff roster as CSV">
+            <i data-lucide="download" class="w-3.5 h-3.5 text-slate-500"></i>
+            <span>Export</span>
+          </button>
+
+          <!-- Secondary: Print -->
+          <button onclick="printStaffDirectory()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Print staff directory">
+            <i data-lucide="printer" class="w-3.5 h-3.5 text-slate-500"></i>
+            <span>Print</span>
+          </button>
+
+          <!-- Primary: + Add New Staff -->
+          <button onclick="openStaffModal()" class="bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-sm shadow-slate-900/20 transition cursor-pointer">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Add New Staff</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 COMPACT SUMMARY CARDS (MATCHING SAAS SCREENSHOT STYLE) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- Card 1: Total Staff -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500">Total Staff</p>
+            <h4 id="staff-summary-total" class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">0</h4>
+            <p class="text-[11px] font-medium text-slate-400 mt-0.5">Active Employees</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center border border-slate-200/80">
+            <i data-lucide="users" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- Card 2: Present Today -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500">Present Today</p>
+            <h4 id="staff-summary-present" class="text-2xl font-black text-emerald-600 tracking-tight mt-0.5">0</h4>
+            <p id="staff-summary-attendance-pct" class="text-[11px] font-medium text-emerald-600 mt-0.5">100% Attendance</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+            <i data-lucide="user-check" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- Card 3: On Leave -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500">On Leave</p>
+            <h4 id="staff-summary-leave" class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">0</h4>
+            <p class="text-[11px] font-medium text-slate-400 mt-0.5">No Leave Today</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+            <i data-lucide="calendar" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- Card 4: Late -->
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500">Late</p>
+            <h4 id="staff-summary-late" class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">0</h4>
+            <p class="text-[11px] font-medium text-slate-400 mt-0.5">On Time</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SEARCH + FILTER BAR -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+        <!-- Search Input -->
+        <div class="relative w-full md:w-80">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+          <input type="text" id="staff-search-input" oninput="handleStaffFilter()" placeholder="Search staff by name, CNIC, phone..." class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
+        </div>
+
+        <!-- Filters & Clear Button -->
+        <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          <!-- Designation Dropdown -->
+          <select id="staff-filter-designation" onchange="handleStaffFilter()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition cursor-pointer">
+            <option value="ALL">All Designations</option>
+            <option value="Pharmacist">Pharmacist</option>
+            <option value="Senior Pharmacist">Senior Pharmacist</option>
+            <option value="Cashier">Cashier</option>
+            <option value="Salesman">Salesman</option>
+            <option value="Manager">Manager</option>
+            <option value="Cleaner">Cleaner</option>
+          </select>
+
+          <!-- Status Dropdown -->
+          <select id="staff-filter-status" onchange="handleStaffFilter()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition cursor-pointer">
+            <option value="ALL">All Status</option>
+            <option value="ACTIVE">Active</option>
+            <option value="LEAVE">On Leave</option>
+          </select>
+
+          <!-- Shift Dropdown -->
+          <select id="staff-filter-shift" onchange="handleStaffFilter()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition cursor-pointer">
+            <option value="ALL">All Shifts</option>
+            <option value="1">Morning Shift (9am - 5pm)</option>
+            <option value="2">Evening Shift (5pm - 1am)</option>
+          </select>
+
+          <!-- Clear Filters -->
+          <button onclick="clearStaffFilters()" class="text-xs text-slate-500 hover:text-slate-800 font-medium px-2.5 py-2 rounded-lg hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Clear Filters</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- MODERN RESPONSIVE STAFF TABLE -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+        
+        <!-- Table Header Info Bar -->
+        <div class="px-5 py-3 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between text-xs">
+          <div class="font-bold text-slate-700 flex items-center gap-2">
+            <span>Employees List</span>
+            <span id="staff-table-counter" class="bg-slate-200/80 text-slate-700 px-2 py-0.5 rounded-full text-[11px] font-semibold">6 Records</span>
+          </div>
+          <div class="text-slate-400 text-[11px]">
+            Sorted by Staff ID
+          </div>
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="overflow-x-auto hidden md:block">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4 w-12 text-slate-400">#</th>
+                <th class="py-3 px-4 min-w-[200px]">Staff Details</th>
+                <th class="py-3 px-4 min-w-[130px]">Designation</th>
+                <th class="py-3 px-4 min-w-[150px]">Contact</th>
+                <th class="py-3 px-4 min-w-[110px]">Salary</th>
+                <th class="py-3 px-4 min-w-[110px]">Joining Date</th>
+                <th class="py-3 px-4 min-w-[90px]">Status</th>
+                <th class="py-3 px-4 text-center min-w-[110px]">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="staff-directory-tbody" class="divide-y divide-slate-100">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Mobile Staff Cards View -->
+        <div id="staff-directory-mobile-list" class="md:hidden p-4 space-y-3">
+          <!-- Rendered via JS on mobile -->
+        </div>
+
+      </div>
+
+    </section>
+
+          <!-- ================================================================= -->
+    <!-- TAB 3: CUSTOMER CREDIT KHATA (REDESIGNED SAAS DASHBOARD)          -->
+    <!-- ================================================================= -->
+    <section id="view-customer-khata" class="space-y-6 hidden">
+
+      <!-- TOP ACTIONS BAR -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Customer Credit Khata (Gahak Hisab Kitab)</h3>
+          <p class="text-xs text-slate-500">Udhar series ledger, 1-click WhatsApp payment reminders &amp; digital parchi generator</p>
+        </div>
+
+        <!-- Page Action Buttons -->
+        <div class="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          <!-- WhatsApp All Pending -->
+          <button onclick="openBatchWhatsAppModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            <span>WhatsApp All</span>
+          </button>
+
+          <!-- Add Credit Purchase -->
+          <button onclick="openAddCustomerKhataModal()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-indigo-600"></i>
+            <span>+ Add Credit Purchase</span>
+          </button>
+
+          <!-- Weekly Report -->
+          <button onclick="openWeeklyKhataReportModal()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer">
+            <i data-lucide="printer" class="w-3.5 h-3.5 text-slate-500"></i>
+            <span>Weekly Report</span>
+          </button>
+
+          <!-- New Customer -->
+          <button onclick="openCustomerModal()" class="bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-sm shadow-slate-900/20 transition cursor-pointer">
+            <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+            <span>+ New Customer</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 TOP KPI METRIC PULSE CARDS (MATCHING SAAS SCREENSHOT STYLE) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+        <!-- KPI 1: TOTAL OUTSTANDING KHATA -->
+        <div class="bg-white rounded-xl p-4 border border-rose-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500">Outstanding Baqaya</p>
+            <h4 id="cust-kpi-outstanding" class="text-2xl font-black text-rose-600 tracking-tight mt-0.5">Rs. 0.00</h4>
+            <p class="text-[11px] font-medium text-slate-400 mt-0.5">Regular Customers Balance</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
+            <i data-lucide="wallet" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- KPI 2: THIS WEEK'S CREDIT GIVEN -->
+        <div class="bg-white rounded-xl p-4 border border-amber-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500">7-Day Credit Given</p>
+            <h4 id="cust-kpi-week-credit" class="text-2xl font-black text-amber-700 tracking-tight mt-0.5">Rs. 0.00</h4>
+            <p class="text-[11px] font-medium text-slate-400 mt-0.5">Credit Medicines Issued</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100">
+            <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- KPI 3: THIS WEEK'S RECOVERED -->
+        <div class="bg-white rounded-xl p-4 border border-emerald-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500">7-Day Recoveries</p>
+            <h4 id="cust-kpi-week-recovered" class="text-2xl font-black text-emerald-600 tracking-tight mt-0.5">Rs. 0.00</h4>
+            <p class="text-[11px] font-medium text-emerald-600 mt-0.5">Wasooli (Cash Received)</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+            <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <!-- KPI 4: ACTIVE DEBTORS -->
+        <div class="bg-white rounded-xl p-4 border border-indigo-200 shadow-xs flex items-center justify-between">
+          <div>
+            <p class="text-xs font-medium text-slate-500">Active Debtors</p>
+            <h4 id="cust-kpi-debtors-count" class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">0 Customers</h4>
+            <p class="text-[11px] font-medium text-slate-400 mt-0.5">Pending Unpaid Khata</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center border border-indigo-100">
+            <i data-lucide="users" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- MAIN CUSTOMERS MASTER CARD -->
+      <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+
+        <!-- SEARCH AND FILTER PILLS -->
+        <div class="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <!-- Search input -->
+          <div class="relative w-full sm:w-80">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+            <input type="text" id="customer-search-input" oninput="filterCustomerTable()" placeholder="Search by name, phone, address..." class="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+            <button onclick="setCustomerFilter('all')" id="btn-cust-filter-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0F172A] text-white shadow-xs cursor-pointer transition">
+              All (<span id="count-cust-all">0</span>)
+            </button>
+            <button onclick="setCustomerFilter('pending')" id="btn-cust-filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700 cursor-pointer transition">
+              Has Pending Balance (<span id="count-cust-pending">0</span>)
+            </button>
+            <button onclick="setCustomerFilter('cleared')" id="btn-cust-filter-cleared" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer transition">
+              All Clear (<span id="count-cust-cleared">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- CUSTOMERS MASTER TABLE -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4 min-w-[200px]">Customer Details</th>
+                <th class="py-3 px-4 min-w-[150px]">Credit Limit &amp; Usage</th>
+                <th class="py-3 px-4 min-w-[110px]">Total Credit</th>
+                <th class="py-3 px-4 min-w-[110px]">Total Paid</th>
+                <th class="py-3 px-4 min-w-[120px] text-rose-600">Baqaya (Due Balance)</th>
+                <th class="py-3 px-4 text-center min-w-[100px]">Status</th>
+                <th class="py-3 px-4 text-center min-w-[160px]">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="customers-tbody" class="divide-y divide-slate-100">
+              <!-- Rendered dynamically via renderCustomerTable() -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </section>
+
+      <section id="view-kiosk" class="space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         <!-- PUNCH INTERACTIVE TERMINAL -->
@@ -494,109 +1672,7 @@
 
       </div>
     </section>
-
-    <!-- ================================================================= -->
-    <!-- TAB 2: TODAY'S LIVE ROSTER (OWNER PULSE) -->
-    <!-- ================================================================= -->
-    <section id="view-live" class="space-y-6 hidden">
-      <!-- PULSE CARDS (CLICKABLE FOR INSTANT FILTERING) -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-        <div id="pulse-card-ALL" onclick="filterLiveRoster('ALL')" class="pulse-card cursor-pointer bg-white p-4 rounded-xl border-2 border-[#232272] shadow-sm flex items-center justify-between active-filter" title="Click to view all staff members">
-          <div>
-            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Staff</p>
-            <h3 id="pulse-total" class="text-2xl font-black text-[#232272] mt-1">6</h3>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-[#232272] flex items-center justify-center">
-            <i data-lucide="users" class="w-5 h-5"></i>
-          </div>
-        </div>
-
-        <div id="pulse-card-PRESENT" onclick="filterLiveRoster('PRESENT')" class="pulse-card cursor-pointer bg-white p-4 rounded-xl border-2 border-transparent hover:border-emerald-300 shadow-sm flex items-center justify-between" title="Click to filter only Present staff">
-          <div>
-            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Present Today</p>
-            <h3 id="pulse-present" class="text-2xl font-black text-[#156D38] mt-1">0</h3>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center">
-            <i data-lucide="user-check" class="w-5 h-5"></i>
-          </div>
-        </div>
-
-        <div id="pulse-card-LATE" onclick="filterLiveRoster('LATE')" class="pulse-card cursor-pointer bg-white p-4 rounded-xl border-2 border-transparent hover:border-amber-300 shadow-sm flex items-center justify-between" title="Click to filter Late Arrivals">
-          <div>
-            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Late Arrivals</p>
-            <h3 id="pulse-late" class="text-2xl font-black text-amber-600 mt-1">0</h3>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-            <i data-lucide="clock-alert" class="w-5 h-5"></i>
-          </div>
-        </div>
-
-        <div id="pulse-card-LEAVE" onclick="filterLiveRoster('LEAVE')" class="pulse-card cursor-pointer bg-white p-4 rounded-xl border-2 border-transparent hover:border-blue-300 shadow-sm flex items-center justify-between" title="Click to filter staff On Leave">
-          <div>
-            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">On Leave</p>
-            <h3 id="pulse-leave" class="text-2xl font-black text-blue-600 mt-1">0</h3>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-            <i data-lucide="calendar" class="w-5 h-5"></i>
-          </div>
-        </div>
-
-        <div id="pulse-card-ABSENT" onclick="filterLiveRoster('ABSENT')" class="pulse-card cursor-pointer bg-white p-4 rounded-xl border-2 border-transparent hover:border-rose-300 shadow-sm flex items-center justify-between" title="Click to filter Absent staff">
-          <div>
-            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Absent Today</p>
-            <h3 id="pulse-absent" class="text-2xl font-black text-rose-600 mt-1">0</h3>
-          </div>
-          <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-            <i data-lucide="user-x" class="w-5 h-5"></i>
-          </div>
-        </div>
-      </div>
-
-      <!-- LIVE ROSTER TABLE -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-              <span>Live Staff Shift Duty Table</span>
-              <span id="live-filter-badge" class="text-xs bg-indigo-50 text-[#232272] border border-indigo-200 font-semibold px-2.5 py-0.5 rounded-full">Showing All Staff (6)</span>
-            </h3>
-            <p class="text-xs text-slate-500">Subah aane aur sham jane ke live timestamps. Pulse card par click kar ke instant filter karein.</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <button id="live-filter-reset-btn" onclick="filterLiveRoster('ALL')" class="hidden text-xs bg-indigo-50 hover:bg-indigo-100 text-[#232272] py-1.5 px-3 rounded-lg font-bold flex items-center gap-1 transition-colors">
-              <i data-lucide="x" class="w-3.5 h-3.5"></i> Show All
-            </button>
-            <button onclick="loadTodayAttendance()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 px-3 rounded-lg font-semibold flex items-center gap-1.5 transition-colors">
-              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
-            </button>
-          </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
-              <tr>
-                <th class="py-3 px-4">Staff Member</th>
-                <th class="py-3 px-4">Role</th>
-                <th class="py-3 px-4">Shift Timings</th>
-                <th class="py-3 px-4">Time-IN</th>
-                <th class="py-3 px-4">Time-OUT</th>
-                <th class="py-3 px-4">Duty Status</th>
-                <th class="py-3 px-4">Action</th>
-              </tr>
-            </thead>
-            <tbody id="live-roster-tbody" class="divide-y divide-slate-100">
-              <!-- Rendered via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================================================================= -->
-    <!-- TAB 3: 1-CLICK PAYROLL & DIGITAL PAYSLIPS -->
-    <!-- ================================================================= -->
-    <section id="view-payroll" class="space-y-6 hidden">
+      <section id="view-payroll" class="space-y-6 hidden">
       <!-- HEADER CONTROLLER -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
@@ -677,11 +1753,7 @@
         </div>
       </div>
     </section>
-
-    <!-- ================================================================= -->
-    <!-- TAB 4: ADVANCE SALARY KHATA -->
-    <!-- ================================================================= -->
-    <section id="view-advances" class="space-y-6 hidden">
+      <section id="view-advances" class="space-y-6 hidden">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         <!-- RECORD NEW ADVANCE FORM -->
@@ -750,204 +1822,7 @@
 
       </div>
     </section>
-
-    <!-- ================================================================= -->
-    <!-- TAB: CUSTOMER UDHAR & SERIES KHATA LEDGER -->
-    <!-- ================================================================= -->
-    <section id="view-customer-khata" class="space-y-6 hidden">
-      <!-- 4 TOP KPI METRIC PULSE CARDS -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- KPI 1: TOTAL OUTSTANDING KHATA -->
-        <div class="bg-white rounded-2xl p-5 border border-rose-200 shadow-sm relative overflow-hidden flex items-center justify-between">
-          <div class="space-y-1">
-            <span class="text-[11px] font-bold text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></span>
-              Total Outstanding Udhar (Baqaya)
-            </span>
-            <div id="cust-kpi-outstanding" class="text-2xl font-black text-rose-600">Rs. 0.00</div>
-            <p class="text-[11px] text-slate-500 font-medium">Regular customers pending balance</p>
-          </div>
-          <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
-            <i data-lucide="wallet" class="w-6 h-6"></i>
-          </div>
-        </div>
-
-        <!-- KPI 2: THIS WEEK'S CREDIT GIVEN -->
-        <div class="bg-white rounded-2xl p-5 border border-amber-200 shadow-sm relative overflow-hidden flex items-center justify-between">
-          <div class="space-y-1">
-            <span class="text-[11px] font-bold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
-              This Week Credit Given
-            </span>
-            <div id="cust-kpi-week-credit" class="text-2xl font-black text-amber-700">Rs. 0.00</div>
-            <p class="text-[11px] text-slate-500 font-medium">Credit medicines (Past 7 days)</p>
-          </div>
-          <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-100">
-            <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
-          </div>
-        </div>
-
-        <!-- KPI 3: THIS WEEK'S RECOVERED -->
-        <div class="bg-white rounded-2xl p-5 border border-emerald-200 shadow-sm relative overflow-hidden flex items-center justify-between">
-          <div class="space-y-1">
-            <span class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="badge-check" class="w-3.5 h-3.5"></i>
-              This Week Recovered (Wasooli)
-            </span>
-            <div id="cust-kpi-week-recovered" class="text-2xl font-black text-[#156D38]">Rs. 0.00</div>
-            <p class="text-[11px] text-slate-500 font-medium">Cash / Digital payments (Past 7 days)</p>
-          </div>
-          <div class="w-12 h-12 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center border border-emerald-100">
-            <i data-lucide="arrow-down-left" class="w-6 h-6"></i>
-          </div>
-        </div>
-
-        <!-- KPI 4: ACTIVE DEBTORS -->
-        <div class="bg-white rounded-2xl p-5 border border-indigo-200 shadow-sm relative overflow-hidden flex items-center justify-between">
-          <div class="space-y-1">
-            <span class="text-[11px] font-bold text-[#232272] uppercase tracking-wider flex items-center gap-1.5">
-              <i data-lucide="users" class="w-3.5 h-3.5"></i>
-              Active Debtors (Pending Khata)
-            </span>
-            <div id="cust-kpi-debtors-count" class="text-2xl font-black text-[#232272]">0 Customers</div>
-            <p class="text-[11px] text-slate-500 font-medium">With active unpaid credit balance</p>
-          </div>
-          <div class="w-12 h-12 rounded-xl bg-indigo-50 text-[#232272] flex items-center justify-center border border-indigo-100">
-            <i data-lucide="user-minus" class="w-6 h-6"></i>
-          </div>
-        </div>
-      </div>
-
-      <!-- MAIN CUSTOMERS MASTER CARD -->
-      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <!-- HEADER, SEARCH & ACTION BUTTONS -->
-        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-5 border-b border-slate-100">
-          <div>
-            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-              <i data-lucide="book-open" class="w-5 h-5 text-[#232272]"></i>
-              Customer Series Khata Book (Gahak Hisab Kitab)
-            </h3>
-            <p class="text-xs text-slate-500">Gahak udhar hisab kitab, series khata book, 1-click WhatsApp reminders &amp; statement parchi</p>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2.5">
-            <button onclick="openBatchWhatsAppModal()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold py-2.5 px-3.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all cursor-pointer">
-              <i data-lucide="send" class="w-4 h-4"></i>
-              <span>⚡ WhatsApp All Pending</span>
-            </button>
-            <button onclick="openAddCustomerKhataModal()" class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 px-3.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all cursor-pointer">
-              <i data-lucide="plus-circle" class="w-4 h-4"></i>
-              <span>+ Add Credit Purchase</span>
-            </button>
-            <button onclick="openCustomerModal()" class="bg-[#232272] hover:bg-indigo-950 active:scale-95 text-white font-bold py-2.5 px-3.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all cursor-pointer">
-              <i data-lucide="user-plus" class="w-4 h-4"></i>
-              <span>+ New Customer</span>
-            </button>
-            <button onclick="openWeeklyKhataReportModal()" class="bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 font-bold py-2.5 px-3.5 rounded-xl text-xs flex items-center gap-1.5 border border-slate-300 transition-all cursor-pointer">
-              <i data-lucide="printer" class="w-4 h-4"></i>
-              <span>Weekly Report</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- SEARCH AND FILTER PILLS -->
-        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
-          <div class="relative w-full sm:w-72">
-            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
-            <input type="text" id="customer-search-input" oninput="filterCustomerTable()" placeholder="Search by name, phone, address..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
-          </div>
-
-          <div class="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-            <button onclick="setCustomerFilter('all')" id="btn-cust-filter-all" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#232272] text-white shadow-xs cursor-pointer">
-              All (<span id="count-cust-all">0</span>)
-            </button>
-            <button onclick="setCustomerFilter('pending')" id="btn-cust-filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-rose-50 hover:text-rose-700 cursor-pointer">
-              Has Pending Balance (<span id="count-cust-pending">0</span>)
-            </button>
-            <button onclick="setCustomerFilter('cleared')" id="btn-cust-filter-cleared" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 cursor-pointer">
-              All Clear (<span id="count-cust-cleared">0</span>)
-            </button>
-          </div>
-        </div>
-
-        <!-- CUSTOMERS MASTER TABLE -->
-        <div class="overflow-x-auto mt-4">
-          <table class="w-full text-left text-sm border-collapse">
-            <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
-              <tr>
-                <th class="py-3 px-4">Customer Details</th>
-                <th class="py-3 px-4">Credit Limit &amp; Usage</th>
-                <th class="py-3 px-4">Total Credit</th>
-                <th class="py-3 px-4">Total Paid</th>
-                <th class="py-3 px-4 text-rose-600">Baqaya (Due Balance)</th>
-                <th class="py-3 px-4 text-center">Status</th>
-                <th class="py-3 px-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="customers-tbody" class="divide-y divide-slate-100 font-medium">
-              <!-- Rendered dynamically -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================================================================= -->
-    <!-- TAB 5: STAFF DIRECTORY & REGISTRATION -->
-    <!-- ================================================================= -->
-    <section id="view-staff" class="space-y-6 hidden">
-      <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <!-- HEADER & ACTIONS -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
-          <div>
-            <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-              <i data-lucide="users" class="w-5 h-5 text-[#232272]"></i>
-              Mumtaz Pharmacy Staff Management
-            </h3>
-            <p class="text-xs text-slate-500">Staff profiling, duty shifts, basic pay, and comprehensive employee dossiers</p>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-3">
-            <!-- LIVE SEARCH BAR -->
-            <div class="relative min-w-[260px]">
-              <input type="text" id="staff-search-input" oninput="handleStaffSearch()" placeholder="Search Name, CNIC, Role, Phone..." class="w-full bg-slate-50 border border-slate-300 rounded-lg pl-9 pr-4 py-2 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#232272]">
-              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
-            </div>
-
-            <button onclick="openStaffModal()" class="bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2 px-4 rounded-lg text-xs flex items-center gap-2 shadow">
-              <i data-lucide="user-plus" class="w-4 h-4"></i> Add New Staff
-            </button>
-          </div>
-        </div>
-
-        <!-- STAFF DIRECTORY TABLE -->
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse text-sm">
-            <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-bold border-b border-slate-200">
-              <tr>
-                <th class="py-3 px-4">Staff ID</th>
-                <th class="py-3 px-4">Employee Details</th>
-                <th class="py-3 px-4">Designation</th>
-                <th class="py-3 px-4">Address</th>
-                <th class="py-3 px-4">Assigned Shift</th>
-                <th class="py-3 px-4">Basic Salary</th>
-                <th class="py-3 px-4">Joining Date</th>
-                <th class="py-3 px-4 text-center">Police Report</th>
-                <th class="py-3 px-4 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="staff-directory-tbody" class="divide-y divide-slate-100">
-              <!-- Rendered via JS -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================================================================= -->
-    <!-- TAB 6: MONTHLY ATTENDANCE MATRIX & REPORTS (Feature 6 & 17) -->
-    <!-- ================================================================= -->
-    <section id="view-reports" class="space-y-6 hidden">
+      <section id="view-reports" class="space-y-6 hidden">
       <!-- HEADER CONTROLLER -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <div>
@@ -1029,11 +1904,24 @@
         </div>
       </div>
     </section>
+    </main>
 
-  </main>
+  </div>
 
-  <!-- ================================================================= -->
-  <!-- MODAL: DIGITAL PAYSLIP PRINTABLE VIEW -->
+  
+  <!-- Backward-Compatible Tab Hooks -->
+  <div class="hidden">
+    <button id="tab-kiosk"></button>
+    <button id="tab-live"></button>
+    <button id="tab-payroll"></button>
+    <button id="tab-advances"></button>
+    <button id="tab-customer-khata"></button>
+    <button id="tab-staff"></button>
+    <button id="tab-reports"></button>
+  </div>
+
+
+<!-- MODAL: DIGITAL PAYSLIP PRINTABLE VIEW -->
   <!-- ================================================================= -->
   <div id="slip-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200">
@@ -2222,21 +3110,55 @@
 
     // 2. Navigation Tabs
     function switchTab(tabId) {
-      ['kiosk', 'live', 'payroll', 'advances', 'customer-khata', 'staff', 'reports'].forEach(t => {
+      const allTabs = ['kiosk', 'live', 'payroll', 'advances', 'customer-khata', 'staff', 'reports'];
+      allTabs.forEach(t => {
         const viewEl = document.getElementById(`view-${t}`);
-        const tabEl = document.getElementById(`tab-${t}`);
+        const sideEl = document.getElementById(`side-tab-${t}`);
+        const legacyTab = document.getElementById(`tab-${t}`);
         if (viewEl) viewEl.classList.add('hidden');
-        if (tabEl) {
-          tabEl.classList.remove('border-emerald-400', 'text-white', 'bg-white/5');
-          tabEl.classList.add('border-transparent', 'text-indigo-200/80');
+        if (sideEl) {
+          sideEl.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm', 'font-semibold');
+          sideEl.classList.add('text-slate-400', 'font-medium');
         }
+        if (legacyTab) legacyTab.classList.remove('border-emerald-400', 'text-white');
       });
+
       const targetView = document.getElementById(`view-${tabId}`);
-      const targetTab = document.getElementById(`tab-${tabId}`);
+      const targetSide = document.getElementById(`side-tab-${tabId}`);
+      const targetLegacy = document.getElementById(`tab-${tabId}`);
       if (targetView) targetView.classList.remove('hidden');
-      if (targetTab) {
-        targetTab.classList.remove('border-transparent', 'text-indigo-200/80');
-        targetTab.classList.add('border-emerald-400', 'text-white', 'bg-white/5');
+      if (targetSide) {
+        targetSide.classList.remove('text-slate-400', 'font-medium');
+        targetSide.classList.add('bg-indigo-600', 'text-white', 'shadow-sm', 'font-semibold');
+      }
+      if (targetLegacy) targetLegacy.classList.add('border-emerald-400', 'text-white');
+
+      // Update Top Header Titles
+      const titleEl = document.getElementById('page-title');
+      const subtitleEl = document.getElementById('page-subtitle');
+      if (titleEl && subtitleEl) {
+        if (tabId === 'staff') {
+          titleEl.innerText = 'Staff Management';
+          subtitleEl.innerText = 'Manage your pharmacy staff, profiles and employment details';
+        } else if (tabId === 'live') {
+          titleEl.innerText = 'Executive Dashboard';
+          subtitleEl.innerText = 'Real-time staff pulse, attendance and pharmacy operations';
+        } else if (tabId === 'kiosk') {
+          titleEl.innerText = 'Biometric Punch Terminal';
+          subtitleEl.innerText = 'Live digital attendance terminal for staff clock-in and clock-out';
+        } else if (tabId === 'payroll') {
+          titleEl.innerText = 'Salary & Payroll Engine';
+          subtitleEl.innerText = '1-click net salary calculation, deductions, and digital payslips';
+        } else if (tabId === 'advances') {
+          titleEl.innerText = 'Staff Advance Khata';
+          subtitleEl.innerText = 'Counter drawer salary advances tracking and automatic deductions';
+        } else if (tabId === 'customer-khata') {
+          titleEl.innerText = 'Customer Credit Khata';
+          subtitleEl.innerText = 'Customer ledger, baqaya recovery, thermal parchi and WhatsApp alerts';
+        } else if (tabId === 'reports') {
+          titleEl.innerText = 'Monthly Attendance Register';
+          subtitleEl.innerText = 'Full 31-day biometric register with PDF & landscape print view';
+        }
       }
 
       if (tabId === 'live') loadTodayAttendance();
@@ -2254,8 +3176,12 @@
     // 3. Load Staff
     async function loadStaff() {
       try {
-        const res = await fetch('/api/staff');
-        staffList = await res.json();
+        if (USE_DUMMY_DATA) {
+          staffList = JSON.parse(JSON.stringify(MOCK_STAFF));
+        } else {
+          const res = await fetch('/api/staff');
+          staffList = await res.json();
+        }
         
         // Populate kiosk select
         const select = document.getElementById('kiosk-staff-select');
@@ -2375,8 +3301,17 @@
 
     async function loadTodayAttendance() {
       try {
-        const res = await fetch('/api/attendance/today');
-        const data = await res.json();
+        let data;
+        if (USE_DUMMY_DATA) {
+          data = JSON.parse(JSON.stringify(MOCK_ATTENDANCE_DATA));
+          if (recentPunches.length === 0) {
+            recentPunches = JSON.parse(JSON.stringify(MOCK_PUNCHES_INITIAL));
+            renderPunchesStream();
+          }
+        } else {
+          const res = await fetch('/api/attendance/today');
+          data = await res.json();
+        }
 
         document.getElementById('pulse-total').innerText = data.total_staff;
         document.getElementById('pulse-present').innerText = data.present_count;
@@ -2594,8 +3529,53 @@
       const year = document.getElementById('payroll-year').value;
 
       try {
-        const res = await fetch(`/api/payroll/calculate?month=${month}&year=${year}`);
-        const data = await res.json();
+        let data;
+        if (USE_DUMMY_DATA) {
+          const staffArr = (staffList || MOCK_STAFF);
+          const sheet = staffArr.map((s, idx) => {
+            const basic = s.monthly_salary || 30000;
+            const wage = basic / 30;
+            const isLateStaff = s.id === 3 || s.id === 7;
+            const lateMins = isLateStaff ? 45 : 0;
+            const lateCut = isLateStaff ? Math.round((lateMins / 60) * (wage / 8)) : 0;
+            const advCut = s.id === 4 ? 5000 : 0;
+            const net = basic - lateCut - advCut;
+            return {
+              staff_id: s.id,
+              staff_name: s.name,
+              role: s.role,
+              designation: s.designation,
+              basic_salary: basic,
+              daily_wage: wage,
+              present_days: 26,
+              absent_days: 0,
+              absent_cut: 0,
+              leave_days: s.id === 5 ? 1 : 0,
+              extra_leaves: 0,
+              extra_leave_cut: 0,
+              late_minutes: lateMins,
+              late_cut: lateCut,
+              advance_deduction: advCut,
+              bonus: 0,
+              net_salary: net,
+              status: idx < 3 ? 'PAID' : 'PENDING',
+              paid_at: idx < 3 ? '2026-09-10 16:30' : null,
+              payment_method: idx < 3 ? 'Cash Counter' : null
+            };
+          });
+          const totalPayout = sheet.reduce((sum, item) => sum + item.net_salary, 0);
+          const totalDed = sheet.reduce((sum, item) => sum + item.late_cut + item.advance_deduction, 0);
+          data = {
+            month: parseInt(month),
+            year: parseInt(year),
+            total_payout: totalPayout,
+            total_deductions: totalDed,
+            sheet: sheet
+          };
+        } else {
+          const res = await fetch(`/api/payroll/calculate?month=${month}&year=${year}`);
+          data = await res.json();
+        }
         currentPayrollData = data.sheet;
 
         document.getElementById('payroll-summary').classList.remove('hidden');
@@ -2863,8 +3843,56 @@
     // 8. Staff Advances & Medicine Credits with Direct Settlement
     async function loadAdvances() {
       try {
-        const res = await fetch('/api/advances');
-        const advances = await res.json();
+        let advances;
+        if (USE_DUMMY_DATA) {
+          advances = [
+            {
+              id: 1,
+              staff_name: "Bilal Ahmed",
+              entry_type: "CASH_ADVANCE",
+              amount: 10000,
+              remaining_amount: 5000,
+              reason: "Family Medical Support",
+              created_at: "2026-09-04 11:20:00",
+              is_settled: 0
+            },
+            {
+              id: 2,
+              staff_name: "Hamza Malik",
+              entry_type: "CASH_ADVANCE",
+              amount: 8000,
+              remaining_amount: 4000,
+              reason: "Eid Shopping Advance",
+              created_at: "2026-09-06 15:40:00",
+              is_settled: 0
+            },
+            {
+              id: 3,
+              staff_name: "Sanaullah Riaz",
+              entry_type: "MEDICINE_CREDIT",
+              amount: 3500,
+              remaining_amount: 0,
+              reason: "Family Medicine (Prescription #8821)",
+              created_at: "2026-08-25 10:15:00",
+              is_settled: 1,
+              settled_at: "2026-09-01",
+              settlement_type: "Salary Deduction"
+            },
+            {
+              id: 4,
+              staff_name: "Muhammad Usman",
+              entry_type: "CASH_ADVANCE",
+              amount: 15000,
+              remaining_amount: 15000,
+              reason: "House Rent Advance",
+              created_at: "2026-09-10 14:00:00",
+              is_settled: 0
+            }
+          ];
+        } else {
+          const res = await fetch('/api/advances');
+          advances = await res.json();
+        }
         allAdvances = advances || [];
         const tbody = document.getElementById('advances-tbody');
         if (!advances || advances.length === 0) {
@@ -3007,95 +4035,324 @@
       await generatePayroll();
       alert(type === 'MEDICINE_CREDIT' ? "Medicine Credit entry recorded successfully!" : "Cash Advance recorded successfully!");
     }
-    // 9. Staff Directory & Management
+    
+    // =========================================================================
+    // REDESIGNED STAFF MANAGEMENT LOGIC (FILTERING, RENDERING & EXPORT)
+    // =========================================================================
+
+    // Synchronize Top Header Search with Staff Search Input
+    function syncStaffSearch(val) {
+      const pageInput = document.getElementById('staff-search-input');
+      if (pageInput) {
+        pageInput.value = val;
+      }
+      handleStaffFilter();
+    }
+
+    // Comprehensive Multi-Criteria Staff Filter
+    function handleStaffFilter() {
+      const q = (document.getElementById('staff-search-input')?.value || '').toLowerCase().trim();
+      const desig = document.getElementById('staff-filter-designation')?.value || 'ALL';
+      const status = document.getElementById('staff-filter-status')?.value || 'ALL';
+      const shift = document.getElementById('staff-filter-shift')?.value || 'ALL';
+
+      const filtered = (staffList || []).filter(s => {
+        // 1. Text Search match
+        const nameMatch = (s.name || '').toLowerCase().includes(q);
+        const cnicMatch = (s.cnic || '').toLowerCase().includes(q);
+        const phoneMatch = (s.phone || '').toLowerCase().includes(q);
+        const roleMatch = (s.designation || s.role || '').toLowerCase().includes(q);
+        const addressMatch = (s.address || '').toLowerCase().includes(q);
+        const textMatch = !q || nameMatch || cnicMatch || phoneMatch || roleMatch || addressMatch;
+
+        // 2. Designation match
+        const role = (s.designation || s.role || '').toLowerCase();
+        const desigMatch = desig === 'ALL' || role.includes(desig.toLowerCase());
+
+        // 3. Shift match
+        const shiftMatch = shift === 'ALL' || String(s.shift_id) === String(shift);
+
+        // 4. Status match
+        let statusMatch = true;
+        if (status === 'ACTIVE') {
+          statusMatch = s.is_active !== 0 && s.is_active !== false;
+        } else if (status === 'LEAVE') {
+          const att = (typeof todayAttendance !== 'undefined' && Array.isArray(todayAttendance)) ? todayAttendance.find(a => a.staff_id === s.id) : null;
+          statusMatch = att && att.status === 'LEAVE';
+        }
+
+        return textMatch && desigMatch && shiftMatch && statusMatch;
+      });
+
+      renderStaffDirectory(filtered);
+    }
+
+    function clearStaffFilters() {
+      const pIn = document.getElementById('staff-search-input');
+      if (pIn) pIn.value = '';
+      const topSearch = document.getElementById('top-staff-search');
+      if (topSearch) topSearch.value = '';
+      const dF = document.getElementById('staff-filter-designation');
+      if (dF) dF.value = 'ALL';
+      const sF = document.getElementById('staff-filter-status');
+      if (sF) sF.value = 'ALL';
+      const shF = document.getElementById('staff-filter-shift');
+      if (shF) shF.value = 'ALL';
+      renderStaffDirectory(staffList);
+    }
+
+    function filterStaffByStatus(statusVal) {
+      const sF = document.getElementById('staff-filter-status');
+      if (sF) sF.value = statusVal;
+      handleStaffFilter();
+    }
+
+    // Export Staff as CSV
+    function exportStaffCSV() {
+      if (!staffList || staffList.length === 0) {
+        alert("No staff members to export.");
+        return;
+      }
+      const headers = ["Staff ID", "Name", "CNIC", "Phone", "Designation", "Shift", "Monthly Basic Salary (PKR)", "Joining Date", "Daily Hours", "Allowed Monthly Leaves", "Address"];
+      const rows = staffList.map(s => [
+        s.id,
+        `"${(s.name || '').replace(/"/g, '""')}"`,
+        `"${s.cnic || ''}"`,
+        `"${s.phone || ''}"`,
+        `"${(s.designation || s.role || '').replace(/"/g, '""')}"`,
+        `"${s.shift_name || (s.shift_id === 1 ? 'Morning Shift' : 'Evening Shift')}"`,
+        s.monthly_salary || 0,
+        s.joining_date || '',
+        s.daily_hours || 8,
+        s.allowed_leaves || 2,
+        `"${(s.address || '').replace(/"/g, '""')}"`
+      ]);
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join(String.fromCharCode(10));
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `mumtaz_staff_directory_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Print Staff Directory
+    function printStaffDirectory() {
+      window.print();
+    }
+
+    // 9. Staff Directory & Management - Render Function
     function renderStaffDirectory(list = null) {
       const data = list !== null ? list : staffList;
       const tbody = document.getElementById('staff-directory-tbody');
-      
-      if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="9" class="py-8 text-center text-slate-400">Koi staff member nahi mila.</td></tr>';
-        return;
+      const mobileList = document.getElementById('staff-directory-mobile-list');
+      const counterBadge = document.getElementById('staff-table-counter');
+
+      // Update counter
+      if (counterBadge) {
+        counterBadge.innerText = `${(data || []).length} ${(data || []).length === 1 ? 'Record' : 'Records'}`;
       }
 
-      tbody.innerHTML = data.map(s => {
-        const designation = s.designation || s.role || 'Staff';
-        const address = s.address || '—';
-        const joining = s.joining_date || '—';
-        const cnic = s.cnic || '—';
-        const phone = s.phone || '—';
-        const isPoliceOk = s.police_report === 1 || s.police_report === '1' || s.police_report === 'YES' || s.police_report === true;
-        const policeBadge = isPoliceOk
-          ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200" title="Police Report Verified"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Yes</span>`
-          : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200" title="Police Report Pending"><i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> No</span>`;
+      // Update Summary Cards Above Table
+      const summaryTotal = document.getElementById('staff-summary-total');
+      if (summaryTotal) summaryTotal.innerText = (staffList || []).length;
 
-        return `
-          <tr class="hover:bg-slate-50 transition-colors">
-            <td class="py-3 px-4 font-mono font-bold text-slate-400">#${s.id}</td>
-            <td class="py-3 px-4">
-              <div class="font-bold text-slate-800 text-sm">${s.name}</div>
-              <div class="text-[11px] font-mono text-slate-400 mt-0.5">CNIC: ${cnic} • ${phone}</div>
-            </td>
-            <td class="py-3 px-4">
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-indigo-50 text-[#232272] border border-indigo-100">
-                ${designation}
-              </span>
-            </td>
-            <td class="py-3 px-4 text-xs text-slate-600 max-w-[180px] truncate" title="${address}">
-              ${address}
-            </td>
-            <td class="py-3 px-4 text-xs font-mono text-indigo-900">
-              <span class="font-semibold">${s.shift_name}</span>
-              <div class="text-[11px] text-slate-500 font-sans mt-0.5">
-                <span class="font-bold text-[#232272]">${s.daily_hours || 8} hrs/day</span> • <span class="text-[#156D38] font-bold">${s.allowed_leaves !== undefined ? s.allowed_leaves : 2} Free Leaves/mo</span>
-              </div>
-            </td>
-            <td class="py-3 px-4 font-black text-[#156D38] text-sm">
-              Rs. ${s.monthly_salary.toLocaleString()}
-            </td>
-            <td class="py-3 px-4 text-xs font-mono text-slate-500">
-              ${joining}
-            </td>
-            <td class="py-3 px-4 text-center">
-              ${policeBadge}
-            </td>
-            <td class="py-3 px-4 text-center">
-              <div class="flex items-center justify-center gap-1.5">
-                <button onclick="openStaffHistoryModal(${s.id})" title="View Complete History & Dossier" class="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-[#232272] transition-colors">
-                  <i data-lucide="file-text" class="w-4 h-4"></i>
-                </button>
-                <button onclick="openStaffModal(${s.id})" title="Edit Staff Profile" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
-                  <i data-lucide="edit-3" class="w-4 h-4"></i>
-                </button>
-                <button onclick="deleteStaff(${s.id}, '${s.name}')" title="Deactivate Staff" class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+      let presentCount = 0;
+      let lateCount = 0;
+      let leaveCount = 0;
+      if (typeof todayAttendance !== 'undefined' && Array.isArray(todayAttendance)) {
+        presentCount = todayAttendance.filter(a => a.status === 'PRESENT' || a.status === 'LATE' || a.time_in).length;
+        lateCount = todayAttendance.filter(a => a.status === 'LATE').length;
+        leaveCount = todayAttendance.filter(a => a.status === 'LEAVE').length;
+      }
+      const summaryPresent = document.getElementById('staff-summary-present');
+      if (summaryPresent) summaryPresent.innerText = presentCount;
+      const summaryLate = document.getElementById('staff-summary-late');
+      if (summaryLate) summaryLate.innerText = lateCount;
+      const summaryLeave = document.getElementById('staff-summary-leave');
+      if (summaryLeave) summaryLeave.innerText = leaveCount;
+      const summaryPct = document.getElementById('staff-summary-attendance-pct');
+      if (summaryPct) {
+        const total = (staffList || []).length;
+        const pct = total > 0 ? Math.round((presentCount / total) * 100) : 0;
+        summaryPct.innerText = `${pct}% Attendance Today`;
+      }
+
+      // Empty State
+      if (!data || data.length === 0) {
+        const emptyHtml = `
+          <tr>
+            <td colspan="8" class="py-12 text-center">
+              <div class="max-w-xs mx-auto flex flex-col items-center">
+                <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-3">
+                  <i data-lucide="user-x" class="w-6 h-6"></i>
+                </div>
+                <h4 class="font-bold text-slate-800 text-sm mb-1">No staff members found</h4>
+                <p class="text-xs text-slate-500 mb-4">Add your first employee to start managing staff records.</p>
+                <button onclick="openStaffModal()" class="bg-[#0F172A] hover:bg-slate-800 text-white font-semibold text-xs py-2 px-4 rounded-lg flex items-center gap-1.5 shadow-sm transition cursor-pointer">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                  <span>Add New Staff</span>
                 </button>
               </div>
             </td>
           </tr>
         `;
-      }).join('');
+        if (tbody) tbody.innerHTML = emptyHtml;
+        if (mobileList) mobileList.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">No staff members found.</div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      // Render Desktop Table Rows
+      if (tbody) {
+        tbody.innerHTML = data.map((s, idx) => {
+          const designation = s.designation || s.role || 'Staff';
+          const address = s.address || '—';
+          const joining = s.joining_date || '—';
+          const cnic = s.cnic || '—';
+          const phone = s.phone || '—';
+          const initials = (s.name || 'S').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+          const shiftName = s.shift_name || (s.shift_id === 1 ? 'Morning (9am-5pm)' : 'Evening (5pm-1am)');
+
+          return `
+            <tr class="hover:bg-slate-50/80 transition-colors">
+              <!-- 1. # -->
+              <td class="py-3 px-4 font-mono font-medium text-slate-400 text-xs">${idx + 1}</td>
+
+              <!-- 2. Staff Details -->
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200 flex-shrink-0">
+                    ${initials}
+                  </div>
+                  <div>
+                    <div class="font-bold text-slate-900 text-xs leading-snug">${s.name}</div>
+                    <div class="text-[11px] text-slate-400 font-mono">CNIC: ${cnic}</div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- 3. Designation -->
+              <td class="py-3 px-4">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                  ${designation}
+                </span>
+                <div class="text-[10px] text-slate-400 mt-0.5">${shiftName}</div>
+              </td>
+
+              <!-- 4. Contact -->
+              <td class="py-3 px-4">
+                <div class="text-xs font-medium text-slate-800 font-mono">${phone}</div>
+                <div class="text-[11px] text-slate-400 truncate max-w-[160px]" title="${address}">${address}</div>
+              </td>
+
+              <!-- 5. Salary -->
+              <td class="py-3 px-4">
+                <div class="text-xs font-bold text-slate-900 font-mono">Rs. ${s.monthly_salary.toLocaleString()}</div>
+                <div class="text-[10px] text-slate-400 font-sans">${s.daily_hours || 8}h / day</div>
+              </td>
+
+              <!-- 6. Joining Date -->
+              <td class="py-3 px-4 text-xs font-mono text-slate-600">
+                ${joining}
+              </td>
+
+              <!-- 7. Status -->
+              <td class="py-3 px-4">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  Active
+                </span>
+              </td>
+
+              <!-- 8. Actions (View, Edit, Delete) -->
+              <td class="py-3 px-4 text-center">
+                <div class="flex items-center justify-center gap-1.5">
+                  <!-- View (Eye icon) -->
+                  <button onclick="openStaffHistoryModal(${s.id})" title="View Profile & Dossier" class="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer">
+                    <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  </button>
+
+                  <!-- Edit (Pencil icon) -->
+                  <button onclick="openStaffModal(${s.id})" title="Edit Staff Profile" class="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 transition-colors cursor-pointer">
+                    <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                  </button>
+
+                  <!-- Delete (Trash icon - Destructive) -->
+                  <button onclick="deleteStaff(${s.id}, '${(s.name || '').replace(/'/g, "\'")}')" title="Deactivate / Delete Staff" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition-colors cursor-pointer">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Render Mobile Card View
+      if (mobileList) {
+        mobileList.innerHTML = data.map(s => {
+          const designation = s.designation || s.role || 'Staff';
+          const cnic = s.cnic || '—';
+          const phone = s.phone || '—';
+          const initials = (s.name || 'S').split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+          return `
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200">
+                    ${initials}
+                  </div>
+                  <div>
+                    <h5 class="font-bold text-slate-900 text-sm">${s.name}</h5>
+                    <p class="text-[11px] text-slate-400 font-mono">CNIC: ${cnic}</p>
+                  </div>
+                </div>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                </span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-xs py-2 border-y border-slate-100">
+                <div>
+                  <span class="text-slate-400 text-[10px] block">Designation</span>
+                  <span class="font-semibold text-slate-700">${designation}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 text-[10px] block">Salary</span>
+                  <span class="font-mono font-bold text-slate-900">Rs. ${s.monthly_salary.toLocaleString()}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 text-[10px] block">Contact</span>
+                  <span class="font-mono text-slate-700">${phone}</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 text-[10px] block">Joining Date</span>
+                  <span class="font-mono text-slate-600">${s.joining_date || '—'}</span>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-end gap-2 pt-1">
+                <button onclick="openStaffHistoryModal(${s.id})" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 flex items-center gap-1 cursor-pointer">
+                  <i data-lucide="eye" class="w-3.5 h-3.5"></i> View
+                </button>
+                <button onclick="openStaffModal(${s.id})" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 hover:bg-indigo-50 border border-indigo-200 flex items-center gap-1 cursor-pointer">
+                  <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
+                </button>
+                <button onclick="deleteStaff(${s.id}, '${(s.name || '').replace(/'/g, "\'")}')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-200 flex items-center gap-1 cursor-pointer">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Delete
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
       lucide.createIcons();
     }
 
-    // Live Instant Search Filter
-    function handleStaffSearch() {
-      const q = document.getElementById('staff-search-input').value.toLowerCase().trim();
-      if (!q) {
-        renderStaffDirectory(staffList);
-        return;
-      }
-      const filtered = staffList.filter(s => {
-        const nameMatch = (s.name || '').toLowerCase().includes(q);
-        const cnicMatch = (s.cnic || '').toLowerCase().includes(q);
-        const phoneMatch = (s.phone || '').toLowerCase().includes(q);
-        const desigMatch = ((s.designation || s.role) || '').toLowerCase().includes(q);
-        const addressMatch = (s.address || '').toLowerCase().includes(q);
-        const policeStr = (s.police_report === 1 || s.police_report === '1' || s.police_report === 'YES' || s.police_report === true) ? 'police verified yes' : 'police pending no';
-        const policeMatch = policeStr.includes(q);
-        return nameMatch || cnicMatch || phoneMatch || desigMatch || addressMatch || policeMatch;
-      });
-      renderStaffDirectory(filtered);
-    }
 
     // Modal: Open Add / Edit Staff
     function openStaffModal(staffId = null) {
@@ -3215,12 +4472,31 @@
     // Feature 19: Complete Staff History & Dossier Modal
     async function openStaffHistoryModal(staffId) {
       try {
-        const res = await fetch(`/api/staff/${staffId}/history`);
-        if (!res.ok) {
-          alert("Unable to fetch staff history");
-          return;
+        let data;
+        if (USE_DUMMY_DATA) {
+          const staffObj = (staffList || MOCK_STAFF).find(s => s.id === staffId) || MOCK_STAFF[0];
+          data = {
+            profile: staffObj,
+            total_present_days: 26,
+            unsettled_advances: staffId === 4 ? 5000 : (staffId === 3 ? 15000 : 0),
+            attendance: [
+              { date: '2026-09-13', time_in: '08:55 AM', time_out: '05:05 PM', status: 'ON_TIME', worked_minutes: 490 },
+              { date: '2026-09-12', time_in: '09:00 AM', time_out: '05:00 PM', status: 'ON_TIME', worked_minutes: 480 },
+              { date: '2026-09-11', time_in: '08:52 AM', time_out: '05:10 PM', status: 'ON_TIME', worked_minutes: 498 },
+              { date: '2026-09-10', time_in: '09:18 AM', time_out: '05:15 PM', status: 'LATE', worked_minutes: 477 },
+              { date: '2026-09-09', time_in: '08:59 AM', time_out: '05:02 PM', status: 'ON_TIME', worked_minutes: 483 },
+              { date: '2026-09-08', time_in: '08:48 AM', time_out: '05:00 PM', status: 'ON_TIME', worked_minutes: 492 },
+              { date: '2026-09-07', time_in: '09:00 AM', time_out: '05:00 PM', status: 'ON_TIME', worked_minutes: 480 }
+            ]
+          };
+        } else {
+          const res = await fetch(`/api/staff/${staffId}/history`);
+          if (!res.ok) {
+            alert("Unable to fetch staff history");
+            return;
+          }
+          data = await res.json();
         }
-        const data = await res.json();
         const p = data.profile;
 
         // Avatar initials
@@ -3473,8 +4749,12 @@
 
     async function loadCustomers() {
       try {
-        const res = await fetch('/api/customers');
-        allCustomers = await res.json();
+        if (USE_DUMMY_DATA) {
+          allCustomers = JSON.parse(JSON.stringify(MOCK_CUSTOMERS));
+        } else {
+          const res = await fetch('/api/customers');
+          allCustomers = await res.json();
+        }
         renderCustomerTable();
         updateCustomerCounts();
         populateCustomerDropdowns();
@@ -3485,8 +4765,13 @@
 
     async function loadCustomerKpis() {
       try {
-        const res = await fetch('/api/customer-khata/kpis');
-        const kpis = await res.json();
+        let kpis;
+        if (USE_DUMMY_DATA) {
+          kpis = JSON.parse(JSON.stringify(MOCK_CUSTOMER_KPIS));
+        } else {
+          const res = await fetch('/api/customer-khata/kpis');
+          kpis = await res.json();
+        }
         document.getElementById('cust-kpi-outstanding').innerText = `Rs. ${kpis.total_outstanding.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         document.getElementById('cust-kpi-week-credit').innerText = `Rs. ${kpis.this_week_credit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         document.getElementById('cust-kpi-week-recovered').innerText = `Rs. ${kpis.this_week_recovered.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -3525,7 +4810,7 @@
       renderCustomerTable();
     }
 
-    function renderCustomerTable() {
+        function renderCustomerTable() {
       const q = (document.getElementById('customer-search-input')?.value || '').toLowerCase().trim();
       let list = allCustomers || [];
 
@@ -3557,69 +4842,76 @@
           ? `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> ${c.pending_invoices_count} Pending</span>`
           : `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check" class="w-3 h-3"></i> All Clear</span>`;
 
-        const waMessage = encodeURIComponent(`Assalam-o-Alaikum ${c.name} Sahab!\nMumtaz Pharmacy ki janib se reminder hai ke aap ke Series Khata mein Kul Baqaya Raqam Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} due hai.\nBaraye meherbani pharmacy par balance clear farma dein. Shukriya!\n— Mumtaz Pharmacy, Model Town, Lahore`);
-        const waLink = c.wa_phone ? `https://wa.me/${c.wa_phone}?text=${waMessage}` : '#';
-
-        const limitPct = Math.min(100, Math.round((c.current_balance / (c.credit_limit || 15000)) * 100));
-        const barColor = limitPct > 85 ? 'bg-rose-500' : (limitPct > 50 ? 'bg-amber-500' : 'bg-[#156D38]');
+        const waMessage = encodeURIComponent(`Assalam-o-Alaikum ${c.name} Sahab!
+Mumtaz Pharmacy ki janib se reminder hai ke aap ke Series Khata mein Kul Baqaya Raqam Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} due hai.
+Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
+— Mumtaz Pharmacy, Model Town, Lahore`);
 
         return `
           <tr class="hover:bg-slate-50 transition-colors">
+            <!-- 1. Customer Details -->
             <td class="py-3 px-4">
-              <div class="font-bold text-slate-800 text-sm">${c.name}</div>
-              <div class="text-[11px] font-mono text-slate-500 flex items-center gap-1 mt-0.5">
-                <i data-lucide="phone" class="w-3 h-3 text-slate-400"></i> ${c.phone}
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-indigo-50 text-[#232272] border border-indigo-100 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                  ${c.name.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div class="font-bold text-slate-800 text-xs">${c.name}</div>
+                  <div class="text-[11px] text-slate-400 font-mono">${c.phone}</div>
+                  <div class="text-[10px] text-slate-400 truncate max-w-[140px]">${c.address || '—'}</div>
+                </div>
               </div>
-              <div class="text-[10px] text-slate-400 truncate max-w-[200px] mt-0.5">${c.address || 'Lahore'}</div>
             </td>
+
+            <!-- 2. Credit Limit & Usage -->
             <td class="py-3 px-4">
-              <div class="text-xs font-semibold text-slate-700">Limit: Rs. ${(c.credit_limit || 0).toLocaleString()}</div>
-              <div class="w-28 bg-slate-200 h-2 rounded-full mt-1.5 overflow-hidden">
-                <div class="${barColor} h-full rounded-full transition-all" style="width: ${limitPct}%"></div>
+              <div class="text-xs font-mono font-bold text-slate-700">Rs. ${c.credit_limit.toLocaleString('en-US', {minimumFractionDigits: 0})}</div>
+              <div class="w-24 bg-slate-100 rounded-full h-1.5 mt-1 overflow-hidden">
+                <div class="h-1.5 rounded-full ${c.current_balance > c.credit_limit ? 'bg-rose-500' : 'bg-emerald-500'}" style="width: ${Math.min(100, Math.round((c.current_balance / (c.credit_limit || 1)) * 100))}%"></div>
               </div>
-              <div class="text-[10px] text-slate-400 mt-1">${limitPct}% used</div>
+              <div class="text-[10px] text-slate-400 mt-0.5 font-mono">${Math.round((c.current_balance / (c.credit_limit || 1)) * 100)}% Used</div>
             </td>
-            <td class="py-3 px-4 text-xs font-semibold text-slate-600">Rs. ${c.total_credit.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td class="py-3 px-4 text-xs font-semibold text-emerald-700">Rs. ${c.total_settled.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td class="py-3 px-4">
-              <div class="text-sm font-black ${hasBalance ? 'text-rose-600' : 'text-slate-400'}">
-                Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-              </div>
-              <div class="text-[10px] text-slate-400">${c.total_invoices_count || 0} total invoices</div>
+
+            <!-- 3. Total Credit Taken -->
+            <td class="py-3 px-4 font-mono text-xs text-slate-600">
+              Rs. ${c.total_credit_taken.toLocaleString('en-US', {minimumFractionDigits: 0})}
             </td>
+
+            <!-- 4. Total Paid -->
+            <td class="py-3 px-4 font-mono text-xs text-emerald-700 font-semibold">
+              Rs. ${c.total_paid.toLocaleString('en-US', {minimumFractionDigits: 0})}
+            </td>
+
+            <!-- 5. Current Baqaya -->
+            <td class="py-3 px-4 font-mono font-bold text-xs ${hasBalance ? 'text-rose-600' : 'text-slate-400'}">
+              Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </td>
+
+            <!-- 6. Status -->
             <td class="py-3 px-4 text-center">
               ${statusBadge}
             </td>
-            <td class="py-3 px-4">
+
+            <!-- 7. Actions -->
+            <td class="py-3 px-4 text-center">
               <div class="flex items-center justify-center gap-1.5">
-                ${hasBalance ? `
-                  <button onclick="quickSettleCustomerMaster(${c.id})" title="Clear Baqaya (1-Click Settle)" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white p-1.5 rounded-lg border border-emerald-700 shadow-xs transition-all flex items-center gap-1 text-[11px] font-bold cursor-pointer">
-                    <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
-                    <span>Clear</span>
-                  </button>
-                  <a href="${waLink}" target="_blank" title="1-Click WhatsApp Reminder" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 p-1.5 rounded-lg border border-emerald-200 transition-all flex items-center gap-1 text-[11px] font-bold">
-                    <i data-lucide="message-circle" class="w-4 h-4 text-emerald-600"></i>
-                    <span>WhatsApp</span>
-                  </a>
-                ` : `
-                  <span class="text-slate-300 p-1.5 text-xs font-semibold">—</span>
-                `}
-                <button onclick="openCustomerLedgerModal(${c.id})" title="Customer Khata Book (Mukammal Hisab Kitab)" class="bg-indigo-50 hover:bg-indigo-100 text-[#232272] p-1.5 rounded-lg border border-indigo-200 transition-all flex items-center gap-1 text-[11px] font-bold cursor-pointer">
-                  <i data-lucide="book-open" class="w-4 h-4"></i>
-                  <span>Khata Book</span>
+                <button onclick="openCustomerLedgerModal(${c.id})" title="View Ledger" class="p-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-[#232272] transition-colors cursor-pointer">
+                  <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
                 </button>
-                <button onclick="openCustomerParchiModal(${c.id})" title="Print Parchi Statement" class="bg-slate-100 hover:bg-slate-200 text-slate-700 p-1.5 rounded-lg border border-slate-300 transition-all cursor-pointer">
-                  <i data-lucide="printer" class="w-4 h-4"></i>
+                <button onclick="openCustomerParchi(${c.id})" title="Print Parchi" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer">
+                  <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                 </button>
-                <button onclick="openCustomerModal(${c.id})" title="Edit Profile" class="text-slate-400 hover:text-slate-700 p-1 cursor-pointer">
-                  <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+                <a href="https://wa.me/${c.phone.replace(/[^0-9]/g, '')}?text=${waMessage}" target="_blank" title="Send WhatsApp Reminder" class="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors cursor-pointer">
+                  <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                </a>
+                <button onclick="openSettleCustomerModal(${c.id})" title="Settle Invoice" class="p-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 transition-colors cursor-pointer">
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
             </td>
           </tr>
         `;
       }).join('');
-
       lucide.createIcons();
     }
 
@@ -3917,8 +5209,56 @@
     async function openCustomerLedgerModal(customerId) {
       currentOpenLedgerCustomerId = customerId;
       try {
-        const res = await fetch(`/api/customers/${customerId}/ledger`);
-        const data = await res.json();
+        let data;
+        if (USE_DUMMY_DATA) {
+          const cust = (allCustomers || MOCK_CUSTOMERS).find(c => c.id === customerId) || MOCK_CUSTOMERS[0];
+          data = {
+            customer: cust,
+            summary: {
+              current_balance: cust.current_balance,
+              total_credit: cust.current_balance + 28000,
+              total_settled: 28000
+            },
+            ledger: [
+              {
+                id: 101,
+                date: '2026-09-12',
+                bill_number: 'MP-8921',
+                medicine_details: 'Panadol Forte, Augmentin 625mg, Lipitor 20mg',
+                debit: 8500,
+                credit: 0,
+                balance: cust.current_balance,
+                status: 'UNPAID',
+                created_at: '2026-09-12 14:30'
+              },
+              {
+                id: 102,
+                date: '2026-09-08',
+                bill_number: 'REC-341',
+                medicine_details: 'Counter Cash Payment Received',
+                debit: 0,
+                credit: 15000,
+                balance: cust.current_balance + 8500,
+                status: 'PAID',
+                created_at: '2026-09-08 18:15'
+              },
+              {
+                id: 103,
+                date: '2026-09-01',
+                bill_number: 'MP-8740',
+                medicine_details: 'Insulin Lantus, Glucophage 500mg, Strip Pack',
+                debit: 19500,
+                credit: 0,
+                balance: cust.current_balance + 23500,
+                status: 'UNPAID',
+                created_at: '2026-09-01 11:00'
+              }
+            ]
+          };
+        } else {
+          const res = await fetch(`/api/customers/${customerId}/ledger`);
+          data = await res.json();
+        }
         const c = data.customer;
         const summary = data.summary;
         const entries = data.ledger;
@@ -4423,3 +5763,4 @@
   </script>
 </body>
 </html>
+
