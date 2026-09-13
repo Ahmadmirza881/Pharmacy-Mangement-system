@@ -8,6 +8,7 @@ Tests:
 """
 
 import unittest
+from datetime import date
 from fastapi.testclient import TestClient
 from main import app
 from seed_data import seed
@@ -168,5 +169,65 @@ class TestMumtazFeatureEnhancements(unittest.TestCase):
         self.assertEqual(data2["absent_count"], 0)
         self.assertEqual(data2["leave_count"], 2)
 
+        # Test editing Kashif's leave
+        leaves_list = self.client.get("/api/leaves").json()
+        kashif_leave = next(l for l in leaves_list if l["staff_id"] == 7 and l["date"] == today_str)
+        update_res = self.client.put(f"/api/leaves/{kashif_leave['id']}", json={
+            "date": today_str,
+            "reason": "Updated Viral Fever Leave"
+        })
+        self.assertEqual(update_res.status_code, 200)
+        leaves_list_after = self.client.get("/api/leaves").json()
+        updated_leave = next(l for l in leaves_list_after if l["id"] == kashif_leave["id"])
+        self.assertEqual(updated_leave["reason"], "Updated Viral Fever Leave")
+
+        # Test deleting leave reverts attendance to absent
+        del_res = self.client.delete(f"/api/leaves/{kashif_leave['id']}")
+        self.assertEqual(del_res.status_code, 200)
+        res3 = self.client.get("/api/attendance/today")
+        kashif_del = next(s for s in res3.json()["roster"] if s["id"] == 7)
+        self.assertEqual(kashif_del["status"], "ABSENT")
+
+        # Test Half-Day Leave application and salary deduction
+        half_day_res = self.client.post("/api/leaves", json={
+            "staff_id": 7,
+            "date": today_str,
+            "reason": "Doctor appointment half day",
+            "leave_type": "HALF_DAY"
+        })
+        self.assertEqual(half_day_res.status_code, 200)
+        leaves_after_half = self.client.get("/api/leaves").json()
+        kashif_half = next(l for l in leaves_after_half if l["staff_id"] == 7 and l["date"] == today_str)
+        self.assertEqual(kashif_half["leave_type"], "HALF_DAY")
+
+        # Check payroll engine calculation with half day
+        from payroll_engine import calculate_monthly_payroll
+        pr = calculate_monthly_payroll(7, 9, 2026)
+        self.assertGreaterEqual(pr["leaves_count"], 0.5)
+
+    def test_06_today_activity_feed(self):
+        """Validates today's real-time activities endpoint and logging."""
+        today_str = date.today().isoformat()
+        res = self.client.get("/api/activities/today")
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn("activities", data)
+        self.assertIn("total_count", data)
+        self.assertIn("category_counts", data)
+        self.assertGreaterEqual(data["total_count"], 1)
+
+        # Test punch activity logging
+        punch_res = self.client.post("/api/punch", json={
+            "staff_id": 1,
+            "custom_time": f"{today_str} 09:00:00"
+        })
+        self.assertEqual(punch_res.status_code, 200)
+
+        feed_res = self.client.get("/api/activities/today?category=ATTENDANCE")
+        self.assertEqual(feed_res.status_code, 200)
+        att_data = feed_res.json()
+        self.assertTrue(any("Ali Raza" in a.get("staff_name", "") for a in att_data["activities"]))
+
 if __name__ == "__main__":
     unittest.main()
+

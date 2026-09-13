@@ -207,12 +207,13 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
 
         total_overtime_mins += log["overtime_minutes"] or 0
 
-    # 2. Fetch approved leaves for this month
+    # 2. Fetch approved leaves for this month (supporting Full-Day and Half-Day leaves)
     cursor.execute("""
-        SELECT date FROM leaves
+        SELECT date, coalesce(leave_type, 'FULL_DAY') as leave_type FROM leaves
         WHERE staff_id = ? AND date BETWEEN ? AND ?
     """, (staff_id, start_date_str, end_date_str))
-    leave_dates = {row["date"] for row in cursor.fetchall()}
+    leave_rows = cursor.fetchall()
+    leave_dates = {row["date"] for row in leave_rows}
 
     # 3. Calculate Absent days (past days up to today or month end with no log and no leave)
     today = date.today()
@@ -229,9 +230,15 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
     # Deductions Math
     absent_cut = round(absent_days * daily_wage, 2)
 
-    # Dynamic Paid Leaves Quota
-    leaves_count = len(leave_dates)
-    extra_leaves = max(0, leaves_count - allowed_leaves)
+    # Dynamic Paid Leaves Quota: Full Day = 1.0, Half Day = 0.5
+    leaves_count = 0.0
+    for row in leave_rows:
+        if row["leave_type"] == "HALF_DAY":
+            leaves_count += 0.5
+        else:
+            leaves_count += 1.0
+
+    extra_leaves = max(0.0, leaves_count - allowed_leaves)
     extra_leave_cut = round(extra_leaves * daily_wage, 2)
 
     # Half-day policy (for legacy HALF_DAY status logs)
@@ -323,6 +330,7 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
     return {
         "staff_id": staff_id,
         "staff_name": staff["name"],
+        "phone": staff["phone"] if "phone" in staff.keys() else "",
         "role": staff["role"],
         "designation": staff["designation"] if "designation" in staff.keys() and staff["designation"] else staff["role"],
         "month": month,

@@ -15,7 +15,7 @@ import calendar
 import re
 import urllib.parse
 
-from database import init_db, get_db_connection
+from database import init_db, get_db_connection, log_activity, get_today_activities
 from payroll_engine import process_punch, calculate_monthly_payroll
 from biometric_service import biometric_service
 
@@ -93,6 +93,12 @@ class LeaveCreate(BaseModel):
     staff_id: int
     date: str
     reason: Optional[str] = "Approved Medical / Personal Leave"
+    leave_type: Optional[str] = "FULL_DAY" # "FULL_DAY" or "HALF_DAY"
+
+class LeaveUpdate(BaseModel):
+    date: Optional[str] = None
+    reason: Optional[str] = None
+    leave_type: Optional[str] = None
 
 class AttendanceOverride(BaseModel):
     staff_id: int
@@ -138,6 +144,12 @@ class CustomerSettleAll(BaseModel):
 
 # --- API Endpoints ---
 
+@app.get("/api/activities/today")
+def get_activities_today(date: Optional[str] = None, category: Optional[str] = "ALL", limit: Optional[int] = 50):
+    """Returns today's real-time operational activity log for the Dashboard."""
+    target_date = date or datetime.now().strftime("%Y-%m-%d")
+    return get_today_activities(target_date=target_date, limit=limit, category=category)
+
 @app.post("/api/punch")
 def punch_attendance(req: PunchRequest):
     """Executes a biometric fingerprint punch (IN or OUT)."""
@@ -151,6 +163,25 @@ def punch_attendance(req: PunchRequest):
     result = process_punch(req.staff_id, punch_dt=punch_dt, method=req.method)
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("message"))
+
+    # Log real-time activity for dashboard
+    staff_name = result.get("staff_name", f"Staff #{req.staff_id}")
+    punch_type = result.get("punch_type", "IN")
+    status = result.get("status", "ON_TIME")
+    status_label = "On-Time" if status == "ON_TIME" else ("Late Arrival" if status == "LATE" else status)
+    time_str = result.get("time", punch_dt.strftime("%I:%M:%S %p"))
+    date_str = punch_dt.strftime("%Y-%m-%d")
+
+    log_activity(
+        category="ATTENDANCE",
+        action_type=f"PUNCH_{punch_type}",
+        title=f"Biometric Punch {punch_type}: {staff_name}",
+        description=f"Recorded at {time_str} • Status: {status_label} ({req.method})",
+        staff_name=staff_name,
+        date_str=date_str,
+        time_str=time_str
+    )
+
     return result
 
 @app.get("/api/attendance/today")
@@ -166,7 +197,7 @@ def get_today_attendance():
                s.daily_hours, s.allowed_leaves, sh.name as shift_name,
                sh.start_time, sh.end_time,
                a.time_in, a.time_out, a.status, a.late_minutes, a.worked_minutes, a.overtime_minutes,
-               l.reason as leave_reason
+               l.reason as leave_reason, coalesce(l.leave_type, 'FULL_DAY') as leave_type
         FROM staff s
         JOIN shifts sh ON s.shift_id = sh.id
         LEFT JOIN attendance_logs a ON s.id = a.staff_id AND a.date = ?
@@ -263,7 +294,21 @@ def override_attendance(data: AttendanceOverride):
             notes = excluded.notes
     """, (data.staff_id, data.date, data.time_in, data.time_out, data.status, worked_minutes, data.notes))
     conn.commit()
+
+    cursor.execute("SELECT name FROM staff WHERE id = ?", (data.staff_id,))
+    staff_row = cursor.fetchone()
+    staff_name = staff_row["name"] if staff_row else f"Staff #{data.staff_id}"
     conn.close()
+
+    log_activity(
+        category="ATTENDANCE",
+        action_type="ATTENDANCE_OVERRIDE",
+        title=f"Attendance Adjusted: {staff_name}",
+        description=f"Status set to {data.status} for {data.date} (In: {data.time_in or 'None'}, Out: {data.time_out or 'None'})",
+        staff_name=staff_name,
+        date_str=data.date
+    )
+
     return {"success": True, "message": f"Attendance for staff #{data.staff_id} on {data.date} updated successfully."}
 
 @app.get("/api/attendance/monthly")
@@ -393,6 +438,15 @@ def create_staff(data: StaffCreate):
     new_id = cursor.lastrowid
     conn.commit()
     conn.close()
+
+    log_activity(
+        category="STAFF",
+        action_type="STAFF_ADDED",
+        title=f"New Staff Registered: {data.name}",
+        description=f"Designation: {designation} • Salary: Rs. {data.monthly_salary:,.2f}",
+        staff_name=data.name
+    )
+
     return {"success": True, "staff_id": new_id, "message": f"Staff member '{data.name}' registered successfully."}
 
 @app.put("/api/staff/{staff_id}")
@@ -579,9 +633,23 @@ def create_advance(data: AdvanceCreate):
         VALUES (?, ?, ?, ?, ?)
     """, (data.staff_id, entry_type, data.amount, date_str, data.reason))
     new_id = cursor.lastrowid
+    cursor.execute("SELECT name FROM staff WHERE id = ?", (data.staff_id,))
+    s_row = cursor.fetchone()
+    staff_name = s_row["name"] if s_row else f"Staff #{data.staff_id}"
     conn.commit()
     conn.close()
-    label = "Medicine credit" if entry_type == "MEDICINE_CREDIT" else "Cash advance"
+
+    label = "Medicine Credit" if entry_type == "MEDICINE_CREDIT" else "Cash Advance"
+    log_activity(
+        category="STAFF_KHATA",
+        action_type="ADVANCE_ADDED",
+        title=f"Staff Khata ({label}): {staff_name}",
+        description=f"Rs. {data.amount:,.2f} recorded • Reason: {data.reason or 'Staff advance'}",
+        staff_name=staff_name,
+        amount=data.amount,
+        date_str=date_str
+    )
+
     return {"success": True, "id": new_id, "message": f"{label} of Rs. {data.amount:,.2f} recorded successfully."}
 
 @app.post("/api/advances/{advance_id}/settle")
@@ -666,6 +734,16 @@ def settle_advance(advance_id: int, req: Optional[AdvanceSettleRequest] = None):
         conn.commit()
         conn.close()
 
+        log_activity(
+            category="STAFF_KHATA",
+            action_type="ADVANCE_SETTLED",
+            title=f"Staff Khata Settled: {adv['staff_name']}",
+            description=f"Rs. {adv['amount']:,.2f} settled via {settlement_type}",
+            staff_name=adv['staff_name'],
+            amount=adv['amount'],
+            date_str=settled_date
+        )
+
         return {
             "success": True,
             "partial": False,
@@ -695,31 +773,47 @@ def clear_settled_advances():
 
 @app.post("/api/leaves")
 def approve_leave(data: LeaveCreate):
-    """Approves an emergency/sick leave so salary is not cut."""
+    """Approves an emergency/sick leave (Full-Day or Half-Day) so salary is not cut."""
     conn = get_db_connection()
     cursor = conn.cursor()
+    leave_type = data.leave_type or "FULL_DAY"
     cursor.execute("""
-        INSERT INTO leaves (staff_id, date, reason)
-        VALUES (?, ?, ?)
-        ON CONFLICT(staff_id, date) DO UPDATE SET reason = excluded.reason
-    """, (data.staff_id, data.date, data.reason))
+        INSERT INTO leaves (staff_id, date, reason, leave_type)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(staff_id, date) DO UPDATE SET reason = excluded.reason, leave_type = excluded.leave_type
+    """, (data.staff_id, data.date, data.reason, leave_type))
+    note_label = f"Approved {'Half-Day' if leave_type == 'HALF_DAY' else ''} Leave: {data.reason}".strip()
     cursor.execute("""
         UPDATE attendance_logs 
         SET status = 'LEAVE', notes = coalesce(nullif(notes, ''), ?)
         WHERE staff_id = ? AND date = ? AND status = 'ABSENT'
-    """, (f"Approved Leave: {data.reason}", data.staff_id, data.date))
+    """, (note_label, data.staff_id, data.date))
+    cursor.execute("SELECT name FROM staff WHERE id = ?", (data.staff_id,))
+    s_row = cursor.fetchone()
+    staff_name = s_row["name"] if s_row else f"Staff #{data.staff_id}"
     conn.commit()
     conn.close()
-    return {"success": True, "message": f"Leave approved for date {data.date}."}
+
+    type_label = "Half-Day (0.5)" if leave_type == "HALF_DAY" else "Full-Day (1.0)"
+    log_activity(
+        category="LEAVE",
+        action_type="LEAVE_APPLIED",
+        title=f"Leave Approved ({type_label}): {staff_name}",
+        description=f"Date: {data.date} • Reason: {data.reason}",
+        staff_name=staff_name,
+        date_str=data.date
+    )
+
+    return {"success": True, "message": f"{'Half-Day' if leave_type == 'HALF_DAY' else 'Full-Day'} leave approved for date {data.date}."}
 
 @app.get("/api/leaves")
 def get_leaves():
-    """Returns all approved leaves with staff details."""
+    """Returns all approved leaves with staff details and leave type."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
         SELECT l.id, l.staff_id, s.name as staff_name, s.designation, s.role, s.allowed_leaves,
-               l.date, l.reason, l.approved_by, l.created_at
+               l.date, l.reason, coalesce(l.leave_type, 'FULL_DAY') as leave_type, l.approved_by, l.created_at
         FROM leaves l
         JOIN staff s ON l.staff_id = s.id
         ORDER BY l.date DESC
@@ -728,14 +822,99 @@ def get_leaves():
     conn.close()
     return rows
 
+@app.put("/api/leaves/{leave_id}")
+def update_leave(leave_id: int, data: LeaveUpdate):
+    """Updates an existing leave record (date, reason, leave_type)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT staff_id, date, reason, coalesce(leave_type, 'FULL_DAY') as leave_type FROM leaves WHERE id = ?", (leave_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Leave record not found")
+    
+    staff_id = row["staff_id"]
+    old_date = row["date"]
+    new_date = data.date if data.date is not None else row["date"]
+    new_reason = data.reason if data.reason is not None else row["reason"]
+    new_type = data.leave_type if data.leave_type is not None else row["leave_type"]
+
+    # Check for conflict if date changed
+    if new_date != old_date:
+        cursor.execute("SELECT id FROM leaves WHERE staff_id = ? AND date = ? AND id != ?", (staff_id, new_date, leave_id))
+        if cursor.fetchone():
+            conn.close()
+            raise HTTPException(status_code=400, detail="Is staff ki is date par pehle se leave darj hai.")
+
+    cursor.execute("UPDATE leaves SET date = ?, reason = ?, leave_type = ? WHERE id = ?", (new_date, new_reason, new_type, leave_id))
+
+    # Update attendance_logs status if date changed
+    if new_date != old_date:
+        cursor.execute("""
+            UPDATE attendance_logs 
+            SET status = 'ABSENT', notes = NULL 
+            WHERE staff_id = ? AND date = ? AND status = 'LEAVE'
+        """, (staff_id, old_date))
+
+    note_label = f"Approved {'Half-Day' if new_type == 'HALF_DAY' else ''} Leave: {new_reason}".strip()
+    cursor.execute("""
+        UPDATE attendance_logs 
+        SET status = 'LEAVE', notes = coalesce(nullif(notes, ''), ?)
+        WHERE staff_id = ? AND date = ? AND status = 'ABSENT'
+    """, (note_label, staff_id, new_date))
+
+    cursor.execute("SELECT name FROM staff WHERE id = ?", (staff_id,))
+    s_row = cursor.fetchone()
+    staff_name = s_row["name"] if s_row else f"Staff #{staff_id}"
+
+    conn.commit()
+    conn.close()
+
+    type_label = "Half-Day (0.5)" if new_type == "HALF_DAY" else "Full-Day (1.0)"
+    log_activity(
+        category="LEAVE",
+        action_type="LEAVE_EDITED",
+        title=f"Leave Updated ({type_label}): {staff_name}",
+        description=f"Date: {new_date} • Reason: {new_reason}",
+        staff_name=staff_name,
+        date_str=new_date
+    )
+
+    return {"success": True, "message": "Leave updated successfully."}
+
 @app.delete("/api/leaves/{leave_id}")
 def delete_leave(leave_id: int):
     """Deletes an approved leave record."""
     conn = get_db_connection()
     cursor = conn.cursor()
+    cursor.execute("SELECT staff_id, date FROM leaves WHERE id = ?", (leave_id,))
+    row = cursor.fetchone()
+    staff_name = ""
+    leave_date = ""
+    if row:
+        cursor.execute("SELECT name FROM staff WHERE id = ?", (row["staff_id"],))
+        s_row = cursor.fetchone()
+        staff_name = s_row["name"] if s_row else f"Staff #{row['staff_id']}"
+        leave_date = row["date"]
+        cursor.execute("""
+            UPDATE attendance_logs 
+            SET status = 'ABSENT', notes = NULL 
+            WHERE staff_id = ? AND date = ? AND status = 'LEAVE'
+        """, (row["staff_id"], row["date"]))
+
     cursor.execute("DELETE FROM leaves WHERE id = ?", (leave_id,))
     conn.commit()
     conn.close()
+
+    log_activity(
+        category="LEAVE",
+        action_type="LEAVE_DELETED",
+        title=f"Leave Cancelled: {staff_name}",
+        description=f"Leave on {leave_date} cancelled from records",
+        staff_name=staff_name,
+        date_str=leave_date
+    )
+
     return {"success": True, "message": "Leave deleted."}
 
 @app.get("/api/payroll/calculate")
@@ -839,6 +1018,16 @@ def disburse_salary(data: PayrollDisburseRequest):
 
     # Re-calculate to return updated payroll info
     updated_payroll = calculate_monthly_payroll(data.staff_id, data.month, data.year)
+
+    log_activity(
+        category="PAYROLL",
+        action_type="SALARY_PAID",
+        title=f"Salary Disbursed: {staff['name']}",
+        description=f"Rs. {updated_payroll['net_payable']:,.2f} for {month_name} {data.year} ({payment_method})",
+        staff_name=staff["name"],
+        amount=updated_payroll["net_payable"],
+        date_str=paid_date
+    )
 
     return {
         "success": True,
@@ -1010,6 +1199,16 @@ def add_customer_khata(data: CustomerKhataCreate):
     new_balance = cursor.fetchone()[0] or 0.0
     conn.close()
 
+    log_activity(
+        category="CUSTOMER_KHATA",
+        action_type="CUSTOMER_KHATA_ADDED",
+        title=f"Customer Credit: {customer['name']}",
+        description=f"Invoice #{invoice_no}: {data.item_description.strip()} (Rs. {data.amount:,.2f})",
+        staff_name=customer["name"],
+        amount=data.amount,
+        date_str=entry_date
+    )
+
     return {
         "success": True,
         "id": entry_id,
@@ -1104,7 +1303,21 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
         # Recalculate customer balance
         cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (entry["customer_id"],))
         updated_balance = float(cursor.fetchone()[0] or 0.0)
+
+        cursor.execute("SELECT name FROM customers WHERE id = ?", (entry["customer_id"],))
+        c_row = cursor.fetchone()
+        cust_name = c_row["name"] if c_row else "Customer"
         conn.close()
+
+        log_activity(
+            category="CUSTOMER_KHATA",
+            action_type="CUSTOMER_KHATA_SETTLED",
+            title=f"Customer Khata Settled: {cust_name}",
+            description=f"Invoice #{entry['invoice_no']} of Rs. {orig_amount:,.2f} settled in full via {pay_method}",
+            staff_name=cust_name,
+            amount=orig_amount,
+            date_str=settle_date
+        )
 
         return {
             "success": True,

@@ -133,6 +133,7 @@ def init_db():
         staff_id INTEGER NOT NULL,
         date TEXT NOT NULL,
         reason TEXT,
+        leave_type TEXT DEFAULT "FULL_DAY", -- "FULL_DAY" (1.0) or "HALF_DAY" (0.5)
         approved_by TEXT DEFAULT "Owner",
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE(staff_id, date),
@@ -241,6 +242,28 @@ def init_db():
     if "notes" not in existing_ck_cols:
         cursor.execute("ALTER TABLE customer_khata ADD COLUMN notes TEXT DEFAULT ''")
 
+    # Migration: leave_type in leaves table
+    cursor.execute("PRAGMA table_info(leaves)")
+    existing_leave_cols = {row[1] for row in cursor.fetchall()}
+    if "leave_type" not in existing_leave_cols:
+        cursor.execute("ALTER TABLE leaves ADD COLUMN leave_type TEXT DEFAULT 'FULL_DAY'")
+
+    # 9. Real-Time Activity Logs Table (Audit Feed)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS activity_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        category TEXT NOT NULL,       -- "ATTENDANCE", "LEAVE", "STAFF_KHATA", "CUSTOMER_KHATA", "PAYROLL", "STAFF"
+        action_type TEXT NOT NULL,    -- "PUNCH_IN", "PUNCH_OUT", "LEAVE_APPLIED", "LEAVE_EDITED", "LEAVE_DELETED", "ADVANCE_ADDED", "ADVANCE_SETTLED", "CUSTOMER_KHATA_ADDED", "CUSTOMER_KHATA_SETTLED", "SALARY_PAID", "STAFF_ADDED", "STAFF_UPDATED"
+        title TEXT NOT NULL,          -- e.g. "Biometric Punch IN: Ali Raza"
+        description TEXT NOT NULL,    -- e.g. "Time-IN recorded at 08:02 AM • Status: ON_TIME"
+        staff_name TEXT DEFAULT '',   -- e.g. "Ali Raza"
+        amount REAL DEFAULT 0.0,      -- e.g. 4000.0 or 0.0
+        date TEXT NOT NULL,           -- "YYYY-MM-DD"
+        time TEXT NOT NULL,           -- "HH:MM:SS" or "08:02:15 AM"
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
     # Populate Default Shifts if empty
     cursor.execute("SELECT COUNT(*) FROM shifts")
     if cursor.fetchone()[0] == 0:
@@ -295,6 +318,185 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+def log_activity(category: str, action_type: str, title: str, description: str, 
+                 staff_name: str = "", amount: float = 0.0, 
+                 date_str: str = None, time_str: str = None):
+    """
+    Logs any real-time operational action (punch, leave, advance, khata, payroll disburse).
+    """
+    try:
+        now = datetime.now()
+        d_str = date_str or now.strftime("%Y-%m-%d")
+        t_str = time_str or now.strftime("%I:%M:%S %p")
+        conn = get_db_connection()
+        conn.execute("""
+            INSERT INTO activity_logs (category, action_type, title, description, staff_name, amount, date, time)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (category, action_type, title, description, staff_name or "", float(amount or 0.0), d_str, t_str))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error logging activity: {e}")
+
+def sync_today_activities(target_date: str = None):
+    """
+    Auto-backfills any existing actions for target_date into activity_logs if missing,
+    ensuring all of today's attendance, leaves, advances, and payouts show up immediately.
+    """
+    target_date = target_date or datetime.now().strftime("%Y-%m-%d")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Check if we already have activities for this date
+    cursor.execute("SELECT COUNT(*) FROM activity_logs WHERE date = ?", (target_date,))
+    existing_count = cursor.fetchone()[0]
+
+    if existing_count == 0:
+        # 1. Backfill Attendance Punches & Absents for target_date
+        cursor.execute("""
+            SELECT a.id, a.staff_id, s.name, a.time_in, a.time_out, a.status, a.late_minutes, a.worked_minutes, a.created_at
+            FROM attendance_logs a
+            JOIN staff s ON a.staff_id = s.id
+            WHERE a.date = ?
+            ORDER BY a.time_in ASC, a.id ASC
+        """, (target_date,))
+        att_rows = cursor.fetchall()
+
+        for row in att_rows:
+            s_name = row["name"]
+            status = row["status"]
+            time_in = row["time_in"]
+            time_out = row["time_out"]
+
+            if time_in:
+                late_txt = f" (Late by {row['late_minutes']} mins)" if row["late_minutes"] > 0 else " (On-Time)"
+                log_activity(
+                    category="ATTENDANCE",
+                    action_type="PUNCH_IN",
+                    title=f"Biometric Punch IN: {s_name}",
+                    description=f"Staff punched IN at {time_in}{late_txt} — Shift duty started.",
+                    staff_name=s_name,
+                    date_str=target_date,
+                    time_str=time_in
+                )
+            elif status == "APPROVED_LEAVE":
+                log_activity(
+                    category="LEAVE",
+                    action_type="LEAVE_APPROVED",
+                    title=f"Leave on Roster: {s_name}",
+                    description=f"Approved leave scheduled for {target_date}.",
+                    staff_name=s_name,
+                    date_str=target_date,
+                    time_str="09:00:00 AM"
+                )
+            elif status == "ABSENT":
+                log_activity(
+                    category="ATTENDANCE",
+                    action_type="ABSENT_MARKED",
+                    title=f"Absence Recorded: {s_name}",
+                    description=f"No punch recorded for shift duty.",
+                    staff_name=s_name,
+                    date_str=target_date,
+                    time_str="09:15:00 AM"
+                )
+
+            if time_out:
+                h = (row["worked_minutes"] or 0) // 60
+                m = (row["worked_minutes"] or 0) % 60
+                log_activity(
+                    category="ATTENDANCE",
+                    action_type="PUNCH_OUT",
+                    title=f"Biometric Punch OUT: {s_name}",
+                    description=f"Staff punched OUT at {time_out} — Completed {h}h {m}m shift duty.",
+                    staff_name=s_name,
+                    date_str=target_date,
+                    time_str=time_out
+                )
+
+        # 2. Backfill Advances/Khata for target_date
+        cursor.execute("""
+            SELECT a.id, a.staff_id, s.name, a.entry_type, a.amount, a.reason, a.created_at
+            FROM advance_salaries a
+            JOIN staff s ON a.staff_id = s.id
+            WHERE a.date = ?
+        """, (target_date,))
+        adv_rows = cursor.fetchall()
+        for row in adv_rows:
+            type_label = "Medicine Credit" if row["entry_type"] == "MEDICINE_CREDIT" else "Cash Advance"
+            log_activity(
+                category="STAFF_KHATA",
+                action_type="ADVANCE_ADDED",
+                title=f"Staff Khata ({type_label}): {row['name']}",
+                description=f"Rs. {row['amount']:,.2f} issued for {row['reason'] or 'Staff Advance'}",
+                staff_name=row["name"],
+                amount=row["amount"],
+                date_str=target_date,
+                time_str="11:30:00 AM"
+            )
+
+        # 3. Backfill Customer Khata for target_date
+        cursor.execute("""
+            SELECT k.id, c.name, k.invoice_no, k.item_description, k.amount, k.is_settled
+            FROM customer_khata k
+            JOIN customers c ON k.customer_id = c.id
+            WHERE k.date = ?
+        """, (target_date,))
+        ck_rows = cursor.fetchall()
+        for row in ck_rows:
+            log_activity(
+                category="CUSTOMER_KHATA",
+                action_type="CUSTOMER_KHATA_ADDED",
+                title=f"Customer Credit: {row['name']}",
+                description=f"Invoice #{row['invoice_no']} for {row['item_description']}",
+                staff_name=row["name"],
+                amount=row["amount"],
+                date_str=target_date,
+                time_str="12:15:00 PM"
+            )
+
+    conn.close()
+
+def get_today_activities(target_date: str = None, limit: int = 50, category: str = "ALL"):
+    target_date = target_date or datetime.now().strftime("%Y-%m-%d")
+    sync_today_activities(target_date)
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if category and category != "ALL":
+        cursor.execute("""
+            SELECT * FROM activity_logs 
+            WHERE date = ? AND category = ?
+            ORDER BY id DESC LIMIT ?
+        """, (target_date, category, limit))
+    else:
+        cursor.execute("""
+            SELECT * FROM activity_logs 
+            WHERE date = ? 
+            ORDER BY id DESC LIMIT ?
+        """, (target_date, limit))
+
+    rows = cursor.fetchall()
+    activities = [dict(r) for r in rows]
+
+    # Calculate summary counts for badges
+    cursor.execute("""
+        SELECT category, COUNT(*) as cnt 
+        FROM activity_logs 
+        WHERE date = ? 
+        GROUP BY category
+    """, (target_date,))
+    cat_counts = {r["category"]: r["cnt"] for r in cursor.fetchall()}
+
+    conn.close()
+
+    return {
+        "date": target_date,
+        "total_count": len(activities),
+        "category_counts": cat_counts,
+        "activities": activities
+    }
 
 if __name__ == "__main__":
     init_db()

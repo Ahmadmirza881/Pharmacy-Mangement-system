@@ -12,6 +12,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- html2pdf CDN for 1-click Digital PDF Slips -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
 
     // ==========================================
@@ -607,6 +609,9 @@
         margin: 0 auto !important;
         max-width: 100% !important;
         width: 100% !important;
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
         page-break-before: avoid !important;
         break-before: avoid !important;
         page-break-after: avoid !important;
@@ -621,6 +626,9 @@
         transform: none !important;
         width: 100% !important;
         max-width: 175mm !important;
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
         margin: 0 auto !important;
         background: white !important;
         border: 1.5px solid #232272 !important;
@@ -1208,6 +1216,55 @@
         </div>
       </div>
 
+      <!-- REAL-TIME TODAY'S LIVE ACTIVITY FEED (AAJ KI SARGARMIYAN) -->
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <!-- HEADER -->
+        <div class="px-5 py-3.5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-xs">
+              <i data-lucide="zap" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-extrabold text-slate-900 tracking-tight">Today's Live Activities (آج کی تمام سرگرمیاں)</h3>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Live Feed
+                </span>
+                <span id="activity-today-badge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  0 Activities
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-500 mt-0.5">Real-time actions: punches, leaves, staff advances, customer credit &amp; salary payouts</p>
+            </div>
+          </div>
+
+          <!-- FILTERS & ACTIONS -->
+          <div class="flex items-center gap-2 flex-wrap">
+            <div class="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold text-slate-600">
+              <button onclick="filterTodayActivities('ALL')" id="act-filter-ALL" class="px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-2xs font-bold transition cursor-pointer">All</button>
+              <button onclick="filterTodayActivities('ATTENDANCE')" id="act-filter-ATTENDANCE" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition cursor-pointer">Punches</button>
+              <button onclick="filterTodayActivities('LEAVE')" id="act-filter-LEAVE" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition cursor-pointer">Leaves</button>
+              <button onclick="filterTodayActivities('STAFF_KHATA')" id="act-filter-STAFF_KHATA" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition cursor-pointer">Staff Khata</button>
+              <button onclick="filterTodayActivities('CUSTOMER_KHATA')" id="act-filter-CUSTOMER_KHATA" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition cursor-pointer">Customer Khata</button>
+              <button onclick="filterTodayActivities('PAYROLL')" id="act-filter-PAYROLL" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition cursor-pointer">Salaries</button>
+            </div>
+            <button onclick="loadTodayActivities()" class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer" title="Refresh activities">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ACTIVITY ITEMS FEED CONTAINER -->
+        <div id="today-activity-feed" class="divide-y divide-slate-100 max-h-72 overflow-y-auto p-2 sm:p-3 space-y-1">
+          <!-- Populated dynamically by JS -->
+          <div class="text-center py-6 text-slate-400 text-xs font-medium">
+            <i data-lucide="activity" class="w-5 h-5 mx-auto text-slate-300 mb-1.5"></i>
+            Loading today's live activities...
+          </div>
+        </div>
+      </div>
+
       <!-- TODAY'S SHIFT ATTENDANCE ROSTER (FULL-WIDTH AUTHORITATIVE LEDGER) -->
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <div class="bg-[#0284C7] text-white px-5 py-3.5 flex items-center justify-between font-bold text-xs uppercase tracking-wider">
@@ -1489,11 +1546,12 @@
             <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-wider border-b border-slate-200">
               <tr>
                 <th class="py-3 px-4 w-12 text-slate-400">#</th>
-                <th class="py-3 px-4 min-w-[180px]">Staff Member</th>
-                <th class="py-3 px-4 min-w-[120px]">Role</th>
-                <th class="py-3 px-4 min-w-[110px]">Leave Date</th>
-                <th class="py-3 px-4 min-w-[220px]">Reason &amp; Description</th>
-                <th class="py-3 px-4 min-w-[120px]">Approved By</th>
+                <th class="py-3 px-4 min-w-[170px]">Staff Member</th>
+                <th class="py-3 px-4 min-w-[110px]">Role</th>
+                <th class="py-3 px-4 min-w-[120px]">Leave Type</th>
+                <th class="py-3 px-4 min-w-[100px]">Leave Date</th>
+                <th class="py-3 px-4 min-w-[200px]">Reason &amp; Description</th>
+                <th class="py-3 px-4 min-w-[110px]">Approved By</th>
                 <th class="py-3 px-4 text-center min-w-[90px]">Action</th>
               </tr>
             </thead>
@@ -2241,30 +2299,30 @@
 
 <!-- MODAL: DIGITAL PAYSLIP PRINTABLE VIEW -->
   <!-- ================================================================= -->
-  <div id="slip-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200">
-      <button onclick="closeSlipModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
-        <i data-lucide="x" class="w-6 h-6"></i>
+  <div id="slip-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-5 shadow-2xl relative border border-slate-200 my-auto max-h-[96vh] flex flex-col">
+      <button onclick="closeSlipModal()" class="absolute top-3 right-3 text-slate-400 hover:text-slate-700 z-10 p-1 cursor-pointer">
+        <i data-lucide="x" class="w-5 h-5"></i>
       </button>
 
       <!-- PRINTABLE CONTENT -->
-      <div id="printable-slip" class="p-4">
-        <div class="flex items-center justify-between pb-4 border-b-2 border-[#232272]">
+      <div id="printable-slip" class="p-1 sm:p-2 overflow-y-auto flex-1">
+        <div class="flex items-center justify-between pb-2 border-b-2 border-[#232272]">
           <div class="flex items-center space-x-2">
-            <img src="/logo.jpg" alt="Mumtaz Pharmacy" class="h-10 w-auto">
+            <img src="/logo.jpg" alt="Mumtaz Pharmacy" class="h-8 sm:h-9 w-auto">
             <div>
-              <h2 class="text-base font-black text-[#232272]">MUMTAZ PHARMACY</h2>
-              <p class="text-[10px] text-slate-500 font-semibold">Official Biometric Salary Payslip</p>
+              <h2 class="text-sm sm:text-base font-black text-[#232272] leading-tight">MUMTAZ PHARMACY</h2>
+              <p class="text-[9px] sm:text-[10px] text-slate-500 font-semibold">Official Biometric Salary Payslip</p>
             </div>
           </div>
           <div class="text-right">
-            <span id="slip-payment-badge" class="text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-300">PAID</span>
-            <div id="slip-month-label" class="text-xs font-bold text-slate-700 mt-1">September 2026</div>
-            <div id="slip-payment-date-label" class="text-[10px] text-slate-500 font-medium mt-0.5"></div>
+            <span id="slip-payment-badge" class="text-[10px] sm:text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-300">PAID</span>
+            <div id="slip-month-label" class="text-xs font-bold text-slate-700 mt-0.5">September 2026</div>
+            <div id="slip-payment-date-label" class="text-[9px] text-slate-500 font-medium"></div>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-3 text-xs bg-slate-50 p-3 rounded-lg border border-slate-100">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 my-2 text-[11px] bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-100">
           <div><span class="text-slate-400">Employee:</span> <strong id="slip-name" class="text-slate-800">Ali Raza</strong></div>
           <div><span class="text-slate-400">Role:</span> <strong id="slip-role" class="text-slate-800">Pharmacist</strong></div>
           <div><span class="text-slate-400">Month Days:</span> <strong id="slip-days" class="text-slate-800">30 Days</strong></div>
@@ -2274,70 +2332,109 @@
           <div class="col-span-2"><span class="text-slate-400">Allowed Free Leaves:</span> <strong id="slip-free-leaves" class="text-slate-800">2 / month</strong></div>
         </div>
 
-        <!-- BREAKDOWN TABLE -->
-        <table class="w-full text-xs mb-3 border-collapse">
-          <thead>
-            <tr class="border-b border-slate-200 text-slate-500">
-              <th class="py-1.5 text-left">Description</th>
-              <th class="py-1.5 text-right">Amount (PKR)</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
-            <tr>
-              <td class="py-1.5 font-bold">Basic Monthly Salary</td>
-              <td id="slip-basic" class="py-1.5 text-right font-bold">Rs. 45,000.00</td>
-            </tr>
-            <tr class="text-rose-600">
-              <td class="py-1.5" id="slip-absent-desc">Absent Deduction (0 days)</td>
-              <td id="slip-absent" class="py-1.5 text-right">- Rs. 0.00</td>
-            </tr>
-            <tr class="text-rose-600">
-              <td class="py-1.5" id="slip-leave-desc">Extra Leaves Cut (Beyond Quota)</td>
-              <td id="slip-leave" class="py-1.5 text-right">- Rs. 0.00</td>
-            </tr>
-            <tr class="text-amber-700" id="slip-shorthour-row">
-              <td class="py-1.5" id="slip-shorthour-desc">Short Hours Deficit Cut (0 hrs)</td>
-              <td id="slip-shorthour" class="py-1.5 text-right font-bold">- Rs. 0.00</td>
-            </tr>
-            <tr class="text-rose-600">
-              <td class="py-1.5 font-semibold">Staff Khata &amp; Advance Deductions</td>
-              <td id="slip-advance" class="py-1.5 text-right font-bold">- Rs. 0.00</td>
-            </tr>
-            <tr id="slip-advances-details-row" class="hidden text-xs text-slate-600 bg-slate-50/80">
-              <td colspan="2" class="py-2 px-3 border border-slate-200 rounded-lg">
-                <div class="font-bold text-[11px] text-[#232272] mb-1 flex items-center gap-1">
-                  <span>Itemized Khata Deductions:</span>
-                </div>
-                <div id="slip-advances-items" class="space-y-1">
-                  <!-- Rendered dynamically -->
-                </div>
-              </td>
-            </tr>
-            <tr class="border-t-2 border-[#232272] font-black text-sm bg-indigo-50/70">
-              <td class="py-2 text-[#232272]">NET PAYABLE SALARY</td>
-              <td id="slip-net" class="py-2 text-right text-[#156D38] text-base">Rs. 45,000.00</td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- SALARY CALCULATION SUMMARY TABLE -->
+        <div class="my-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xs">
+          <div class="bg-slate-100/90 px-2.5 py-1.5 border-b border-slate-200 flex items-center justify-between">
+            <span class="text-[10px] sm:text-[11px] font-black text-[#232272] uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="calculator" class="w-3.5 h-3.5 text-[#156D38]"></i>
+              Salary Calculation Summary
+            </span>
+            <span class="text-[9px] sm:text-[10px] text-slate-500 font-semibold">Gross − Leaves − Khata = Net Payable</span>
+          </div>
 
-        <div class="flex justify-between items-end pt-4 border-t border-dashed border-slate-300 text-[10px] text-slate-400">
+          <table class="w-full text-xs border-collapse">
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
+              <!-- 1. Gross Salary -->
+              <tr class="bg-slate-50/50">
+                <td class="py-1.5 px-2.5">
+                  <div class="font-bold text-slate-800 text-xs">Gross Salary</div>
+                  <div id="slip-gross-desc" class="text-[10px] text-slate-400 font-normal leading-tight">Basic Monthly Pay</div>
+                </td>
+                <td id="slip-basic" class="py-1.5 px-2.5 text-right font-black text-slate-900 text-xs sm:text-sm font-mono">Rs. 0.00</td>
+              </tr>
+
+              <!-- 2. Leaves Deduction -->
+              <tr class="text-rose-600 bg-white">
+                <td class="py-1.5 px-2.5">
+                  <div class="font-bold text-rose-600 text-xs">Leaves Deduction</div>
+                  <div id="slip-leave-desc" class="text-[10px] text-rose-500 font-normal leading-tight">0 Absents • 0 Extra Leaves</div>
+                </td>
+                <td id="slip-leave" class="py-1.5 px-2.5 text-right font-bold text-rose-600 text-xs font-mono">- Rs. 0.00</td>
+              </tr>
+
+              <!-- 3. Short Hours Cut (Only if short hours deficit exists) -->
+              <tr class="text-amber-700 bg-amber-50/40 hidden" id="slip-shorthour-row">
+                <td class="py-1.5 px-2.5">
+                  <div class="font-bold text-amber-800 text-xs">Short Hours Cut</div>
+                  <div id="slip-shorthour-desc" class="text-[10px] text-amber-600 font-normal leading-tight">Deficit Duty Hours</div>
+                </td>
+                <td id="slip-shorthour" class="py-1.5 px-2.5 text-right font-bold text-amber-700 text-xs font-mono">- Rs. 0.00</td>
+              </tr>
+
+              <!-- 4. Khata Deduction -->
+              <tr class="text-rose-600 bg-white">
+                <td class="py-1.5 px-2.5">
+                  <div class="font-bold text-rose-600 text-xs">Khata Deduction</div>
+                  <div id="slip-khata-desc" class="text-[10px] text-slate-500 font-normal leading-tight">Cash Advances &amp; Medicine Credit</div>
+                </td>
+                <td id="slip-advance" class="py-1.5 px-2.5 text-right font-bold text-rose-600 text-xs font-mono">- Rs. 0.00</td>
+              </tr>
+
+              <!-- Itemized Khata Advances if present -->
+              <tr id="slip-advances-details-row" class="hidden text-xs text-slate-600 bg-slate-50">
+                <td colspan="2" class="py-1.5 px-2.5 border-t border-slate-200">
+                  <div class="font-bold text-[10px] text-[#232272] mb-1 flex items-center justify-between">
+                    <span>Itemized Khata Deductions:</span>
+                    <span class="text-[9px] text-slate-400 font-normal">Auto-deducted from salary</span>
+                  </div>
+                  <div id="slip-advances-items" class="space-y-0.5 max-h-24 overflow-y-auto pr-1">
+                    <!-- Rendered dynamically -->
+                  </div>
+                </td>
+              </tr>
+
+              <!-- 5. Net Payable Salary -->
+              <tr class="bg-emerald-50/90 border-t-2 border-[#156D38]">
+                <td class="py-2 px-2.5">
+                  <div class="text-xs font-black text-[#156D38] uppercase tracking-wider">NET PAYABLE</div>
+                  <div class="text-[10px] text-emerald-700 font-medium leading-tight">Final Take-Home Cash / Salary</div>
+                </td>
+                <td id="slip-net" class="py-2 px-2.5 text-right text-[#156D38] text-sm sm:text-base font-black font-mono">Rs. 0.00</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex justify-between items-end pt-2 mt-2 border-t border-dashed border-slate-300 text-[9px] sm:text-[10px] text-slate-400">
           <div>System Generated via Mumtaz Core Engine</div>
           <div class="text-center">
-            <div class="h-6"></div>
-            <div class="border-t border-slate-400 px-4">Owner Signature &amp; Stamp</div>
+            <div class="h-3 sm:h-4"></div>
+            <div class="border-t border-slate-400 px-3">Owner Signature &amp; Stamp</div>
           </div>
         </div>
       </div>
 
       <!-- ACTION BUTTONS -->
-      <div class="flex gap-3 mt-4">
-        <button id="slip-pay-btn" onclick="openDisburseModalFromSlip()" class="flex-1 bg-[#156D38] hover:bg-emerald-800 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 shadow cursor-pointer">
-          <i data-lucide="banknote" class="w-4 h-4"></i> Mark Paid
-        </button>
-        <button onclick="printPayslip()" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 shadow cursor-pointer">
-          <i data-lucide="printer" class="w-4 h-4"></i> Print Payslip
-        </button>
-        <button onclick="closeSlipModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-sm cursor-pointer">
+      <div class="mt-2.5 pt-2 border-t border-slate-100 shrink-0">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <button id="slip-pay-btn" onclick="openDisburseModalFromSlip()" class="bg-[#156D38] hover:bg-emerald-800 text-white py-1.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer">
+            <i data-lucide="banknote" class="w-3.5 h-3.5"></i>
+            <span>Mark Paid</span>
+          </button>
+          <button onclick="sendPayslipWhatsApp()" class="bg-[#25D366] hover:bg-[#1ebe57] text-white py-1.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer" title="Staff ko WhatsApp par digital slip bhejein">
+            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+            <span>WhatsApp</span>
+          </button>
+          <button onclick="downloadPayslipPDF()" class="bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer" title="Slip ko PDF file mein download karein">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Download PDF</span>
+          </button>
+          <button onclick="printPayslip()" class="bg-[#232272] hover:bg-indigo-950 text-white py-1.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer" title="A4 Printout nikalein">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+            <span>Print Slip</span>
+          </button>
+        </div>
+        <button onclick="closeSlipModal()" class="w-full mt-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer">
           Close
         </button>
       </div>
@@ -3544,6 +3641,14 @@
         document.getElementById('live-time').innerText = now.toLocaleTimeString();
         document.getElementById('live-date').innerText = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
       }, 1000);
+
+      // Auto-refresh Dashboard attendance and live activities every 15 seconds if Executive Dashboard is open
+      setInterval(() => {
+        const liveView = document.getElementById('view-live');
+        if (liveView && !liveView.classList.contains('hidden')) {
+          loadTodayAttendance();
+        }
+      }, 15000);
     }
 
     // 2. Navigation Tabs
@@ -3829,6 +3934,7 @@
         renderPunchesStream();
 
         renderLiveRosterTable();
+        loadTodayActivities();
       } catch (err) {
         console.error("Failed to load today attendance", err);
       }
@@ -3927,7 +4033,11 @@
         } else if (item.status === 'HALF_DAY') {
           badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">HALF DAY</span>';
         } else if (item.status === 'LEAVE') {
-          badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800" title="${item.leave_reason || 'Approved Leave'}">ON LEAVE</span>`;
+          if (item.leave_type === 'HALF_DAY') {
+            badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 inline-flex items-center gap-1" title="${item.leave_reason || 'Approved Half-Day Leave'}"><i data-lucide="clock" class="w-3 h-3 text-amber-600"></i> HALF DAY LEAVE</span>`;
+          } else {
+            badge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800" title="${item.leave_reason || 'Approved Full-Day Leave'}">FULL DAY LEAVE</span>`;
+          }
         } else if (item.status === 'ABSENT') {
           badge = '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">ABSENT</span>';
         } else if (item.status === 'LATE') {
@@ -3963,6 +4073,217 @@
         `;
       }).join('');
       lucide.createIcons();
+    }
+
+    // 5.1 Real-Time Today's Live Activities Feed (Dashboard Stream)
+    let currentActivitiesList = [];
+    let currentActivityFilter = 'ALL';
+
+    async function loadTodayActivities() {
+      const container = document.getElementById('today-activity-feed');
+      const badge = document.getElementById('activity-today-badge');
+      if (!container) return;
+
+      try {
+        const query = currentActivityFilter && currentActivityFilter !== 'ALL' ? `?category=${currentActivityFilter}` : '';
+        const res = await fetch(`/api/activities/today${query}`);
+        if (!res.ok) throw new Error("HTTP error " + res.status);
+        const data = await res.json();
+
+        currentActivitiesList = data.activities || [];
+        const totalCount = data.total_count || 0;
+
+        if (badge) {
+          badge.innerText = `${totalCount} ${totalCount === 1 ? 'Activity' : 'Activities'}`;
+        }
+
+        renderTodayActivitiesFeed(currentActivitiesList);
+      } catch (err) {
+        console.error("Failed to load today's activities:", err);
+        if (container) {
+          container.innerHTML = `
+            <div class="text-center py-6 text-slate-400 text-xs">
+              <i data-lucide="alert-circle" class="w-5 h-5 mx-auto text-amber-400 mb-1"></i>
+              Activities load nahi ho sakeen. Baraye meherbani refresh karein.
+            </div>
+          `;
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    }
+
+    function filterTodayActivities(filterType) {
+      currentActivityFilter = filterType;
+
+      // Update button highlights
+      const filters = ['ALL', 'ATTENDANCE', 'LEAVE', 'STAFF_KHATA', 'CUSTOMER_KHATA', 'PAYROLL'];
+      filters.forEach(f => {
+        const btn = document.getElementById(`act-filter-${f}`);
+        if (btn) {
+          if (f === filterType) {
+            btn.className = "px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-2xs font-bold transition cursor-pointer";
+          } else {
+            btn.className = "px-2.5 py-1 rounded-md hover:text-slate-900 transition cursor-pointer font-medium";
+          }
+        }
+      });
+
+      loadTodayActivities();
+    }
+
+    function renderTodayActivitiesFeed(activities) {
+      const container = document.getElementById('today-activity-feed');
+      if (!container) return;
+
+      if (!activities || activities.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-slate-400">
+            <div class="w-10 h-10 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+              <i data-lucide="inbox" class="w-5 h-5"></i>
+            </div>
+            <p class="text-xs font-semibold text-slate-600">Aaj ki koi activity darj nahi hui</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">Biometric punch, leave, staff ya customer khata ki entries foran yahan show hongi.</p>
+          </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      const html = activities.map(act => {
+        // Styling configuration based on category & action
+        let iconName = 'activity';
+        let iconBg = 'bg-slate-100 text-slate-600 border-slate-200';
+        let badgeBg = 'bg-slate-100 text-slate-700 border-slate-200';
+        let badgeText = act.category;
+
+        if (act.category === 'ATTENDANCE') {
+          if (act.action_type === 'PUNCH_IN') {
+            iconName = 'log-in';
+            iconBg = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            badgeBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            badgeText = 'Punch IN';
+          } else if (act.action_type === 'PUNCH_OUT') {
+            iconName = 'log-out';
+            iconBg = 'bg-sky-100 text-sky-700 border-sky-200';
+            badgeBg = 'bg-sky-50 text-sky-700 border-sky-200';
+            badgeText = 'Punch OUT';
+          } else {
+            iconName = 'edit-3';
+            iconBg = 'bg-purple-100 text-purple-700 border-purple-200';
+            badgeBg = 'bg-purple-50 text-purple-700 border-purple-200';
+            badgeText = 'Attendance Edit';
+          }
+        } else if (act.category === 'LEAVE') {
+          iconName = 'calendar-off';
+          iconBg = 'bg-amber-100 text-amber-700 border-amber-200';
+          badgeBg = 'bg-amber-50 text-amber-700 border-amber-200';
+          if (act.action_type === 'LEAVE_CANCELLED') {
+            badgeText = 'Leave Cancelled';
+            iconBg = 'bg-rose-100 text-rose-700 border-rose-200';
+            badgeBg = 'bg-rose-50 text-rose-700 border-rose-200';
+          } else if (act.action_type === 'LEAVE_UPDATED') {
+            badgeText = 'Leave Updated';
+          } else {
+            badgeText = 'Leave Approved';
+          }
+        } else if (act.category === 'STAFF_KHATA') {
+          if (act.action_type === 'ADVANCE_SETTLED') {
+            iconName = 'check-circle-2';
+            iconBg = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            badgeBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            badgeText = 'Khata Settled';
+          } else {
+            iconName = 'wallet';
+            iconBg = 'bg-rose-100 text-rose-700 border-rose-200';
+            badgeBg = 'bg-rose-50 text-rose-700 border-rose-200';
+            badgeText = 'Staff Advance';
+          }
+        } else if (act.category === 'CUSTOMER_KHATA') {
+          if (act.action_type === 'CUSTOMER_SETTLED' || act.action_type === 'CUSTOMER_KHATA_SETTLED') {
+            iconName = 'receipt';
+            iconBg = 'bg-teal-100 text-teal-700 border-teal-200';
+            badgeBg = 'bg-teal-50 text-teal-700 border-teal-200';
+            badgeText = 'Baqaya Recovered';
+          } else {
+            iconName = 'shopping-bag';
+            iconBg = 'bg-cyan-100 text-cyan-700 border-cyan-200';
+            badgeBg = 'bg-cyan-50 text-cyan-700 border-cyan-200';
+            badgeText = 'Customer Credit';
+          }
+        } else if (act.category === 'PAYROLL') {
+          iconName = 'banknote';
+          iconBg = 'bg-emerald-100 text-emerald-700 border-emerald-200';
+          badgeBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+          badgeText = 'Salary Paid';
+        } else if (act.category === 'STAFF') {
+          iconName = 'user-plus';
+          iconBg = 'bg-indigo-100 text-indigo-700 border-indigo-200';
+          badgeBg = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+          badgeText = 'New Staff';
+        }
+
+        // Amount badge if present
+        let amountHtml = '';
+        if (act.amount && act.amount > 0) {
+          amountHtml = `
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold font-mono bg-slate-900 text-white shadow-2xs">
+              Rs. ${Number(act.amount).toLocaleString()}
+            </span>
+          `;
+        }
+
+        // Staff badge if available
+        let staffHtml = '';
+        if (act.staff_name) {
+          staffHtml = `
+            <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
+              <i data-lucide="user" class="w-3 h-3 text-slate-400"></i>
+              ${act.staff_name}
+            </span>
+          `;
+        }
+
+        // Format time nicely (HH:MM AM/PM)
+        let timeDisplay = act.time || '';
+        if (timeDisplay && timeDisplay.includes(':')) {
+          const parts = timeDisplay.split(':');
+          let hours = parseInt(parts[0], 10);
+          const mins = parts[1];
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12 || 12;
+          timeDisplay = `${hours}:${mins} ${ampm}`;
+        }
+
+        return `
+          <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl hover:bg-slate-50/80 transition-all border border-transparent hover:border-slate-100">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div class="w-9 h-9 rounded-xl ${iconBg} border flex items-center justify-center shrink-0 shadow-2xs">
+                <i data-lucide="${iconName}" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h4 class="text-xs font-bold text-slate-900 truncate">${act.title}</h4>
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${badgeBg}">
+                    ${badgeText}
+                  </span>
+                  ${amountHtml}
+                </div>
+                <p class="text-[11px] text-slate-500 truncate mt-0.5">${act.description || ''}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0 text-right">
+              ${staffHtml}
+              <div class="px-2 py-1 rounded-lg bg-slate-50 border border-slate-200/80 text-[11px] font-mono font-bold text-slate-700 flex items-center gap-1">
+                <i data-lucide="clock" class="w-3 h-3 text-slate-400"></i>
+                ${timeDisplay}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = html;
+      if (window.lucide) lucide.createIcons();
     }
 
     // Manual Attendance Override Functions (Feature 18)
@@ -4386,12 +4707,46 @@
           }
         }
 
-        setTxt('slip-basic', `Rs. ${(p.basic_salary || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
-        setTxt('slip-absent-desc', `Absent Deduction (${p.absent_days || 0} days)`);
-        setTxt('slip-absent', `- Rs. ${(p.absent_cut || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
-        setTxt('slip-leave-desc', `Extra Leaves Cut (${p.extra_leaves || 0} beyond ${p.allowed_leaves !== undefined ? p.allowed_leaves : 2} free)`);
-        setTxt('slip-leave', `- Rs. ${(p.extra_leave_cut || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+        const grossSalary = parseFloat(p.basic_salary || 0);
+        const absentCut = parseFloat(p.absent_cut || 0);
+        const extraLeaveCut = parseFloat(p.extra_leave_cut || 0);
+        const extraHalfDayCut = parseFloat(p.extra_half_day_cut || 0);
+        const totalLeavesCut = absentCut + extraLeaveCut + extraHalfDayCut;
+        const advancesTotal = parseFloat(p.advances_deducted || 0);
+        const netPayable = parseFloat(p.net_payable || 0);
 
+        // 1. Gross Salary
+        setTxt('slip-basic', `Rs. ${grossSalary.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+        if (document.getElementById('slip-gross-desc')) {
+          setTxt('slip-gross-desc', `Full Monthly Pay (${p.days_in_month || 30} Days @ Rs. ${p.daily_wage ? p.daily_wage.toFixed(2) : '0.00'}/day)`);
+        }
+
+        // 2. Leaves Deduction
+        let leaveParts = [];
+        if (p.absent_days && p.absent_days > 0) {
+          leaveParts.push(`${p.absent_days} Absent Day${p.absent_days > 1 ? 's' : ''}`);
+        }
+        if (p.extra_leaves && p.extra_leaves > 0) {
+          leaveParts.push(`${p.extra_leaves} Extra Leave${p.extra_leaves > 1 ? 's' : ''}`);
+        }
+        if (p.extra_half_days && p.extra_half_days > 0) {
+          leaveParts.push(`${p.extra_half_days} Extra Half Day${p.extra_half_days > 1 ? 's' : ''}`);
+        }
+
+        const leavesDetailText = totalLeavesCut > 0
+          ? `${leaveParts.join(' • ')} (Cut beyond ${p.allowed_leaves !== undefined ? p.allowed_leaves : 2} free leaves)`
+          : `No deduction (All within ${p.allowed_leaves !== undefined ? p.allowed_leaves : 2} allowed free quota)`;
+
+        setTxt('slip-leave-desc', leavesDetailText);
+        setTxt('slip-leave', totalLeavesCut > 0
+          ? `- Rs. ${totalLeavesCut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+          : `- Rs. 0.00`);
+
+        // Backward compatibility
+        setTxt('slip-absent-desc', `Absent Deduction (${p.absent_days || 0} days)`);
+        setTxt('slip-absent', `- Rs. ${absentCut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+
+        // 3. Short Hours Cut (Only if short hours deficit exists)
         const shRow = document.getElementById('slip-shorthour-row');
         const shortMins = p.total_short_minutes || 0;
         const shHours = Math.floor(shortMins / 60);
@@ -4406,8 +4761,18 @@
           }
         }
 
-        setTxt('slip-advance', `- Rs. ${(p.advances_deducted || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
-        setTxt('slip-net', `Rs. ${(p.net_payable || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+        // 4. Khata Deduction
+        setTxt('slip-advance', advancesTotal > 0
+          ? `- Rs. ${advancesTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+          : `- Rs. 0.00`);
+        if (document.getElementById('slip-khata-desc')) {
+          setTxt('slip-khata-desc', advancesTotal > 0
+            ? `${(p.advances_list || []).length} Item(s) — Cash Advances & Medicine Khata`
+            : 'No advances or khata deducted this month');
+        }
+
+        // 5. Net Payable
+        setTxt('slip-net', `Rs. ${netPayable.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
 
         const advRow = document.getElementById('slip-advances-details-row');
         const advItems = document.getElementById('slip-advances-items');
@@ -4520,6 +4885,7 @@
           closeDisburseModal();
           await generatePayroll();
           await loadAdvances();
+          if (typeof loadTodayActivities === 'function') loadTodayActivities();
           alert(data.message || "Salary marked as PAID and advances auto-settled!");
         } else {
           alert(data.detail || "Failed to mark salary as paid.");
@@ -4971,6 +5337,7 @@
           await loadAdvances();
           await generatePayroll();
           if (typeof loadStaff === 'function') loadStaff();
+          if (typeof loadTodayActivities === 'function') loadTodayActivities();
           alert(data.message || "Advance settled successfully!");
         } else {
           alert(data.detail || "Failed to settle advance");
@@ -5009,6 +5376,7 @@
         await loadAdvances();
         await generatePayroll();
         if (typeof loadStaff === 'function') loadStaff();
+        if (typeof loadTodayActivities === 'function') loadTodayActivities();
         alert(data.message || (type === 'MEDICINE_CREDIT' ? "Medicine Credit entry recorded successfully!" : "Cash Advance recorded successfully!"));
       } catch (err) {
         console.error("Failed to record advance", err);
@@ -5452,6 +5820,7 @@
           closeStaffModal();
           await loadStaff();
           renderStaffDirectory();
+          if (typeof loadTodayActivities === 'function') loadTodayActivities();
           alert(formId ? "Staff member profile updated successfully!" : "New staff member registered successfully!");
         } else {
           alert(data.detail || "Error saving staff member");
@@ -5642,6 +6011,125 @@
       document.body.classList.add('printing-slip');
       setPrintOrientation('portrait');
       setTimeout(() => { window.print(); }, 50);
+    }
+
+    function sendPayslipWhatsApp() {
+      const staffId = currentOpenSlipStaffId;
+      if (!staffId) return;
+
+      const p = (currentPayrollData || []).find(x => x.staff_id === staffId);
+      if (!p) {
+        alert("Payroll record nahi mila.");
+        return;
+      }
+
+      const staff = (staffList || []).find(s => s.id === staffId);
+      let rawPhone = (p.phone || (staff ? staff.phone : '') || '').trim();
+
+      // Normalize phone number to international WhatsApp format (923xxxxxxxxx)
+      let digits = rawPhone.replace(/[^0-9]/g, '');
+      if (digits.startsWith('03') && digits.length === 11) {
+        digits = '92' + digits.substring(1);
+      } else if (digits.startsWith('3') && digits.length === 10) {
+        digits = '92' + digits;
+      }
+
+      // If missing, prompt the user
+      if (!digits || digits.length < 10) {
+        const inputNum = prompt(`Staff member "${p.staff_name}" ka WhatsApp number enter karein:`, rawPhone || '03');
+        if (!inputNum) return;
+        digits = inputNum.replace(/[^0-9]/g, '');
+        if (digits.startsWith('03') && digits.length === 11) {
+          digits = '92' + digits.substring(1);
+        } else if (digits.startsWith('3') && digits.length === 10) {
+          digits = '92' + digits;
+        }
+      }
+
+      const monthSelect = document.getElementById('payroll-month');
+      const monthName = (monthSelect && monthSelect.selectedOptions && monthSelect.selectedOptions[0])
+        ? monthSelect.selectedOptions[0].text.split(' ')[0]
+        : 'Current Month';
+      const yearVal = document.getElementById('payroll-year')?.value || new Date().getFullYear();
+
+      const lines = [
+        `*🏥 MUMTAZ PHARMACY — SALARY PAYSLIP*`,
+        `━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        `👤 *Staff:* ${p.staff_name}`,
+        `💼 *Role:* ${p.designation || p.role || 'Staff Member'}`,
+        `📅 *Month:* ${monthName} ${yearVal}`,
+        `⏱ *Days:* ${p.days_in_month || 30} Days (${p.daily_hours || 8} hrs/day)`,
+        `━━━━━━━━━━━━━━━━━━━━━━━━━`,
+        `*📊 SALARY CALCULATION BREAKDOWN:*`,
+        `• Gross Salary = Rs. ${(p.basic_salary || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`
+      ];
+
+      // Itemized deductions
+      const absentCut = parseFloat(p.absent_cut || 0);
+      const extraLeaveCut = parseFloat(p.extra_leave_cut || 0);
+      const extraHalfDayCut = parseFloat(p.extra_half_day_cut || 0);
+      const totalLeavesCut = absentCut + extraLeaveCut + extraHalfDayCut;
+
+      let leaveParts = [];
+      if (p.absent_days && p.absent_days > 0) leaveParts.push(`${p.absent_days} Absent`);
+      if (p.extra_leaves && p.extra_leaves > 0) leaveParts.push(`${p.extra_leaves} Extra Leave`);
+      if (p.extra_half_days && p.extra_half_days > 0) leaveParts.push(`${p.extra_half_days} Extra Half Day`);
+      const leaveDetailStr = leaveParts.length > 0 ? ` (${leaveParts.join(', ')})` : '';
+
+      lines.push(`• Leaves Deduction = -Rs. ${totalLeavesCut.toLocaleString('en-US', {minimumFractionDigits: 2})}${leaveDetailStr}`);
+
+      if (p.short_hours_cut && p.short_hours_cut > 0) {
+        lines.push(`• Short Hours Cut = -Rs. ${parseFloat(p.short_hours_cut).toLocaleString('en-US', {minimumFractionDigits: 2})}`);
+      }
+
+      const advTotal = parseFloat(p.advances_deducted || 0);
+      lines.push(`• Khata Deduction = -Rs. ${advTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}`);
+
+      lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      lines.push(`*💰 Net Payable = Rs. ${(p.net_payable || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}*`);
+      
+      if (p.status === 'PAID') {
+        lines.push(``);
+        lines.push(`*✅ STATUS: PAID*`);
+        if (p.paid_at) lines.push(`📅 Paid on: ${p.paid_at} (${p.payment_method || 'Cash'})`);
+      } else {
+        lines.push(``);
+        lines.push(`*⏳ STATUS: PENDING PAYMENT*`);
+      }
+
+      lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━`);
+      lines.push(`_Mumtaz Pharmacy Biometric Core Payroll_`);
+
+      const fullMessage = encodeURIComponent(lines.join('\n'));
+      const waUrl = digits ? `https://wa.me/${digits}?text=${fullMessage}` : `https://wa.me/?text=${fullMessage}`;
+      window.open(waUrl, '_blank');
+    }
+
+    async function downloadPayslipPDF() {
+      const printableEl = document.getElementById('printable-slip');
+      if (!printableEl) return;
+
+      const staffName = (document.getElementById('slip-name')?.innerText || 'Staff').trim().replace(/\s+/g, '_');
+      const monthLabel = (document.getElementById('slip-month-label')?.innerText || 'Payslip').trim().replace(/\s+/g, '_');
+      const safeFileName = `Mumtaz_Salary_Slip_${staffName}_${monthLabel}.pdf`;
+
+      if (typeof html2pdf !== 'undefined') {
+        const opt = {
+          margin: [8, 8, 8, 8],
+          filename: safeFileName,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, logging: false },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        try {
+          await html2pdf().set(opt).from(printableEl).save();
+        } catch (err) {
+          console.error("PDF generation fallback:", err);
+          printPayslip();
+        }
+      } else {
+        printPayslip();
+      }
     }
 
     window.addEventListener('beforeprint', () => {
@@ -6214,6 +6702,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
           await loadCustomers();
           await loadCustomerKpis();
+          if (typeof loadTodayActivities === 'function') loadTodayActivities();
 
           if (hadReturnLedgerId) {
             await openCustomerLedgerModal(hadReturnLedgerId);
@@ -6410,6 +6899,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           await openCustomerLedgerModal(currentOpenLedgerCustomerId);
           loadCustomers();
           loadCustomerKpis();
+          if (typeof loadTodayActivities === 'function') loadTodayActivities();
         } else {
           alert(data.detail || "Bill save karne mein masla aaya.");
         }
@@ -6517,6 +7007,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
           await loadCustomers();
           await loadCustomerKpis();
+          if (typeof loadTodayActivities === 'function') loadTodayActivities();
 
           if (hadReturnLedgerId) {
             await openCustomerLedgerModal(hadReturnLedgerId);
@@ -6671,6 +7162,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
           await loadCustomers();
           await loadCustomerKpis();
+          if (typeof loadTodayActivities === 'function') loadTodayActivities();
 
           if (fromLedger && hadReturnLedgerId) {
             await openCustomerLedgerModal(hadReturnLedgerId);
@@ -6874,6 +7366,9 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     // Universal backdrop click dismissal for modals
     document.addEventListener('click', function(e) {
       const modalList = [
+        { id: 'edit-leave-modal', close: closeEditLeaveModal },
+        { id: 'staff-leave-detail-modal', close: closeStaffLeaveDetailsModal },
+        { id: 'apply-leave-modal', close: closeApplyLeaveModal },
         { id: 'slip-modal', close: closeSlipModal },
         { id: 'disburse-salary-modal', close: closeDisburseModal },
         { id: 'quick-settle-all-modal', close: closeQuickSettleModal },
@@ -6897,6 +7392,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         const priorityModals = [
+          { id: 'edit-leave-modal', close: closeEditLeaveModal },
           { id: 'staff-leave-detail-modal', close: closeStaffLeaveDetailsModal },
           { id: 'apply-leave-modal', close: closeApplyLeaveModal },
           { id: 'slip-modal', close: closeSlipModal },
@@ -7053,7 +7549,20 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       const activeStaff = (staffList || []).filter(s => s.is_active !== 0);
       const workingStaff = activeStaff.filter(s => !onLeaveIds.has(s.id));
 
-      if (todayBadge) todayBadge.innerText = `${todayLeaves.length} Staff`;
+      const fullLeavesCount = todayLeaves.filter(l => l.leave_type !== 'HALF_DAY').length;
+      const halfLeavesCount = todayLeaves.filter(l => l.leave_type === 'HALF_DAY').length;
+
+      if (todayBadge) {
+        if (todayLeaves.length === 0) {
+          todayBadge.innerText = `0 Staff`;
+        } else if (halfLeavesCount > 0 && fullLeavesCount > 0) {
+          todayBadge.innerText = `${todayLeaves.length} Staff (${fullLeavesCount} Full, ${halfLeavesCount} Half)`;
+        } else if (halfLeavesCount > 0) {
+          todayBadge.innerText = `${todayLeaves.length} Staff (${halfLeavesCount} Half Day)`;
+        } else {
+          todayBadge.innerText = `${todayLeaves.length} Staff (${fullLeavesCount} Full Day)`;
+        }
+      }
       if (workingBadge) workingBadge.innerText = `${workingStaff.length} Staff Available`;
       if (tabCountOnLeave) tabCountOnLeave.innerText = todayLeaves.length;
       if (tabCountOnDuty) tabCountOnDuty.innerText = workingStaff.length;
@@ -7063,7 +7572,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         if (todayLeaves.length === 0) {
           todayTable.innerHTML = `
             <tr>
-              <td colspan="7" class="py-12 text-center">
+              <td colspan="8" class="py-12 text-center">
                 <div class="flex flex-col items-center justify-center text-emerald-600 gap-1.5">
                   <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-1">
                     <i data-lucide="check-check" class="w-6 h-6 text-emerald-600"></i>
@@ -7075,7 +7584,9 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
             </tr>
           `;
         } else {
-          todayTable.innerHTML = todayLeaves.map((l, idx) => `
+          todayTable.innerHTML = todayLeaves.map((l, idx) => {
+            const isHalf = l.leave_type === 'HALF_DAY';
+            return `
             <tr class="hover:bg-rose-50/40 transition-colors">
               <td class="py-3.5 px-4 font-mono font-bold text-slate-400">#${idx + 1}</td>
               <td class="py-3.5 px-4">
@@ -7085,9 +7596,15 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
               <td class="py-3.5 px-4">
                 <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700">${l.role || 'Staff'}</span>
               </td>
-              <td class="py-3.5 px-4 font-mono font-bold text-rose-700 text-xs">${l.date}</td>
+              <td class="py-3.5 px-4 text-xs whitespace-nowrap">
+                ${isHalf
+                  ? '<span class="inline-flex items-center gap-1 font-bold text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full shadow-2xs"><i data-lucide="clock" class="w-3 h-3 text-amber-600"></i> Half Day (Aadhi)</span>'
+                  : '<span class="inline-flex items-center gap-1 font-bold text-[10px] bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-full shadow-2xs"><i data-lucide="sun" class="w-3 h-3 text-rose-600"></i> Full Day (Poori)</span>'
+                }
+              </td>
+              <td class="py-3.5 px-4 font-mono font-bold text-slate-700 text-xs">${l.date}</td>
               <td class="py-3.5 px-4 text-xs">
-                <div class="font-semibold text-rose-800">${l.reason}</div>
+                <div class="font-semibold text-slate-800">${l.reason}</div>
               </td>
               <td class="py-3.5 px-4 text-xs">
                 <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -7095,12 +7612,18 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
                 </span>
               </td>
               <td class="py-3.5 px-4 text-center">
-                <button onclick="deleteLeaveRecord(${l.id}, '${(l.staff_name || '').replace(/'/g, "\\'")}', '${l.date}')" title="Cancel Leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition cursor-pointer">
-                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                </button>
+                <div class="inline-flex items-center justify-center gap-1">
+                  <button onclick="openEditLeaveModal(${l.id})" title="Edit Leave" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 transition cursor-pointer">
+                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                  </button>
+                  <button onclick="deleteLeaveRecord(${l.id}, '${(l.staff_name || '').replace(/'/g, "\\'")}', '${l.date}')" title="Cancel Leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
               </td>
             </tr>
-          `).join('');
+          `;
+          }).join('');
         }
       }
 
@@ -7158,20 +7681,40 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
       tbody.innerHTML = activeStaff.map(s => {
         const sLeaves = (allLeaves || []).filter(l => l.staff_id === s.id && l.date && l.date.startsWith(selectedMonth));
-        const taken = sLeaves.length;
+        let fullCount = 0;
+        let halfCount = 0;
+        sLeaves.forEach(l => {
+          if (l.leave_type === 'HALF_DAY') halfCount += 1;
+          else fullCount += 1;
+        });
+        const taken = (fullCount * 1.0) + (halfCount * 0.5);
         const quota = s.allowed_leaves !== undefined ? s.allowed_leaves : 2;
         const isExceeded = taken > quota;
         const extra = Math.max(0, taken - quota);
         const remaining = Math.max(0, quota - taken);
+        const takenDisp = (taken % 1 === 0 ? taken : taken.toFixed(1));
+        const extraDisp = (extra % 1 === 0 ? extra : extra.toFixed(1));
+        const remDisp = (remaining % 1 === 0 ? remaining : remaining.toFixed(1));
+
+        let typeBreakdownHtml = '';
+        if (sLeaves.length > 0) {
+          if (fullCount > 0 && halfCount > 0) {
+            typeBreakdownHtml = `<div class="text-[10px] text-slate-500 font-semibold mt-1 flex items-center justify-center gap-1"><span>${fullCount} Full</span> • <span class="text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded font-bold">${halfCount} Half</span></div>`;
+          } else if (halfCount > 0) {
+            typeBreakdownHtml = `<div class="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded inline-flex items-center gap-0.5 font-bold mt-1"><i data-lucide="clock" class="w-2.5 h-2.5"></i> ${halfCount} Half Day</div>`;
+          } else {
+            typeBreakdownHtml = `<div class="text-[10px] text-slate-400 font-medium mt-1">${fullCount} Full Day${fullCount === 1 ? '' : 's'}</div>`;
+          }
+        }
 
         // Status Badge
         let statusBadge;
         if (taken === 0) {
           statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i> ${quota} Leaves Available</span>`;
         } else if (!isExceeded) {
-          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200"><i data-lucide="check" class="w-3 h-3 text-indigo-600"></i> ${remaining} Leave${remaining === 1 ? '' : 's'} Remaining</span>`;
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200"><i data-lucide="check" class="w-3 h-3 text-indigo-600"></i> ${remDisp} Leave${remDisp == 1 ? '' : 's'} Remaining</span>`;
         } else {
-          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-600"></i> ${extra} Extra Leave (Cut in Payroll)</span>`;
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-600"></i> ${extraDisp} Extra Leave${extraDisp == 1 ? '' : 's'} (Cut in Payroll)</span>`;
         }
 
         // Details Button / Badge
@@ -7182,7 +7725,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           detailsHtml = `
             <button onclick="openStaffLeaveDetailsModal(${s.id})" class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition cursor-pointer shadow-2xs group" title="View leave dates and reasons for ${s.name}">
               <i data-lucide="eye" class="w-3.5 h-3.5 text-indigo-600 group-hover:scale-110 transition-transform"></i>
-              <span>View Details (${taken})</span>
+              <span>View Details (${sLeaves.length})</span>
             </button>
           `;
         }
@@ -7197,9 +7740,12 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
               <span class="px-2 py-0.5 bg-slate-100 rounded-md border border-slate-200">${quota} Days</span>
             </td>
             <td class="py-3 px-4 text-center">
-              <span class="font-black text-xs px-2.5 py-0.5 rounded-full ${taken > 0 ? (isExceeded ? 'bg-rose-100 text-rose-700' : 'bg-indigo-100 text-indigo-700') : 'bg-slate-100 text-slate-500'}">
-                ${taken} ${taken === 1 ? 'Day' : 'Days'}
-              </span>
+              <div>
+                <span class="font-black text-xs px-2.5 py-0.5 rounded-full ${taken > 0 ? (isExceeded ? 'bg-rose-100 text-rose-700' : 'bg-indigo-100 text-indigo-700') : 'bg-slate-100 text-slate-500'}">
+                  ${takenDisp} ${takenDisp == 1 ? 'Day' : 'Days'}
+                </span>
+              </div>
+              ${typeBreakdownHtml}
             </td>
             <td class="py-3 px-4 text-center">
               ${statusBadge}
@@ -7259,7 +7805,10 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           <td class="py-3 px-4">
             <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700">${l.role || 'Staff'}</span>
           </td>
-          <td class="py-3 px-4 font-mono font-bold text-slate-700 text-xs">${l.date}</td>
+          <td class="py-3 px-4 font-mono text-xs">
+            <div class="font-bold text-slate-800">${l.date}</div>
+            <div class="mt-0.5">${l.leave_type === 'HALF_DAY' ? '<span class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5"><i data-lucide="clock" class="w-2.5 h-2.5"></i> Half Day</span>' : '<span class="text-[9px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded-full inline-flex items-center gap-0.5"><i data-lucide="sun" class="w-2.5 h-2.5"></i> Full Day</span>'}</div>
+          </td>
           <td class="py-3 px-4 text-xs text-slate-600">
             <div class="font-medium text-slate-800">${l.reason}</div>
           </td>
@@ -7269,9 +7818,14 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
             </span>
           </td>
           <td class="py-3 px-4 text-center">
-            <button onclick="deleteLeaveRecord(${l.id}, '${(l.staff_name || '').replace(/'/g, "\\'")}', '${l.date}')" title="Cancel Leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition cursor-pointer">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-            </button>
+            <div class="inline-flex items-center justify-center gap-1">
+              <button onclick="openEditLeaveModal(${l.id})" title="Edit Leave" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 transition cursor-pointer">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+              </button>
+              <button onclick="deleteLeaveRecord(${l.id}, '${(l.staff_name || '').replace(/'/g, "\\'")}', '${l.date}')" title="Cancel Leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
           </td>
         </tr>
       `).join('');
@@ -7297,6 +7851,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       e.preventDefault();
       const staffId = parseInt(document.getElementById('leave-staff-select').value);
       const dateVal = document.getElementById('leave-date-input').value;
+      const leaveType = document.getElementById('leave-type-select') ? document.getElementById('leave-type-select').value : 'FULL_DAY';
       const reasonVal = document.getElementById('leave-reason-input').value.trim();
 
       try {
@@ -7306,7 +7861,8 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           body: JSON.stringify({
             staff_id: staffId,
             date: dateVal,
-            reason: reasonVal
+            reason: reasonVal,
+            leave_type: leaveType
           })
         });
         const result = await res.json();
@@ -7345,6 +7901,69 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       }
     }
 
+    function openEditLeaveModal(leaveId) {
+      const leave = (allLeaves || []).find(l => l.id === leaveId);
+      if (!leave) return;
+      const staff = (staffList || []).find(s => s.id === leave.staff_id);
+      
+      const idInput = document.getElementById('edit-leave-id');
+      const nameInput = document.getElementById('edit-leave-staff-name');
+      const dateInput = document.getElementById('edit-leave-date-input');
+      const typeInput = document.getElementById('edit-leave-type-select');
+      const reasonInput = document.getElementById('edit-leave-reason-input');
+
+      if (idInput) idInput.value = leave.id;
+      if (nameInput) nameInput.value = staff ? staff.name : (leave.staff_name || 'Staff Member');
+      if (dateInput) dateInput.value = leave.date || '';
+      if (typeInput) typeInput.value = leave.leave_type || 'FULL_DAY';
+      if (reasonInput) reasonInput.value = leave.reason || '';
+
+      const modalEl = document.getElementById('edit-leave-modal');
+      if (modalEl) modalEl.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeEditLeaveModal() {
+      const modalEl = document.getElementById('edit-leave-modal');
+      if (modalEl) modalEl.classList.add('hidden');
+    }
+
+    async function submitEditLeave(e) {
+      e.preventDefault();
+      const leaveId = document.getElementById('edit-leave-id').value;
+      const dateVal = document.getElementById('edit-leave-date-input').value;
+      const leaveType = document.getElementById('edit-leave-type-select') ? document.getElementById('edit-leave-type-select').value : 'FULL_DAY';
+      const reasonVal = document.getElementById('edit-leave-reason-input').value.trim();
+
+      try {
+        const res = await fetch(`/api/leaves/${leaveId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date: dateVal,
+            reason: reasonVal,
+            leave_type: leaveType
+          })
+        });
+        const result = await res.json();
+        if (res.ok && result.success) {
+          closeEditLeaveModal();
+          await loadLeaves();
+          await loadTodayAttendance();
+          if (typeof generatePayroll === 'function') generatePayroll();
+          if (typeof currentLeaveDetailStaffId !== 'undefined' && currentLeaveDetailStaffId) {
+            openStaffLeaveDetailsModal(currentLeaveDetailStaffId);
+          }
+          alert("Leave record kamyabi se update ho gaya!");
+        } else {
+          alert("Error: " + (result.detail || result.message || "Failed to update leave"));
+        }
+      } catch (err) {
+        console.error("Leave update error", err);
+        alert("Leave update nahi ho saki: " + err.message);
+      }
+    }
+
     let currentLeaveDetailStaffId = null;
 
     function openStaffLeaveDetailsModal(staffId) {
@@ -7365,11 +7984,17 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       const sLeaves = (allLeaves || []).filter(l => l.staff_id === staffId && l.date && l.date.startsWith(selectedMonth));
       sLeaves.sort((a, b) => (a.date > b.date ? 1 : -1));
 
-      const taken = sLeaves.length;
+      let taken = 0;
+      sLeaves.forEach(l => {
+        taken += (l.leave_type === 'HALF_DAY' ? 0.5 : 1.0);
+      });
       const quota = staff.allowed_leaves !== undefined ? staff.allowed_leaves : 2;
       const isExceeded = taken > quota;
       const extra = Math.max(0, taken - quota);
       const remaining = Math.max(0, quota - taken);
+      const takenDisp = (taken % 1 === 0 ? taken : taken.toFixed(1));
+      const extraDisp = (extra % 1 === 0 ? extra : extra.toFixed(1));
+      const remDisp = (remaining % 1 === 0 ? remaining : remaining.toFixed(1));
 
       const titleEl = document.getElementById('staff-detail-modal-title');
       const subtitleEl = document.getElementById('staff-detail-modal-subtitle');
@@ -7382,9 +8007,9 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         if (taken === 0) {
           statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i> ${quota} Available</span>`;
         } else if (!isExceeded) {
-          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200"><i data-lucide="check" class="w-3 h-3 text-indigo-600"></i> ${remaining} Left</span>`;
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200"><i data-lucide="check" class="w-3 h-3 text-indigo-600"></i> ${remDisp} Left</span>`;
         } else {
-          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-600"></i> ${extra} Cut in Payroll</span>`;
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-600"></i> ${extraDisp} Cut in Payroll</span>`;
         }
 
         metricsContainer.innerHTML = `
@@ -7394,7 +8019,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           </div>
           <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center">
             <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Leaves Taken</div>
-            <div class="text-sm font-black ${taken > quota ? 'text-rose-600' : (taken > 0 ? 'text-indigo-600' : 'text-slate-800')} mt-0.5">${taken} ${taken === 1 ? 'Day' : 'Days'}</div>
+            <div class="text-sm font-black ${taken > quota ? 'text-rose-600' : (taken > 0 ? 'text-indigo-600' : 'text-slate-800')} mt-0.5">${takenDisp} ${takenDisp == 1 ? 'Day' : 'Days'}</div>
           </div>
           <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center flex flex-col items-center justify-center">
             <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">Quota Status</div>
@@ -7408,7 +8033,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         if (sLeaves.length === 0) {
           tbody.innerHTML = `
             <tr>
-              <td colspan="6" class="py-8 text-center text-slate-400">
+              <td colspan="7" class="py-8 text-center text-slate-400">
                 <div class="flex flex-col items-center justify-center gap-1.5">
                   <i data-lucide="calendar-check" class="w-8 h-8 text-slate-300"></i>
                   <span class="text-xs font-bold text-slate-600">Is mahine koi leave record nahi hai</span>
@@ -7435,6 +8060,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
             const safeStaffName = (staff.name || '').replace(/'/g, "\\'");
             const safeReason = (l.reason || 'Koi reason darj nahi hai').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const isHalf = l.leave_type === 'HALF_DAY';
 
             return `
               <tr class="hover:bg-slate-50/80 transition-colors">
@@ -7448,6 +8074,12 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
                 <td class="py-3 px-3 text-xs whitespace-nowrap">
                   <span class="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">${dayName}</span>
                 </td>
+                <td class="py-3 px-3 text-xs whitespace-nowrap">
+                  ${isHalf
+                    ? '<span class="inline-flex items-center gap-1 font-bold text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full"><i data-lucide="clock" class="w-3 h-3 text-amber-600"></i> Half Day (0.5)</span>'
+                    : '<span class="inline-flex items-center gap-1 font-bold text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full"><i data-lucide="sun" class="w-3 h-3 text-indigo-600"></i> Full Day (1.0)</span>'
+                  }
+                </td>
                 <td class="py-3 px-3 text-xs">
                   <div class="font-medium text-slate-800 bg-amber-50/50 p-2 rounded-lg border border-amber-100/80 leading-snug">
                     <i data-lucide="help-circle" class="w-3 h-3 text-amber-600 inline mr-1 -mt-0.5"></i>
@@ -7460,9 +8092,14 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
                   </span>
                 </td>
                 <td class="py-3 px-3 text-center whitespace-nowrap">
-                  <button onclick="deleteLeaveRecord(${l.id}, '${safeStaffName}', '${l.date}')" title="Cancel this leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                  </button>
+                  <div class="inline-flex items-center justify-center gap-1">
+                    <button onclick="openEditLeaveModal(${l.id})" title="Edit this leave" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 transition cursor-pointer">
+                      <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                    </button>
+                    <button onclick="deleteLeaveRecord(${l.id}, '${safeStaffName}', '${l.date}')" title="Cancel this leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer">
+                      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+                  </div>
                 </td>
               </tr>
             `;
@@ -7513,9 +8150,18 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
               <!-- Populated by JS -->
             </select>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Leave Date</label>
-            <input type="date" id="leave-date-input" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Leave Date</label>
+              <input type="date" id="leave-date-input" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Leave Type</label>
+              <select id="leave-type-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                <option value="FULL_DAY">Full Day (1.0 Chhutti)</option>
+                <option value="HALF_DAY">Half Day (0.5 Chhutti)</option>
+              </select>
+            </div>
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Reason for Leave</label>
@@ -7527,6 +8173,52 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           <div class="flex items-center justify-end gap-2.5 pt-2">
             <button type="button" onclick="closeApplyLeaveModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer">Cancel</button>
             <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0F172A] hover:bg-slate-800 transition cursor-pointer shadow-sm">Save &amp; Approve</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- EDIT LEAVE MODAL -->
+    <div id="edit-leave-modal" onclick="if (event.target === this) closeEditLeaveModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative animate-in fade-in zoom-in duration-150">
+        <button onclick="closeEditLeaveModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+            <i data-lucide="edit-3" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-base">Edit Staff Leave</h3>
+            <p class="text-xs text-slate-500">Chhutti ki date ya reason ko update karein</p>
+          </div>
+        </div>
+        <form onsubmit="submitEditLeave(event)" class="space-y-4">
+          <input type="hidden" id="edit-leave-id">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Staff Member</label>
+            <input type="text" id="edit-leave-staff-name" disabled class="w-full bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-600 cursor-not-allowed">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Leave Date</label>
+              <input type="date" id="edit-leave-date-input" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Leave Type</label>
+              <select id="edit-leave-type-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                <option value="FULL_DAY">Full Day (1.0 Chhutti)</option>
+                <option value="HALF_DAY">Half Day (0.5 Chhutti)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Reason for Leave</label>
+            <textarea id="edit-leave-reason-input" rows="2" placeholder="Leave ki reason darj karein..." required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+          </div>
+          <div class="flex items-center justify-end gap-2.5 pt-2">
+            <button type="button" onclick="closeEditLeaveModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer">Cancel</button>
+            <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition cursor-pointer shadow-sm">Save Changes</button>
           </div>
         </form>
       </div>
@@ -7564,6 +8256,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
                 <th class="py-2.5 px-3">#</th>
                 <th class="py-2.5 px-3">Leave Date</th>
                 <th class="py-2.5 px-3">Day</th>
+                <th class="py-2.5 px-3">Type</th>
                 <th class="py-2.5 px-3">Reason for Leave</th>
                 <th class="py-2.5 px-3">Approved By</th>
                 <th class="py-2.5 px-3 text-center">Action</th>
