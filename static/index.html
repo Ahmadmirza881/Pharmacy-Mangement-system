@@ -565,17 +565,19 @@
         min-height: 0 !important;
       }
 
-      /* 1. PAYSLIP PRINTING (A4 Portrait - 1 Single Page, No Blank Leading Page) */
-      body.printing-slip > header,
-      body.printing-slip > nav,
-      body.printing-slip > main,
-      body.printing-slip #staff-modal,
-      body.printing-slip #staff-history-modal,
-      body.printing-slip #attendance-override-modal,
-      body.printing-slip #settle-advance-modal,
-      body.printing-slip #disburse-salary-modal,
-      body.printing-slip #printable-report {
+      /* 1. PAYSLIP PRINTING (A4 Portrait - 1 Single Page, No Background Overlap) */
+      body.printing-slip > *:not(#slip-modal) {
         display: none !important;
+        visibility: hidden !important;
+      }
+
+      body.printing-slip #sidebar,
+      body.printing-slip header,
+      body.printing-slip main,
+      body.printing-slip .flex-1,
+      body.printing-slip .fixed:not(#slip-modal) {
+        display: none !important;
+        visibility: hidden !important;
       }
 
       body.printing-slip #slip-modal {
@@ -584,13 +586,15 @@
         inset: auto !important;
         background: transparent !important;
         padding: 0 !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         border: none !important;
         box-shadow: none !important;
         width: 100% !important;
         max-width: 100% !important;
         page-break-before: avoid !important;
         break-before: avoid !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
       }
 
       body.printing-slip #slip-modal > div {
@@ -605,6 +609,8 @@
         width: 100% !important;
         page-break-before: avoid !important;
         break-before: avoid !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
       }
 
       body.printing-slip #printable-slip { 
@@ -619,13 +625,13 @@
         background: white !important;
         border: 1.5px solid #232272 !important;
         border-radius: 8px !important;
-        padding: 16px 20px !important;
+        padding: 14px 18px !important;
         box-shadow: none !important;
         box-sizing: border-box !important;
-        page-break-before: avoid !important;
-        break-before: avoid !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
+        page-break-before: avoid !important;
+        break-before: avoid !important;
         page-break-after: avoid !important;
         break-after: avoid !important;
         -webkit-print-color-adjust: exact !important;
@@ -636,35 +642,93 @@
         visibility: visible !important;
       }
 
+      body.printing-slip #printable-slip .hidden {
+        display: none !important;
+      }
+
       body.printing-slip button,
-      body.printing-slip #slip-modal button {
+      body.printing-slip #slip-modal button,
+      body.printing-slip .no-print {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      /* Automatic fallback if slip modal is open during print */
+      body:has(#slip-modal:not(.hidden)) > *:not(#slip-modal) {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      body:has(#slip-modal:not(.hidden)) #sidebar,
+      body:has(#slip-modal:not(.hidden)) header,
+      body:has(#slip-modal:not(.hidden)) main,
+      body:has(#slip-modal:not(.hidden)) .flex-1,
+      body:has(#slip-modal:not(.hidden)) .fixed:not(#slip-modal) {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      body:has(#slip-modal:not(.hidden)) #slip-modal {
+        display: block !important;
+        position: static !important;
+        background: transparent !important;
+        width: 100% !important;
+      }
+      body:has(#slip-modal:not(.hidden)) #slip-modal > div {
+        display: block !important;
+        position: static !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 auto !important;
+      }
+      body:has(#slip-modal:not(.hidden)) button {
         display: none !important;
         visibility: hidden !important;
       }
 
       /* 2. MONTHLY REGISTER PRINTING (A4 Landscape - Full Width) */
-      body.printing-report > header,
-      body.printing-report > nav,
-      body.printing-report #view-kiosk,
-      body.printing-report #view-live,
-      body.printing-report #view-payroll,
-      body.printing-report #view-advances,
-      body.printing-report #view-staff,
-      body.printing-report #slip-modal,
-      body.printing-report #staff-modal,
-      body.printing-report #staff-history-modal,
-      body.printing-report #attendance-override-modal,
-      body.printing-report #settle-advance-modal,
-      body.printing-report #disburse-salary-modal,
-      body.printing-report #printable-slip {
+      body.printing-report #sidebar,
+      body.printing-report header,
+      body.printing-report .no-print,
+      body.printing-report .fixed {
         display: none !important;
         visibility: hidden !important;
       }
 
+      body.printing-report main {
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 100% !important;
+        width: 100% !important;
+      }
+
+      body.printing-report main > div:not(#view-reports) {
+        display: none !important;
+      }
+
+      body.printing-report #view-reports {
+        display: block !important;
+      }
+
+      body.printing-report #view-reports > div:not(#printable-report) {
+        display: none !important;
+      }
+
+      body.printing-report #printable-report,
+      body.printing-report #printable-report * {
+        visibility: visible !important;
+      }
+
       /* 3. CUSTOMER KHATA PARCHI PRINTING (A4 Portrait / Thermal Slip) */
-      body.printing-parchi > header,
-      body.printing-parchi > nav,
+      body.printing-parchi > *:not(#customer-parchi-modal) {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      body.printing-parchi #sidebar,
+      body.printing-parchi header,
       body.printing-parchi main,
+      body.printing-parchi .flex-1,
       body.printing-parchi .fixed:not(#customer-parchi-modal) {
         display: none !important;
         visibility: hidden !important;
@@ -676,6 +740,8 @@
         padding: 0 !important;
         margin: 0 !important;
         background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
       }
 
       body.printing-parchi #printable-parchi {
@@ -695,9 +761,15 @@
       }
 
       /* 4. WEEKLY KHATA REPORT PRINTING */
-      body.printing-weekly-khata > header,
-      body.printing-weekly-khata > nav,
+      body.printing-weekly-khata > *:not(#weekly-khata-modal) {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      body.printing-weekly-khata #sidebar,
+      body.printing-weekly-khata header,
       body.printing-weekly-khata main,
+      body.printing-weekly-khata .flex-1,
       body.printing-weekly-khata .fixed:not(#weekly-khata-modal) {
         display: none !important;
         visibility: hidden !important;
@@ -709,6 +781,8 @@
         padding: 0 !important;
         margin: 0 !important;
         background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
       }
 
       body.printing-weekly-khata #printable-weekly-khata {
@@ -724,22 +798,6 @@
 
       body.printing-weekly-khata button {
         display: none !important;
-      }
-
-      body.printing-report main {
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
-        width: 100% !important;
-      }
-
-      body.printing-report #view-reports > div:not(#printable-report) {
-        display: none !important;
-      }
-
-      body.printing-report #printable-report,
-      body.printing-report #printable-report * {
-        visibility: visible !important;
       }
 
       /* Default fallback if no class on body */
@@ -854,6 +912,14 @@
     /* Print media hiding sidebar & header */
     @media print {
       #sidebar, header, .no-print {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      body.printing-slip #sidebar,
+      body.printing-slip header,
+      body.printing-slip main,
+      body.printing-slip .flex-1,
+      body.printing-slip > *:not(#slip-modal) {
         display: none !important;
         visibility: hidden !important;
       }
@@ -1312,31 +1378,31 @@
       <!-- TOP BAR -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
-          <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Leave Management &amp; Approvals</h3>
-          <p class="text-xs text-slate-500">Official pharmacy staff leave register &amp; automatic payroll deduction audit</p>
+          <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Leave Management &amp; Quotas</h3>
+          <p class="text-xs text-slate-500">Official staff leave register, real-time presence, and monthly 2-day quota tracking</p>
         </div>
         <div class="flex items-center gap-2.5 self-start sm:self-auto">
-          <button onclick="openApplyLeaveModal()" class="bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm transition cursor-pointer">
+          <button onclick="openApplyLeaveModal()" class="bg-[#0F172A] hover:bg-slate-800 active:scale-95 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm transition cursor-pointer">
             <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
-            <span>Approve New Leave</span>
+            <span>+ Approve New Leave</span>
           </button>
         </div>
       </div>
 
-      <!-- KPI METRIC CARDS -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+      <!-- KPI METRIC CARDS (CLICKABLE SHORTCUTS) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div onclick="switchLeaveSection('monthly-summary')" class="bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-300 shadow-xs hover:shadow-sm flex items-center justify-between cursor-pointer transition">
           <div>
             <p class="text-xs font-medium text-slate-500">This Month Leaves</p>
             <h4 id="leaves-kpi-month" class="text-2xl font-black text-indigo-600 tracking-tight mt-0.5">0</h4>
-            <p class="text-[11px] font-medium text-indigo-600 mt-0.5">September 2026</p>
+            <p id="leaves-kpi-month-label" class="text-[11px] font-medium text-indigo-500 mt-0.5">September 2026</p>
           </div>
           <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
             <i data-lucide="calendar" class="w-5 h-5"></i>
           </div>
         </div>
 
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex items-center justify-between">
+        <div onclick="switchLeaveSection('on-leave')" class="bg-white p-4 rounded-xl border border-rose-200 hover:border-rose-400 shadow-xs hover:shadow-sm flex items-center justify-between cursor-pointer transition">
           <div>
             <p class="text-xs font-medium text-slate-500">On Leave Today</p>
             <h4 id="leaves-kpi-today" class="text-2xl font-black text-rose-600 tracking-tight mt-0.5">0</h4>
@@ -1346,29 +1412,203 @@
             <i data-lucide="user-x" class="w-5 h-5"></i>
           </div>
         </div>
+
+        <div onclick="switchLeaveSection('on-duty')" class="bg-white p-4 rounded-xl border border-emerald-200 hover:border-emerald-400 shadow-xs hover:shadow-sm flex items-center justify-between cursor-pointer transition">
+          <div>
+            <p class="text-xs font-medium text-slate-500">On Duty Today</p>
+            <h4 id="leaves-kpi-working" class="text-2xl font-black text-emerald-600 tracking-tight mt-0.5">0</h4>
+            <p class="text-[11px] font-medium text-emerald-600 mt-0.5">Not on leave (Available)</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+            <i data-lucide="user-check" class="w-5 h-5"></i>
+          </div>
+        </div>
+
+        <div onclick="switchLeaveSection('monthly-summary')" class="bg-white p-4 rounded-xl border border-amber-200 hover:border-amber-400 shadow-xs hover:shadow-sm flex items-center justify-between cursor-pointer transition">
+          <div>
+            <p class="text-xs font-medium text-slate-500">Exceeded Quota</p>
+            <h4 id="leaves-kpi-exceeded" class="text-2xl font-black text-amber-600 tracking-tight mt-0.5">0</h4>
+            <p class="text-[11px] font-medium text-amber-600 mt-0.5">Extra leaves (Cut applied)</p>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+            <i data-lucide="alert-circle" class="w-5 h-5"></i>
+          </div>
+        </div>
       </div>
 
-      <!-- LEAVES FILTER & SEARCH -->
-      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
-        <div class="relative w-full md:w-80">
-          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
-          <input type="text" id="leaves-search-input" oninput="filterLeavesTable()" placeholder="Search staff name or leave reason..." class="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+      <!-- SECTION NAVIGATION TABS (ALAG ALAG SECTIONS) -->
+      <div class="flex items-center gap-1.5 p-1.5 bg-slate-100/90 rounded-2xl border border-slate-200/80 w-full sm:w-fit overflow-x-auto">
+        <button type="button" onclick="switchLeaveSection('on-leave')" id="leave-sec-btn-on-leave" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition bg-white text-slate-800 shadow-xs cursor-pointer whitespace-nowrap">
+          <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+          <span>On Leave Today</span>
+          <span id="tab-count-on-leave" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">0</span>
+        </button>
+
+        <button type="button" onclick="switchLeaveSection('on-duty')" id="leave-sec-btn-on-duty" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:text-slate-900 cursor-pointer whitespace-nowrap">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>On Duty Today (Not on Leave)</span>
+          <span id="tab-count-on-duty" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">0</span>
+        </button>
+
+        <button type="button" onclick="switchLeaveSection('monthly-summary')" id="leave-sec-btn-monthly-summary" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:text-slate-900 cursor-pointer whitespace-nowrap">
+          <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-indigo-600"></i>
+          <span>Monthly Leaves Summary</span>
+        </button>
+
+        <button type="button" onclick="switchLeaveSection('history-register')" id="leave-sec-btn-history-register" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:text-slate-900 cursor-pointer whitespace-nowrap">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-500"></i>
+          <span>Approved Leaves Register</span>
+        </button>
+
+        <button type="button" onclick="switchLeaveSection('all')" id="leave-sec-btn-all" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:text-slate-900 cursor-pointer whitespace-nowrap">
+          <i data-lucide="layout-grid" class="w-3.5 h-3.5 text-slate-500"></i>
+          <span>View All</span>
+        </button>
+      </div>
+
+      <!-- 1. SECTION: STAFF ON LEAVE TODAY -->
+      <div id="leave-section-on-leave" class="bg-white rounded-2xl border border-rose-200/90 shadow-xs overflow-hidden">
+        <div class="p-4 bg-gradient-to-r from-rose-50/90 via-rose-50/30 to-white border-b border-rose-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xs shadow-2xs">
+              <i data-lucide="user-x" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-sm text-slate-900">Staff On Leave Today (Chutti Par Hain)</h4>
+              <p class="text-[11px] text-slate-500">Today approved leaves • Auto marked absent/leave in register</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="leaves-today-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-200">0 Staff</span>
+            <span class="text-xs text-rose-700 font-semibold" id="leaves-today-date-label">Today</span>
+          </div>
         </div>
-        <div class="flex items-center gap-2.5 w-full md:w-auto">
-          <select id="leaves-filter-month" onchange="filterLeavesTable()" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-            <option value="ALL">All Months</option>
-            <option value="2026-09" selected>September 2026</option>
-            <option value="2026-08">August 2026</option>
-            <option value="2026-07">July 2026</option>
-          </select>
-          <button onclick="loadLeaves()" class="text-xs text-slate-500 hover:text-slate-800 font-medium px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition flex items-center gap-1.5 cursor-pointer">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Refresh
-          </button>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4 w-12 text-slate-400">#</th>
+                <th class="py-3 px-4 min-w-[180px]">Staff Member</th>
+                <th class="py-3 px-4 min-w-[120px]">Role</th>
+                <th class="py-3 px-4 min-w-[110px]">Leave Date</th>
+                <th class="py-3 px-4 min-w-[220px]">Reason &amp; Description</th>
+                <th class="py-3 px-4 min-w-[120px]">Approved By</th>
+                <th class="py-3 px-4 text-center min-w-[90px]">Action</th>
+              </tr>
+            </thead>
+            <tbody id="leaves-today-table-body" class="divide-y divide-slate-100">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- LEAVES TABLE -->
-      <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      <!-- 2. SECTION: STAFF ON DUTY TODAY (NOT ON LEAVE) -->
+      <div id="leave-section-on-duty" class="bg-white rounded-2xl border border-emerald-200/90 shadow-xs overflow-hidden hidden">
+        <div class="p-4 bg-gradient-to-r from-emerald-50/90 via-emerald-50/30 to-white border-b border-emerald-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shadow-2xs">
+              <i data-lucide="user-check" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-sm text-slate-900">Staff On Duty Today (Leave Par Nahi Hain)</h4>
+              <p class="text-[11px] text-slate-500">Active team members available for pharmacy duty today</p>
+            </div>
+          </div>
+          <span id="leaves-working-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">0 Staff Available</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4 w-12 text-slate-400">#</th>
+                <th class="py-3 px-4 min-w-[180px]">Staff Member</th>
+                <th class="py-3 px-4 min-w-[130px]">Shift</th>
+                <th class="py-3 px-4 min-w-[100px]">Duty Hours</th>
+                <th class="py-3 px-4 min-w-[150px]">Status</th>
+                <th class="py-3 px-4 text-right min-w-[120px]">Quick Action</th>
+              </tr>
+            </thead>
+            <tbody id="leaves-duty-table-body" class="divide-y divide-slate-100">
+              <!-- Rendered dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. SECTION: MONTHLY STAFF LEAVE SUMMARY & QUOTAS -->
+      <div id="leave-section-monthly-summary" class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden hidden">
+        <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs shadow-2xs">
+              <i data-lucide="bar-chart-2" class="w-4 h-4 text-indigo-600"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-sm text-slate-900">Staff Monthly Leaves Summary (Mahana Leaves Khata)</h4>
+              <p class="text-[11px] text-slate-500">Har person ne is month kitni leaves li hain vs 2-day allowed free quota</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-500 font-medium">Select Month:</span>
+            <select id="leaves-summary-month" onchange="renderStaffLeaveSummary()" class="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-700 font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+              <option value="2026-09" selected>September 2026</option>
+              <option value="2026-08">August 2026</option>
+              <option value="2026-07">July 2026</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Staff Member</th>
+                <th class="py-3 px-4 text-center">Monthly Free Quota</th>
+                <th class="py-3 px-4 text-center">Leaves Taken (This Month)</th>
+                <th class="py-3 px-4 text-center">Quota Status &amp; Salary Cut</th>
+                <th class="py-3 px-4 text-center">Leave Details</th>
+                <th class="py-3 px-4 text-right">Quick Action</th>
+              </tr>
+            </thead>
+            <tbody id="leaves-summary-tbody" class="divide-y divide-slate-100">
+              <tr><td colspan="6" class="py-8 text-center text-slate-400">Loading monthly staff summary...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4. SECTION: DETAILED APPROVED LEAVE REGISTER -->
+      <div id="leave-section-history-register" class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden hidden">
+        <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col md:flex-row items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5 w-full md:w-auto">
+            <div class="w-8 h-8 rounded-xl bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs shadow-2xs">
+              <i data-lucide="file-text" class="w-4 h-4 text-slate-600"></i>
+            </div>
+            <div>
+              <h4 class="font-bold text-sm text-slate-900">Approved Leave Register (Roznamcha Log)</h4>
+              <p class="text-[11px] text-slate-500">Official log of all approved leave applications</p>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
+            <div class="relative w-full sm:w-64">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2 pointer-events-none"></i>
+              <input type="text" id="leaves-search-input" oninput="filterLeavesTable()" placeholder="Search staff or reason..." class="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+            </div>
+            <select id="leaves-filter-month" onchange="filterLeavesTable()" class="bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer">
+              <option value="ALL">All Months</option>
+              <option value="2026-09" selected>September 2026</option>
+              <option value="2026-08">August 2026</option>
+              <option value="2026-07">July 2026</option>
+            </select>
+            <button onclick="loadLeaves()" class="text-xs text-slate-600 hover:text-slate-900 font-semibold px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition flex items-center gap-1.5 cursor-pointer shadow-2xs">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Refresh
+            </button>
+          </div>
+        </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse text-xs">
             <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-wider border-b border-slate-200">
@@ -1664,14 +1904,42 @@
           </div>
         </div>
 
-        <!-- PAYROLL BREAKDOWN TABLE -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-          <div class="p-3 bg-slate-50/70 border-b border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div class="relative w-full sm:w-72">
-              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-              <input type="text" id="payroll-search-input" oninput="filterPayrollTable()" placeholder="Search staff name or role..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10">
+        <!-- PAYROLL TOOLBAR (SEARCH & FILTER TABS) -->
+        <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+          <div class="relative w-full sm:w-72">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            <input type="text" id="payroll-search-input" oninput="filterPayrollTable()" placeholder="Search staff name or role..." class="w-full bg-slate-50/80 border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition">
+          </div>
+
+          <!-- STATUS / SECTION FILTER TABS -->
+          <div class="flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl w-full sm:w-auto justify-center">
+            <button type="button" id="payroll-filter-all" onclick="setPayrollFilter('all')" class="px-3 py-1.5 text-xs font-bold rounded-lg transition bg-white text-slate-800 shadow-xs cursor-pointer">
+              All Staff (<span id="count-all">0</span>)
+            </button>
+            <button type="button" id="payroll-filter-pending" onclick="setPayrollFilter('pending')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              <span>Pending (<span id="count-pending">0</span>)</span>
+            </button>
+            <button type="button" id="payroll-filter-paid" onclick="setPayrollFilter('paid')" class="px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Paid (<span id="count-paid">0</span>)</span>
+            </button>
+          </div>
+
+          <span id="payroll-records-badge" class="text-xs text-slate-500 font-semibold hidden sm:inline-block">0 Staff Records</span>
+        </div>
+
+        <!-- 1. PENDING / UNPAID SALARIES SECTION -->
+        <div id="payroll-pending-section" class="bg-white rounded-2xl border border-amber-200/90 shadow-xs overflow-hidden">
+          <div class="p-3.5 bg-gradient-to-r from-amber-50/90 via-amber-50/40 to-white border-b border-amber-200/70 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs shadow-2xs">
+                <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-600"></i>
+              </div>
+              <h3 class="font-bold text-xs uppercase tracking-wider text-slate-800">Pending / Unpaid Salaries</h3>
+              <span id="payroll-pending-count-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">0 Staff</span>
             </div>
-            <span id="payroll-records-badge" class="text-xs text-slate-500 font-semibold">0 Staff Records</span>
+            <span class="text-[11px] text-amber-700 font-medium hidden sm:inline-block">Salaries awaiting disbursement</span>
           </div>
 
           <div class="overflow-x-auto">
@@ -1688,7 +1956,7 @@
                   <th class="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody id="payroll-tbody" class="divide-y divide-slate-100">
+              <tbody id="payroll-pending-tbody" class="divide-y divide-slate-100">
                 <tr>
                   <td colspan="8" class="p-8 text-center text-slate-400">Pehle month select kar ke "Calculate Payroll" dabayein.</td>
                 </tr>
@@ -1696,6 +1964,44 @@
             </table>
           </div>
         </div>
+
+        <!-- 2. PAID / DISBURSED SALARIES SECTION -->
+        <div id="payroll-paid-section" class="bg-white rounded-2xl border border-emerald-200/90 shadow-xs overflow-hidden">
+          <div class="p-3.5 bg-gradient-to-r from-emerald-50/90 via-emerald-50/40 to-white border-b border-emerald-200/70 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shadow-2xs">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i>
+              </div>
+              <h3 class="font-bold text-xs uppercase tracking-wider text-slate-800">Paid / Disbursed Salaries</h3>
+              <span id="payroll-paid-count-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">0 Staff</span>
+            </div>
+            <span class="text-[11px] text-emerald-700 font-medium hidden sm:inline-block">Successfully Disbursed</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold border-b border-slate-200 tracking-wider">
+                <tr>
+                  <th class="py-3 px-4">Staff Member</th>
+                  <th class="py-3 px-4">Basic Salary</th>
+                  <th class="py-3 px-4">Attendance Cuts</th>
+                  <th class="py-3 px-4">Khata Cuts</th>
+                  <th class="py-3 px-4">Total Deductions</th>
+                  <th class="py-3 px-4">Net Payable</th>
+                  <th class="py-3 px-4 text-center">Status</th>
+                  <th class="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="payroll-paid-tbody" class="divide-y divide-slate-100">
+                <tr>
+                  <td colspan="8" class="p-8 text-center text-slate-400">Pehle month select kar ke "Calculate Payroll" dabayein.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <tbody id="payroll-tbody" class="hidden"></tbody>
       </section>
       <section id="view-advances" class="space-y-4 hidden">
 
@@ -3803,128 +4109,223 @@
       renderPayrollTable();
     }
 
+    let currentPayrollFilter = 'all';
+
+    function setPayrollFilter(mode) {
+      currentPayrollFilter = mode;
+      const modes = ['all', 'pending', 'paid'];
+      modes.forEach(m => {
+        const btn = document.getElementById(`payroll-filter-${m}`);
+        if (!btn) return;
+        if (m === mode) {
+          btn.className = "px-3 py-1.5 text-xs font-bold rounded-lg transition bg-white text-slate-800 shadow-xs cursor-pointer";
+        } else {
+          btn.className = "px-3 py-1.5 text-xs font-semibold rounded-lg transition text-slate-600 hover:text-slate-900 cursor-pointer";
+        }
+      });
+
+      const pendingSec = document.getElementById('payroll-pending-section');
+      const paidSec = document.getElementById('payroll-paid-section');
+
+      if (pendingSec) {
+        if (mode === 'paid') pendingSec.classList.add('hidden');
+        else pendingSec.classList.remove('hidden');
+      }
+      if (paidSec) {
+        if (mode === 'pending') paidSec.classList.add('hidden');
+        else paidSec.classList.remove('hidden');
+      }
+    }
+
+    function renderPayrollRow(p) {
+      // Attendance cuts calculation
+      const absentCut = p.absent_cut || 0;
+      const extraLeaveCut = p.extra_leave_cut || 0;
+      const shortHoursCut = (p.short_hours_cut || 0) + (p.extra_half_day_cut || 0);
+      const attendanceCut = absentCut + extraLeaveCut + shortHoursCut;
+
+      let attDetails = [];
+      if (p.absent_days > 0) attDetails.push(`${p.absent_days}d absent`);
+      if (p.extra_leaves > 0) attDetails.push(`${p.extra_leaves} extra leave`);
+      if ((p.total_short_minutes || 0) > 0) {
+        const h = Math.floor(p.total_short_minutes / 60);
+        const m = p.total_short_minutes % 60;
+        attDetails.push(h > 0 ? `${h}h ${m}m short` : `${m}m short`);
+      } else if (p.extra_half_days > 0) {
+        attDetails.push(`${p.extra_half_days} half-day`);
+      }
+
+      const attCutHtml = attendanceCut > 0 ? `
+        <div class="text-rose-600 font-bold text-xs">- Rs. ${attendanceCut.toLocaleString()}</div>
+        <div class="text-[10px] text-slate-400 font-medium">${attDetails.join(' • ')}</div>
+      ` : `<span class="text-slate-400 font-normal">—</span>`;
+
+      // Khata cuts (with N/A if empty)
+      const khataCut = p.advances_deducted || 0;
+      const khataCutHtml = khataCut > 0 ? `
+        <div class="text-amber-600 font-bold text-xs">- Rs. ${khataCut.toLocaleString()}</div>
+        <div class="text-[10px] text-slate-400 font-medium">Khata auto-cut</div>
+      ` : `<span class="text-slate-400 font-normal">N/A</span>`;
+
+      // Total deductions
+      const totalCut = attendanceCut + khataCut;
+      const totalCutHtml = totalCut > 0 ? `
+        <span class="text-rose-600 font-black text-xs">- Rs. ${totalCut.toLocaleString()}</span>
+      ` : `<span class="text-slate-400 font-normal">Rs. 0</span>`;
+
+      // Status pill
+      const isPaid = (p.status || '').toUpperCase() === 'PAID';
+      const statusHtml = isPaid ? `
+        <div class="flex flex-col items-center">
+          <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-600"></i> Paid
+          </span>
+          ${p.paid_at ? `<span class="text-[10px] text-slate-400 font-medium mt-0.5">${p.paid_at.split(' ')[0]}</span>` : ''}
+        </div>
+      ` : `
+        <div class="flex flex-col items-center">
+          <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending
+          </span>
+        </div>
+      `;
+
+      return `
+        <tr class="hover:bg-slate-50/80 transition font-medium">
+          <td class="py-3 px-4">
+            <div class="font-bold text-slate-800 text-xs">${p.staff_name}</div>
+            <div class="text-[11px] text-slate-400 font-normal mt-0.5">${p.designation || p.role}</div>
+          </td>
+          <td class="py-3 px-4 font-mono text-xs font-semibold text-slate-700">
+            Rs. ${(p.basic_salary || 0).toLocaleString()}
+          </td>
+          <td class="py-3 px-4">
+            ${attCutHtml}
+          </td>
+          <td class="py-3 px-4">
+            ${khataCutHtml}
+          </td>
+          <td class="py-3 px-4">
+            ${totalCutHtml}
+          </td>
+          <td class="py-3 px-4">
+            <span class="text-emerald-700 font-black text-sm">Rs. ${(p.net_payable || 0).toLocaleString()}</span>
+          </td>
+          <td class="py-3 px-4 text-center">
+            ${statusHtml}
+          </td>
+          <td class="py-3 px-4 text-right">
+            <div class="flex items-center justify-end gap-1.5">
+              ${!isPaid ? `
+                <button onclick="openDisburseModal(${p.staff_id})" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs transition cursor-pointer" title="Disburse salary">
+                  <i data-lucide="banknote" class="w-3.5 h-3.5"></i>
+                  <span>Pay</span>
+                </button>
+              ` : ''}
+              <button onclick="openSlipModal(${p.staff_id})" class="bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 border border-slate-200 shadow-2xs transition cursor-pointer" title="View official payslip">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-500"></i>
+                <span>Slip</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+
     function renderPayrollTable() {
-      const tbody = document.getElementById('payroll-tbody');
-      if (!tbody) return;
+      const pendingTbody = document.getElementById('payroll-pending-tbody');
+      const paidTbody = document.getElementById('payroll-paid-tbody');
+      const legacyTbody = document.getElementById('payroll-tbody');
 
       const q = (document.getElementById('payroll-search-input')?.value || '').toLowerCase().trim();
       const recordsBadge = document.getElementById('payroll-records-badge');
 
-      const filtered = (currentPayrollData || []).filter(p => {
+      const allData = currentPayrollData || [];
+      const totalStaff = allData.length;
+
+      const filtered = allData.filter(p => {
         if (!q) return true;
         const name = (p.staff_name || '').toLowerCase();
         const role = (p.designation || p.role || '').toLowerCase();
         return name.includes(q) || role.includes(q);
       });
 
+      const pendingList = filtered.filter(p => (p.status || '').toUpperCase() !== 'PAID');
+      const paidList = filtered.filter(p => (p.status || '').toUpperCase() === 'PAID');
+
+      const rawPendingCount = allData.filter(p => (p.status || '').toUpperCase() !== 'PAID').length;
+      const rawPaidCount = allData.filter(p => (p.status || '').toUpperCase() === 'PAID').length;
+
+      // Update badges
       if (recordsBadge) {
         recordsBadge.innerText = `${filtered.length} Staff ${filtered.length === 1 ? 'Record' : 'Records'}`;
       }
+      const countAll = document.getElementById('count-all');
+      if (countAll) countAll.innerText = filtered.length;
+      const countPending = document.getElementById('count-pending');
+      if (countPending) countPending.innerText = pendingList.length;
+      const countPaid = document.getElementById('count-paid');
+      if (countPaid) countPaid.innerText = paidList.length;
 
-      if (filtered.length === 0) {
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="8" class="p-8 text-center text-slate-400">
-              Koi record nahi mila.
-            </td>
-          </tr>
-        `;
-        return;
+      const pendingBadge = document.getElementById('payroll-pending-count-badge');
+      if (pendingBadge) pendingBadge.innerText = `${pendingList.length} Staff`;
+      const paidBadge = document.getElementById('payroll-paid-count-badge');
+      if (paidBadge) paidBadge.innerText = `${paidList.length} Staff`;
+
+      // Render Pending Section
+      if (pendingTbody) {
+        if (totalStaff === 0) {
+          pendingTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">Pehle month select kar ke "Calculate Payroll" dabayein.</td></tr>`;
+        } else if (pendingList.length > 0) {
+          pendingTbody.innerHTML = pendingList.map(renderPayrollRow).join('');
+        } else if (rawPendingCount === 0) {
+          pendingTbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="p-8 text-center">
+                <div class="flex flex-col items-center justify-center text-emerald-600 gap-1.5">
+                  <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <i data-lucide="check" class="w-5 h-5 text-emerald-600"></i>
+                  </div>
+                  <span class="font-bold text-sm text-slate-800">Sabhi Staff Ki Salary Ada Ho Chuki Hai!</span>
+                  <span class="text-xs text-slate-400">Is mahine ke sabhi records clear aur paid hain.</span>
+                </div>
+              </td>
+            </tr>
+          `;
+        } else {
+          pendingTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">Koi matching pending record nahi mila.</td></tr>`;
+        }
       }
 
-      tbody.innerHTML = filtered.map(p => {
-        // Attendance cuts calculation
-        const absentCut = p.absent_cut || 0;
-        const extraLeaveCut = p.extra_leave_cut || 0;
-        const shortHoursCut = (p.short_hours_cut || 0) + (p.extra_half_day_cut || 0);
-        const attendanceCut = absentCut + extraLeaveCut + shortHoursCut;
-
-        let attDetails = [];
-        if (p.absent_days > 0) attDetails.push(`${p.absent_days}d absent`);
-        if (p.extra_leaves > 0) attDetails.push(`${p.extra_leaves} extra leave`);
-        if ((p.total_short_minutes || 0) > 0) {
-          const h = Math.floor(p.total_short_minutes / 60);
-          const m = p.total_short_minutes % 60;
-          attDetails.push(h > 0 ? `${h}h ${m}m short` : `${m}m short`);
-        } else if (p.extra_half_days > 0) {
-          attDetails.push(`${p.extra_half_days} half-day`);
+      // Render Paid Section
+      if (paidTbody) {
+        if (totalStaff === 0) {
+          paidTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">Pehle month select kar ke "Calculate Payroll" dabayein.</td></tr>`;
+        } else if (paidList.length > 0) {
+          paidTbody.innerHTML = paidList.map(renderPayrollRow).join('');
+        } else if (rawPaidCount === 0) {
+          paidTbody.innerHTML = `
+            <tr>
+              <td colspan="8" class="p-8 text-center text-slate-400 text-xs">
+                <div class="flex flex-col items-center justify-center gap-1 text-slate-400">
+                  <i data-lucide="info" class="w-5 h-5"></i>
+                  <span>Abhi tak is mahine kisi staff ki salary pay nahi hui.</span>
+                </div>
+              </td>
+            </tr>
+          `;
+        } else {
+          paidTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">Koi matching paid record nahi mila.</td></tr>`;
         }
+      }
 
-        const attCutHtml = attendanceCut > 0 ? `
-          <div class="text-rose-600 font-bold text-xs">- Rs. ${attendanceCut.toLocaleString()}</div>
-          <div class="text-[10px] text-slate-400 font-medium">${attDetails.join(' • ')}</div>
-        ` : `<span class="text-slate-400 font-normal">—</span>`;
+      // Legacy fallback
+      if (legacyTbody) {
+        legacyTbody.innerHTML = filtered.length > 0 ? filtered.map(renderPayrollRow).join('') : `<tr><td colspan="8" class="p-8 text-center text-slate-400">Koi record nahi mila.</td></tr>`;
+      }
 
-        // Khata cuts
-        const khataCut = p.advances_deducted || 0;
-        const khataCutHtml = khataCut > 0 ? `
-          <div class="text-amber-600 font-bold text-xs">- Rs. ${khataCut.toLocaleString()}</div>
-          <div class="text-[10px] text-slate-400 font-medium">Khata auto-cut</div>
-        ` : `<span class="text-slate-400 font-normal">—</span>`;
-
-        // Total deductions
-        const totalCut = attendanceCut + khataCut;
-        const totalCutHtml = totalCut > 0 ? `
-          <span class="text-rose-600 font-black text-xs">- Rs. ${totalCut.toLocaleString()}</span>
-        ` : `<span class="text-slate-400 font-normal">Rs. 0</span>`;
-
-        // Status pill
-        const statusHtml = p.status === 'PAID' ? `
-          <div class="flex flex-col items-center">
-            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-600"></i> Paid
-            </span>
-            ${p.paid_at ? `<span class="text-[10px] text-slate-400 font-medium mt-0.5">${p.paid_at.split(' ')[0]}</span>` : ''}
-          </div>
-        ` : `
-          <div class="flex flex-col items-center">
-            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending
-            </span>
-          </div>
-        `;
-
-        return `
-          <tr class="hover:bg-slate-50/80 transition font-medium">
-            <td class="py-3 px-4">
-              <div class="font-bold text-slate-800 text-xs">${p.staff_name}</div>
-              <div class="text-[11px] text-slate-400 font-normal mt-0.5">${p.designation || p.role}</div>
-            </td>
-            <td class="py-3 px-4 font-mono text-xs font-semibold text-slate-700">
-              Rs. ${(p.basic_salary || 0).toLocaleString()}
-            </td>
-            <td class="py-3 px-4">
-              ${attCutHtml}
-            </td>
-            <td class="py-3 px-4">
-              ${khataCutHtml}
-            </td>
-            <td class="py-3 px-4">
-              ${totalCutHtml}
-            </td>
-            <td class="py-3 px-4">
-              <span class="text-emerald-700 font-black text-sm">Rs. ${(p.net_payable || 0).toLocaleString()}</span>
-            </td>
-            <td class="py-3 px-4 text-center">
-              ${statusHtml}
-            </td>
-            <td class="py-3 px-4 text-right">
-              <div class="flex items-center justify-end gap-1.5">
-                ${p.status !== 'PAID' ? `
-                  <button onclick="openDisburseModal(${p.staff_id})" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs transition cursor-pointer" title="Disburse salary">
-                    <i data-lucide="banknote" class="w-3.5 h-3.5"></i>
-                    <span>Pay</span>
-                  </button>
-                ` : ''}
-                <button onclick="openSlipModal(${p.staff_id})" class="bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 border border-slate-200 shadow-2xs transition cursor-pointer" title="View official payslip">
-                  <i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-500"></i>
-                  <span>Slip</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join('');
+      // Apply current section visibility
+      setPayrollFilter(currentPayrollFilter);
 
       if (window.lucide) lucide.createIcons();
     }
@@ -6496,6 +6897,8 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         const priorityModals = [
+          { id: 'staff-leave-detail-modal', close: closeStaffLeaveDetailsModal },
+          { id: 'apply-leave-modal', close: closeApplyLeaveModal },
           { id: 'slip-modal', close: closeSlipModal },
           { id: 'disburse-salary-modal', close: closeDisburseModal },
           { id: 'quick-settle-all-modal', close: closeQuickSettleModal },
@@ -6524,45 +6927,304 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
     async function loadLeaves() {
       try {
+        if (!staffList || staffList.length === 0) {
+          if (typeof loadStaff === 'function') await loadStaff();
+        }
         const res = await fetch('/api/leaves');
         if (res.ok) {
           allLeaves = await res.json();
         } else {
           allLeaves = [];
         }
-        renderLeavesTable();
         updateLeavesKpis();
+        renderTodayPresence();
+        renderStaffLeaveSummary();
+        filterLeavesTable();
+        if (typeof currentLeaveDetailStaffId !== 'undefined' && currentLeaveDetailStaffId) {
+          const detailModal = document.getElementById('staff-leave-detail-modal');
+          if (detailModal && !detailModal.classList.contains('hidden')) {
+            openStaffLeaveDetailsModal(currentLeaveDetailStaffId);
+          }
+        }
+        if (window.lucide) lucide.createIcons();
       } catch (err) {
         console.error("Failed to load leaves", err);
       }
     }
 
+    function getLocalTodayStr() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     function updateLeavesKpis() {
       const monthEl = document.getElementById('leaves-kpi-month');
+      const monthLabelEl = document.getElementById('leaves-kpi-month-label');
       const todayEl = document.getElementById('leaves-kpi-today');
       const todayNamesEl = document.getElementById('leaves-kpi-today-names');
-      const totalEl = document.getElementById('leaves-kpi-total');
-      if (totalEl) totalEl.innerText = (allLeaves || []).length;
+      const workingEl = document.getElementById('leaves-kpi-working');
+      const exceededEl = document.getElementById('leaves-kpi-exceeded');
 
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = getLocalTodayStr();
       const curMonthStr = todayStr.substring(0, 7);
 
-      if (monthEl) {
-        const monthLeaves = (allLeaves || []).filter(l => l.date && l.date.startsWith(curMonthStr));
-        monthEl.innerText = monthLeaves.length;
+      const monthLeaves = (allLeaves || []).filter(l => l.date && l.date.startsWith(curMonthStr));
+      if (monthEl) monthEl.innerText = monthLeaves.length;
+      if (monthLabelEl) {
+        const d = new Date();
+        monthLabelEl.innerText = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
       }
 
-      if (todayEl) {
-        const todayLeaves = (allLeaves || []).filter(l => l.date === todayStr);
-        todayEl.innerText = todayLeaves.length;
-        if (todayNamesEl) {
-          if (todayLeaves.length > 0) {
-            todayNamesEl.innerText = todayLeaves.map(l => l.staff_name).join(', ');
-          } else {
-            todayNamesEl.innerText = 'None today';
-          }
+      const todayLeaves = (allLeaves || []).filter(l => l.date === todayStr);
+      if (todayEl) todayEl.innerText = todayLeaves.length;
+      if (todayNamesEl) {
+        if (todayLeaves.length > 0) {
+          todayNamesEl.innerText = todayLeaves.map(l => l.staff_name).join(', ');
+        } else {
+          todayNamesEl.innerText = 'None today';
         }
       }
+
+      const onLeaveIds = new Set(todayLeaves.map(l => l.staff_id));
+      const activeStaff = (staffList || []).filter(s => s.is_active !== 0);
+      const workingStaff = activeStaff.filter(s => !onLeaveIds.has(s.id));
+      if (workingEl) workingEl.innerText = workingStaff.length;
+
+      // Count staff who exceeded quota this month
+      let exceededCount = 0;
+      activeStaff.forEach(s => {
+        const sLeaves = monthLeaves.filter(l => l.staff_id === s.id).length;
+        const quota = s.allowed_leaves !== undefined ? s.allowed_leaves : 2;
+        if (sLeaves > quota) exceededCount++;
+      });
+      if (exceededEl) exceededEl.innerText = exceededCount;
+    }
+
+    let currentLeaveSection = 'on-leave';
+
+    function switchLeaveSection(sec) {
+      currentLeaveSection = sec;
+      const sections = ['on-leave', 'on-duty', 'monthly-summary', 'history-register'];
+      const allBtns = ['on-leave', 'on-duty', 'monthly-summary', 'history-register', 'all'];
+
+      allBtns.forEach(b => {
+        const btn = document.getElementById(`leave-sec-btn-${b}`);
+        if (!btn) return;
+        if (b === sec) {
+          btn.className = "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition bg-white text-slate-800 shadow-xs cursor-pointer whitespace-nowrap";
+        } else {
+          btn.className = "flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:text-slate-900 cursor-pointer whitespace-nowrap";
+        }
+      });
+
+      sections.forEach(s => {
+        const el = document.getElementById(`leave-section-${s}`);
+        if (!el) return;
+        if (sec === 'all' || sec === s) {
+          el.classList.remove('hidden');
+        } else {
+          el.classList.add('hidden');
+        }
+      });
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function renderTodayPresence() {
+      const todayTable = document.getElementById('leaves-today-table-body');
+      const dutyTable = document.getElementById('leaves-duty-table-body');
+      const todayBadge = document.getElementById('leaves-today-badge');
+      const workingBadge = document.getElementById('leaves-working-badge');
+      const tabCountOnLeave = document.getElementById('tab-count-on-leave');
+      const tabCountOnDuty = document.getElementById('tab-count-on-duty');
+      const dateLabel = document.getElementById('leaves-today-date-label');
+
+      const todayStr = getLocalTodayStr();
+      if (dateLabel) {
+        const d = new Date();
+        dateLabel.innerText = d.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      }
+
+      const todayLeaves = (allLeaves || []).filter(l => l.date === todayStr);
+      const onLeaveIds = new Set(todayLeaves.map(l => l.staff_id));
+      const activeStaff = (staffList || []).filter(s => s.is_active !== 0);
+      const workingStaff = activeStaff.filter(s => !onLeaveIds.has(s.id));
+
+      if (todayBadge) todayBadge.innerText = `${todayLeaves.length} Staff`;
+      if (workingBadge) workingBadge.innerText = `${workingStaff.length} Staff Available`;
+      if (tabCountOnLeave) tabCountOnLeave.innerText = todayLeaves.length;
+      if (tabCountOnDuty) tabCountOnDuty.innerText = workingStaff.length;
+
+      // 1. Render Dedicated Section: Staff on leave today table
+      if (todayTable) {
+        if (todayLeaves.length === 0) {
+          todayTable.innerHTML = `
+            <tr>
+              <td colspan="7" class="py-12 text-center">
+                <div class="flex flex-col items-center justify-center text-emerald-600 gap-1.5">
+                  <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-1">
+                    <i data-lucide="check-check" class="w-6 h-6 text-emerald-600"></i>
+                  </div>
+                  <span class="font-bold text-sm text-slate-800">Koi Staff Aaj Chutti Par Nahi Hai!</span>
+                  <span class="text-xs text-slate-400">Poori pharmacy team aaj duty par available aur mojood hai.</span>
+                </div>
+              </td>
+            </tr>
+          `;
+        } else {
+          todayTable.innerHTML = todayLeaves.map((l, idx) => `
+            <tr class="hover:bg-rose-50/40 transition-colors">
+              <td class="py-3.5 px-4 font-mono font-bold text-slate-400">#${idx + 1}</td>
+              <td class="py-3.5 px-4">
+                <div class="font-bold text-slate-900 text-xs">${l.staff_name}</div>
+                <div class="text-[10px] text-slate-400 font-medium">${l.designation || l.role || 'Staff'}</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700">${l.role || 'Staff'}</span>
+              </td>
+              <td class="py-3.5 px-4 font-mono font-bold text-rose-700 text-xs">${l.date}</td>
+              <td class="py-3.5 px-4 text-xs">
+                <div class="font-semibold text-rose-800">${l.reason}</div>
+              </td>
+              <td class="py-3.5 px-4 text-xs">
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <i data-lucide="check" class="w-3 h-3"></i> ${l.approved_by || 'Owner'}
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-center">
+                <button onclick="deleteLeaveRecord(${l.id}, '${(l.staff_name || '').replace(/'/g, "\\'")}', '${l.date}')" title="Cancel Leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition cursor-pointer">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      // 2. Render Dedicated Section: Staff working today table
+      if (dutyTable) {
+        if (workingStaff.length === 0) {
+          dutyTable.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">Koi active staff nahi mila.</td></tr>`;
+        } else {
+          dutyTable.innerHTML = workingStaff.map((s, idx) => `
+            <tr class="hover:bg-emerald-50/30 transition-colors">
+              <td class="py-3.5 px-4 font-mono font-bold text-slate-400">#${idx + 1}</td>
+              <td class="py-3.5 px-4">
+                <div class="font-bold text-slate-900 text-xs">${s.name}</div>
+                <div class="text-[10px] text-slate-400 font-medium">${s.designation || s.role || 'Staff'}</div>
+              </td>
+              <td class="py-3.5 px-4">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                  ${s.shift_name || 'Regular Shift'}
+                </span>
+              </td>
+              <td class="py-3.5 px-4 font-mono text-slate-700 text-xs font-semibold">
+                ${s.daily_hours || 8}h / day
+              </td>
+              <td class="py-3.5 px-4 text-xs">
+                <span class="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span> On Duty / Available
+                </span>
+              </td>
+              <td class="py-3.5 px-4 text-right">
+                <button onclick="openApplyLeaveModal(${s.id})" class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition cursor-pointer" title="Apply Leave for ${s.name}">
+                  <i data-lucide="plus" class="w-3 h-3"></i> Apply Leave
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+      }
+
+      // Ensure active section visibility is applied
+      switchLeaveSection(currentLeaveSection);
+    }
+
+    function renderStaffLeaveSummary() {
+      const tbody = document.getElementById('leaves-summary-tbody');
+      if (!tbody) return;
+
+      const monthSel = document.getElementById('leaves-summary-month');
+      const selectedMonth = monthSel ? monthSel.value : '2026-09';
+
+      const activeStaff = (staffList || []).filter(s => s.is_active !== 0);
+      if (activeStaff.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">Koi active staff record nahi mila.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = activeStaff.map(s => {
+        const sLeaves = (allLeaves || []).filter(l => l.staff_id === s.id && l.date && l.date.startsWith(selectedMonth));
+        const taken = sLeaves.length;
+        const quota = s.allowed_leaves !== undefined ? s.allowed_leaves : 2;
+        const isExceeded = taken > quota;
+        const extra = Math.max(0, taken - quota);
+        const remaining = Math.max(0, quota - taken);
+
+        // Status Badge
+        let statusBadge;
+        if (taken === 0) {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i> ${quota} Leaves Available</span>`;
+        } else if (!isExceeded) {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200"><i data-lucide="check" class="w-3 h-3 text-indigo-600"></i> ${remaining} Leave${remaining === 1 ? '' : 's'} Remaining</span>`;
+        } else {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-600"></i> ${extra} Extra Leave (Cut in Payroll)</span>`;
+        }
+
+        // Details Button / Badge
+        let detailsHtml;
+        if (sLeaves.length === 0) {
+          detailsHtml = `<span class="text-slate-400 font-mono font-medium text-xs">N/A</span>`;
+        } else {
+          detailsHtml = `
+            <button onclick="openStaffLeaveDetailsModal(${s.id})" class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition cursor-pointer shadow-2xs group" title="View leave dates and reasons for ${s.name}">
+              <i data-lucide="eye" class="w-3.5 h-3.5 text-indigo-600 group-hover:scale-110 transition-transform"></i>
+              <span>View Details (${taken})</span>
+            </button>
+          `;
+        }
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="py-3 px-4">
+              <div class="font-bold text-slate-900 text-xs">${s.name}</div>
+              <div class="text-[10px] text-slate-400 font-medium">${s.designation || s.role || 'Staff'}</div>
+            </td>
+            <td class="py-3 px-4 text-center font-bold text-slate-600 text-xs">
+              <span class="px-2 py-0.5 bg-slate-100 rounded-md border border-slate-200">${quota} Days</span>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <span class="font-black text-xs px-2.5 py-0.5 rounded-full ${taken > 0 ? (isExceeded ? 'bg-rose-100 text-rose-700' : 'bg-indigo-100 text-indigo-700') : 'bg-slate-100 text-slate-500'}">
+                ${taken} ${taken === 1 ? 'Day' : 'Days'}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-center">
+              ${statusBadge}
+            </td>
+            <td class="py-3 px-4 text-center">
+              ${detailsHtml}
+            </td>
+            <td class="py-3 px-4 text-right">
+              <button onclick="openApplyLeaveModal(${s.id})" class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition cursor-pointer" title="Approve leave for ${s.name}">
+                <i data-lucide="plus" class="w-3 h-3"></i>
+                <span>Add Leave</span>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      if (typeof currentLeaveDetailStaffId !== 'undefined' && currentLeaveDetailStaffId) {
+        const detailModal = document.getElementById('staff-leave-detail-modal');
+        if (detailModal && !detailModal.classList.contains('hidden')) {
+          openStaffLeaveDetailsModal(currentLeaveDetailStaffId);
+        }
+      }
+
+      if (window.lucide) lucide.createIcons();
     }
 
     function filterLeavesTable() {
@@ -6613,17 +7275,18 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           </td>
         </tr>
       `).join('');
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
-    function openApplyLeaveModal() {
+    function openApplyLeaveModal(preSelectStaffId = null) {
       const sel = document.getElementById('leave-staff-select');
       if (sel && staffList && staffList.length > 0) {
-        sel.innerHTML = staffList.map(s => `<option value="${s.id}">${s.name} (${s.designation || s.role || 'Staff'})</option>`).join('');
+        sel.innerHTML = staffList.map(s => `<option value="${s.id}" ${preSelectStaffId === s.id ? 'selected' : ''}>${s.name} (${s.designation || s.role || 'Staff'})</option>`).join('');
       }
       const dateInp = document.getElementById('leave-date-input');
-      if (dateInp) dateInp.value = new Date().toISOString().split('T')[0];
+      if (dateInp) dateInp.value = getLocalTodayStr();
       document.getElementById('apply-leave-modal').classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
     }
 
     function closeApplyLeaveModal() {
@@ -6671,12 +7334,159 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           await loadLeaves();
           await loadTodayAttendance();
           if (typeof generatePayroll === 'function') generatePayroll();
+          if (typeof currentLeaveDetailStaffId !== 'undefined' && currentLeaveDetailStaffId) {
+            openStaffLeaveDetailsModal(currentLeaveDetailStaffId);
+          }
         } else {
           alert("Failed to delete leave");
         }
       } catch (err) {
         console.error("Delete leave error", err);
       }
+    }
+
+    let currentLeaveDetailStaffId = null;
+
+    function openStaffLeaveDetailsModal(staffId) {
+      currentLeaveDetailStaffId = staffId;
+      const staff = (staffList || []).find(s => s.id === staffId);
+      if (!staff) return;
+
+      const monthSel = document.getElementById('leaves-summary-month');
+      const selectedMonth = monthSel ? monthSel.value : '2026-09';
+
+      let monthDisplay = selectedMonth;
+      try {
+        const [y, m] = selectedMonth.split('-');
+        const dateObj = new Date(parseInt(y, 10), parseInt(m, 10) - 1, 1);
+        monthDisplay = dateObj.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+      } catch (e) {}
+
+      const sLeaves = (allLeaves || []).filter(l => l.staff_id === staffId && l.date && l.date.startsWith(selectedMonth));
+      sLeaves.sort((a, b) => (a.date > b.date ? 1 : -1));
+
+      const taken = sLeaves.length;
+      const quota = staff.allowed_leaves !== undefined ? staff.allowed_leaves : 2;
+      const isExceeded = taken > quota;
+      const extra = Math.max(0, taken - quota);
+      const remaining = Math.max(0, quota - taken);
+
+      const titleEl = document.getElementById('staff-detail-modal-title');
+      const subtitleEl = document.getElementById('staff-detail-modal-subtitle');
+      if (titleEl) titleEl.innerText = `${staff.name} — Leave Details`;
+      if (subtitleEl) subtitleEl.innerText = `${staff.designation || staff.role || 'Staff'} • ${monthDisplay}`;
+
+      const metricsContainer = document.getElementById('staff-detail-modal-metrics');
+      if (metricsContainer) {
+        let statusBadge;
+        if (taken === 0) {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i> ${quota} Available</span>`;
+        } else if (!isExceeded) {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200"><i data-lucide="check" class="w-3 h-3 text-indigo-600"></i> ${remaining} Left</span>`;
+        } else {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-600"></i> ${extra} Cut in Payroll</span>`;
+        }
+
+        metricsContainer.innerHTML = `
+          <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center">
+            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Allowed Quota</div>
+            <div class="text-sm font-black text-slate-800 mt-0.5">${quota} Days</div>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center">
+            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Leaves Taken</div>
+            <div class="text-sm font-black ${taken > quota ? 'text-rose-600' : (taken > 0 ? 'text-indigo-600' : 'text-slate-800')} mt-0.5">${taken} ${taken === 1 ? 'Day' : 'Days'}</div>
+          </div>
+          <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center flex flex-col items-center justify-center">
+            <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">Quota Status</div>
+            <div>${statusBadge}</div>
+          </div>
+        `;
+      }
+
+      const tbody = document.getElementById('staff-detail-modal-tbody');
+      if (tbody) {
+        if (sLeaves.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="py-8 text-center text-slate-400">
+                <div class="flex flex-col items-center justify-center gap-1.5">
+                  <i data-lucide="calendar-check" class="w-8 h-8 text-slate-300"></i>
+                  <span class="text-xs font-bold text-slate-600">Is mahine koi leave record nahi hai</span>
+                  <span class="text-[11px] text-slate-400">Employee ne is mahine koi chhutti nahi li.</span>
+                </div>
+              </td>
+            </tr>
+          `;
+        } else {
+          tbody.innerHTML = sLeaves.map((l, idx) => {
+            let dayName = '-';
+            let formattedDate = l.date;
+            try {
+              const parts = l.date.split('-');
+              if (parts.length === 3) {
+                const year = parseInt(parts[0], 10);
+                const monthIndex = parseInt(parts[1], 10) - 1;
+                const day = parseInt(parts[2], 10);
+                const dObj = new Date(year, monthIndex, day);
+                dayName = dObj.toLocaleDateString('en-US', { weekday: 'long' });
+                formattedDate = dObj.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+              }
+            } catch (e) {}
+
+            const safeStaffName = (staff.name || '').replace(/'/g, "\\'");
+            const safeReason = (l.reason || 'Koi reason darj nahi hai').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            return `
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-3 px-3 font-mono font-bold text-slate-400 text-xs">#${idx + 1}</td>
+                <td class="py-3 px-3 font-mono font-bold text-slate-900 text-xs whitespace-nowrap">
+                  <div class="flex items-center gap-1.5">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-600"></i>
+                    <span>${formattedDate}</span>
+                  </div>
+                </td>
+                <td class="py-3 px-3 text-xs whitespace-nowrap">
+                  <span class="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">${dayName}</span>
+                </td>
+                <td class="py-3 px-3 text-xs">
+                  <div class="font-medium text-slate-800 bg-amber-50/50 p-2 rounded-lg border border-amber-100/80 leading-snug">
+                    <i data-lucide="help-circle" class="w-3 h-3 text-amber-600 inline mr-1 -mt-0.5"></i>
+                    ${safeReason}
+                  </div>
+                </td>
+                <td class="py-3 px-3 text-xs whitespace-nowrap">
+                  <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> ${l.approved_by || 'Admin'}
+                  </span>
+                </td>
+                <td class="py-3 px-3 text-center whitespace-nowrap">
+                  <button onclick="deleteLeaveRecord(${l.id}, '${safeStaffName}', '${l.date}')" title="Cancel this leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      const addBtn = document.getElementById('staff-detail-add-leave-btn');
+      if (addBtn) {
+        addBtn.onclick = () => {
+          closeStaffLeaveDetailsModal();
+          openApplyLeaveModal(staffId);
+        };
+      }
+
+      const modalEl = document.getElementById('staff-leave-detail-modal');
+      if (modalEl) modalEl.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeStaffLeaveDetailsModal() {
+      currentLeaveDetailStaffId = null;
+      const modalEl = document.getElementById('staff-leave-detail-modal');
+      if (modalEl) modalEl.classList.add('hidden');
     }
 
   </script>
@@ -6719,6 +7529,62 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
             <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0F172A] hover:bg-slate-800 transition cursor-pointer shadow-sm">Save &amp; Approve</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- STAFF LEAVE DETAILS MODAL -->
+    <div id="staff-leave-detail-modal" onclick="if (event.target === this) closeStaffLeaveDetailsModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
+      <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 relative animate-in fade-in zoom-in duration-150 flex flex-col max-h-[90vh]">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold shadow-2xs">
+              <i data-lucide="calendar" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 id="staff-detail-modal-title" class="font-extrabold text-slate-900 text-base">Staff Leave Details</h3>
+              <p id="staff-detail-modal-subtitle" class="text-xs text-slate-500">Breakdown of leaves taken and reasons</p>
+            </div>
+          </div>
+          <button onclick="closeStaffLeaveDetailsModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Summary Metric Cards -->
+        <div id="staff-detail-modal-metrics" class="grid grid-cols-3 gap-3 my-4">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Leaves Breakdown Table -->
+        <div class="overflow-y-auto flex-1 border border-slate-200 rounded-xl">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-wider border-b border-slate-200 sticky top-0">
+              <tr>
+                <th class="py-2.5 px-3">#</th>
+                <th class="py-2.5 px-3">Leave Date</th>
+                <th class="py-2.5 px-3">Day</th>
+                <th class="py-2.5 px-3">Reason for Leave</th>
+                <th class="py-2.5 px-3">Approved By</th>
+                <th class="py-2.5 px-3 text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody id="staff-detail-modal-tbody" class="divide-y divide-slate-100">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-between pt-4 mt-2 border-t border-slate-100">
+          <button id="staff-detail-add-leave-btn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition cursor-pointer">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Add Leave</span>
+          </button>
+          <button type="button" onclick="closeStaffLeaveDetailsModal()" class="px-5 py-2 rounded-xl text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition cursor-pointer">
+            Close
+          </button>
+        </div>
       </div>
     </div>
 
