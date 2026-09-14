@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mumtaz Pharmacy — Biometric Attendance &amp; Payroll System</title>
+  <link rel="icon" href="data:,">
     <!-- Google Fonts: Plus Jakarta Sans, Inter, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +13,13 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- SheetJS Local with CDN Fallback for Excel (.xlsx) Export -->
+  <script src="/static/xlsx.full.min.js"></script>
+  <script>
+    if (typeof XLSX === 'undefined') {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>');
+    }
+  </script>
   <!-- html2pdf CDN for 1-click Digital PDF Slips -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
@@ -1216,47 +1224,51 @@
         </div>
       </div>
 
-      <!-- REAL-TIME TODAY'S LIVE ACTIVITY FEED (AAJ KI SARGARMIYAN) -->
+      <!-- REAL-TIME TODAY'S LIVE ACTIVITY FEED (AIRY, UNCLUTTERED EXECUTIVE DESIGN) -->
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <!-- HEADER -->
-        <div class="px-5 py-3.5 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-slate-50 to-white">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-xs">
-              <i data-lucide="zap" class="w-4 h-4"></i>
+        <!-- TIER 1: CLEAN HEADER -->
+        <div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-gradient-to-r from-slate-50 to-white">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-[#232272] text-white flex items-center justify-center shadow-xs shrink-0">
+              <i data-lucide="activity" class="w-4.5 h-4.5"></i>
             </div>
             <div>
-              <div class="flex items-center gap-2">
-                <h3 class="text-sm font-extrabold text-slate-900 tracking-tight">Today's Live Activities (آج کی تمام سرگرمیاں)</h3>
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <div class="flex items-center gap-2.5">
+                <h3 class="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">Today's Live Activities</h3>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                   Live Feed
                 </span>
-                <span id="activity-today-badge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                <span id="activity-today-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
                   0 Activities
                 </span>
               </div>
-              <p class="text-[11px] text-slate-500 mt-0.5">Real-time actions: punches, leaves, staff advances, customer credit &amp; salary payouts</p>
+              <p class="text-xs text-slate-500 mt-0.5">Real-time punches, approved leaves, staff advances and customer khata operations</p>
             </div>
           </div>
 
-          <!-- FILTERS & ACTIONS -->
-          <div class="flex items-center gap-2 flex-wrap">
-            <div class="inline-flex rounded-lg bg-slate-100 p-0.5 text-xs font-semibold text-slate-600">
-              <button onclick="filterTodayActivities('ALL')" id="act-filter-ALL" class="px-2.5 py-1 rounded-md bg-white text-slate-900 shadow-2xs font-bold transition cursor-pointer">All</button>
-              <button onclick="filterTodayActivities('ATTENDANCE')" id="act-filter-ATTENDANCE" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition cursor-pointer">Punches</button>
-              <button onclick="filterTodayActivities('LEAVE')" id="act-filter-LEAVE" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition cursor-pointer">Leaves</button>
-              <button onclick="filterTodayActivities('STAFF_KHATA')" id="act-filter-STAFF_KHATA" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition cursor-pointer">Staff Khata</button>
-              <button onclick="filterTodayActivities('CUSTOMER_KHATA')" id="act-filter-CUSTOMER_KHATA" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition cursor-pointer">Customer Khata</button>
-              <button onclick="filterTodayActivities('PAYROLL')" id="act-filter-PAYROLL" class="px-2.5 py-1 rounded-md hover:text-slate-900 transition cursor-pointer">Salaries</button>
+          <!-- FILTERS & ACTIONS (SPACIOUS PILLS) -->
+          <div class="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
+            <div class="inline-flex rounded-xl bg-slate-100/90 p-1 text-xs font-semibold text-slate-600">
+              <button onclick="filterTodayActivities('ALL')" id="act-filter-ALL" class="px-3 py-1.5 rounded-lg bg-white text-slate-900 shadow-2xs font-bold transition cursor-pointer">All</button>
+              <button onclick="filterTodayActivities('ATTENDANCE')" id="act-filter-ATTENDANCE" class="px-3 py-1.5 rounded-lg hover:text-slate-900 transition cursor-pointer">Punches</button>
+              <button onclick="filterTodayActivities('LEAVE')" id="act-filter-LEAVE" class="px-3 py-1.5 rounded-lg hover:text-slate-900 transition cursor-pointer">Leaves</button>
+              <button onclick="filterTodayActivities('STAFF_KHATA')" id="act-filter-STAFF_KHATA" class="px-3 py-1.5 rounded-lg hover:text-slate-900 transition cursor-pointer">Staff Khata</button>
+              <button onclick="filterTodayActivities('CUSTOMER_KHATA')" id="act-filter-CUSTOMER_KHATA" class="px-3 py-1.5 rounded-lg hover:text-slate-900 transition cursor-pointer">Customer Khata</button>
+              <button onclick="filterTodayActivities('PAYROLL')" id="act-filter-PAYROLL" class="px-3 py-1.5 rounded-lg hover:text-slate-900 transition cursor-pointer">Salaries</button>
             </div>
-            <button onclick="loadTodayActivities()" class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition cursor-pointer" title="Refresh activities">
+            <button onclick="loadTodayActivities()" class="p-2 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-2xs transition cursor-pointer" title="Refresh activities">
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
             </button>
           </div>
         </div>
 
-        <!-- ACTIVITY ITEMS FEED CONTAINER -->
-        <div id="today-activity-feed" class="divide-y divide-slate-100 max-h-72 overflow-y-auto p-2 sm:p-3 space-y-1">
+        <!-- TIER 2: DEDICATED SUMMARY COUNT STRIP (AIRY WHITE BADGES ON SOFT SUB-BAR) -->
+        <div id="activity-summary-chips" class="px-5 py-2.5 bg-slate-50/70 border-b border-slate-100 flex items-center gap-2 flex-wrap text-xs font-bold">
+        </div>
+
+        <!-- ACTIVITY ITEMS FEED CONTAINER (EXPANDED & ROOMY) -->
+        <div id="today-activity-feed" class="max-h-[420px] overflow-y-auto p-4 space-y-2.5">
           <!-- Populated dynamically by JS -->
           <div class="text-center py-6 text-slate-400 text-xs font-medium">
             <i data-lucide="activity" class="w-5 h-5 mx-auto text-slate-300 mb-1.5"></i>
@@ -1320,20 +1332,14 @@
 
         <!-- Page Action Buttons -->
         <div class="flex items-center gap-2.5 self-start sm:self-auto">
-          <!-- Secondary: Export -->
-          <button onclick="exportStaffCSV()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Export staff roster as CSV">
-            <i data-lucide="download" class="w-3.5 h-3.5 text-slate-500"></i>
-            <span>Export</span>
-          </button>
-
-          <!-- Secondary: Print -->
-          <button onclick="printStaffDirectory()" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Print staff directory">
-            <i data-lucide="printer" class="w-3.5 h-3.5 text-slate-500"></i>
-            <span>Print</span>
+          <!-- Secondary: Export Excel (High Visibility Solid Button) -->
+          <button onclick="exportStaffExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Export staff roster as Excel spreadsheet (.xlsx)">
+            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-white"></i>
+            <span>Export Excel</span>
           </button>
 
           <!-- Primary: + Add New Staff -->
-          <button onclick="openStaffModal()" class="bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-sm shadow-slate-900/20 transition cursor-pointer">
+          <button onclick="openStaffModal()" class="bg-[#0F172A] hover:bg-slate-800 active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-sm shadow-slate-900/20 transition cursor-pointer">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span>Add New Staff</span>
           </button>
@@ -1439,6 +1445,10 @@
           <p class="text-xs text-slate-500">Official staff leave register, real-time presence, and monthly 2-day quota tracking</p>
         </div>
         <div class="flex items-center gap-2.5 self-start sm:self-auto">
+          <button onclick="exportLeavesExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Export leaves to Excel">
+            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+            <span>Export Excel</span>
+          </button>
           <button onclick="openApplyLeaveModal()" class="bg-[#0F172A] hover:bg-slate-800 active:scale-95 text-white text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-2 shadow-sm transition cursor-pointer">
             <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
             <span>+ Approve New Leave</span>
@@ -1695,18 +1705,24 @@
 
       <!-- CLEAN TOP ACTIONS BAR -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
-        <!-- Left: Quick Utilities -->
-        <div class="flex items-center gap-2">
-          <button onclick="openBatchWhatsAppModal()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer">
-            <i data-lucide="send" class="w-3.5 h-3.5"></i>
-            <span>WhatsApp All</span>
-          </button>
-          <button onclick="openWeeklyKhataReportModal()" class="bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer">
-            <i data-lucide="printer" class="w-3.5 h-3.5 text-slate-500"></i>
+        <!-- Left: Quick Utilities (High-Contrast Authoritative Action Buttons) -->
+        <div class="flex items-center gap-2.5">
+          <!-- Compact Integrated WhatsApp All + Template Button -->
+          <div class="inline-flex rounded-xl shadow-xs">
+            <button onclick="openBatchWhatsAppModal()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-l-xl flex items-center gap-1.5 transition cursor-pointer" title="Send WhatsApp payment reminders to all pending khata customers">
+              <i data-lucide="send" class="w-4 h-4 text-white"></i>
+              <span>WhatsApp All</span>
+            </button>
+            <button onclick="openCustomerWaTemplateModal()" class="bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white px-2.5 py-2 rounded-r-xl border-l border-emerald-500 flex items-center justify-center transition cursor-pointer" title="Edit Customer WhatsApp Reminder Template">
+              <i data-lucide="settings-2" class="w-3.5 h-3.5 text-white"></i>
+            </button>
+          </div>
+          <button onclick="openWeeklyKhataReportModal()" class="bg-[#232272] hover:bg-indigo-900 active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Open and print Weekly Khata Report">
+            <i data-lucide="printer" class="w-4 h-4 text-white"></i>
             <span>Weekly Report</span>
           </button>
-          <button onclick="clearAllSettledCustomerKhata()" title="Delete old settled/cleared records to keep ledger clean" class="bg-slate-50 hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-300 text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5 text-slate-400"></i>
+          <button onclick="clearAllSettledCustomerKhata()" title="Delete old settled/cleared records to keep ledger clean" class="bg-white hover:bg-rose-50 text-rose-700 hover:text-rose-800 border-2 border-rose-300 hover:border-rose-500 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer">
+            <i data-lucide="trash-2" class="w-4 h-4 text-rose-600"></i>
             <span>Clear Settled Records</span>
           </button>
         </div>
@@ -1923,6 +1939,14 @@
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               <span>Recalculate</span>
             </button>
+            <button onclick="exportPayrollExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold py-2 px-3.5 rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Export payroll register to Excel (.xlsx)">
+              <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+              <span>Export Excel</span>
+            </button>
+            <button onclick="openSalaryWaTemplateModal()" class="bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 hover:border-emerald-500 active:scale-95 text-xs font-bold py-2 px-3.5 rounded-xl flex items-center gap-1.5 shadow-2xs transition cursor-pointer" title="Staff Salary WhatsApp payslip message template edit karein">
+              <i data-lucide="message-square-text" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Edit Slip Message</span>
+            </button>
           </div>
         </div>
 
@@ -2065,9 +2089,13 @@
 
         <!-- TOP ACTION BAR (CLEAN & MINIMALIST) -->
         <div class="flex items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
-          <div class="flex items-center gap-2">
-            <button onclick="clearAllSettledStaffKhata()" title="Delete old settled records to save space" class="bg-slate-50 hover:bg-rose-50 text-slate-600 hover:text-rose-700 border border-slate-200 hover:border-rose-300 text-xs font-semibold px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5 text-slate-400"></i>
+          <div class="flex items-center gap-2.5">
+            <button onclick="exportStaffAdvancesExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Export staff advances to Excel">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4 text-white"></i>
+              <span>Export Excel</span>
+            </button>
+            <button onclick="clearAllSettledStaffKhata()" title="Delete old settled records to save space" class="bg-white hover:bg-rose-50 text-rose-700 hover:text-rose-800 border-2 border-rose-300 hover:border-rose-500 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer">
+              <i data-lucide="trash-2" class="w-4 h-4 text-rose-600"></i>
               <span>Clear Settled Records</span>
             </button>
           </div>
@@ -2199,43 +2227,73 @@
 
       </section>
       <section id="view-reports" class="space-y-6 hidden">
-      <!-- HEADER CONTROLLER -->
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div>
-          <h3 class="font-bold text-slate-800 text-base flex items-center gap-2">
-            <i data-lucide="calendar-range" class="w-5 h-5 text-[#232272]"></i>
-            Monthly Attendance Register &amp; Matrix
-          </h3>
-          <p class="text-xs text-slate-500">Day-by-day attendance status across all staff with printable official register</p>
+      <!-- HEADER CONTROLLER: CLEAN, SPACIOUS & PROFESSIONAL 2-TIER DESIGN -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+        <!-- TOP TIER: TITLE & AUDIT BADGE -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-[#232272] text-white flex items-center justify-center shadow-xs shrink-0">
+              <i data-lucide="calendar-range" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-extrabold text-slate-900 text-base sm:text-lg tracking-tight">
+                Monthly Attendance Register &amp; Matrix
+              </h3>
+              <p class="text-xs text-slate-500 mt-0.5">Day-by-day attendance status across all staff with printable official register</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 self-start sm:self-auto">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-600"></i>
+              Official Master Record
+            </span>
+          </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3">
-          <select id="report-month" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-800">
-            <option value="1">January 2026</option>
-            <option value="2">February 2026</option>
-            <option value="3">March 2026</option>
-            <option value="4">April 2026</option>
-            <option value="5">May 2026</option>
-            <option value="6">June 2026</option>
-            <option value="7">July 2026</option>
-            <option value="8">August 2026</option>
-            <option value="9" selected>September 2026 (Current)</option>
-            <option value="10">October 2026</option>
-            <option value="11">November 2026</option>
-            <option value="12">December 2026</option>
-          </select>
-          <select id="report-year" class="bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm font-semibold text-slate-800">
-            <option value="2026" selected>2026</option>
-            <option value="2027">2027</option>
-          </select>
-          <button onclick="loadMonthlyReport()" class="bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-2 shadow">
-            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-            Load Register
-          </button>
-          <button onclick="printMonthlyReport()" class="bg-[#156D38] hover:bg-emerald-800 text-white font-bold py-2 px-4 rounded-lg text-sm flex items-center gap-2 shadow">
-            <i data-lucide="printer" class="w-4 h-4"></i>
-            Print Report
-          </button>
+        <!-- BOTTOM TIER: CONTROLS & EXPORT ACTIONS (UNCLUTTERED & ROOMY) -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3.5">
+          <!-- LEFT GROUP: MONTH & YEAR PICKER + LOAD REGISTER -->
+          <div class="flex flex-wrap items-center gap-2.5">
+            <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200/80">
+              <select id="report-month" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 shadow-2xs focus:ring-2 focus:ring-[#232272]/20 outline-none cursor-pointer">
+                <option value="1">January 2026</option>
+                <option value="2">February 2026</option>
+                <option value="3">March 2026</option>
+                <option value="4">April 2026</option>
+                <option value="5">May 2026</option>
+                <option value="6">June 2026</option>
+                <option value="7">July 2026</option>
+                <option value="8">August 2026</option>
+                <option value="9" selected>September 2026 (Current)</option>
+                <option value="10">October 2026</option>
+                <option value="11">November 2026</option>
+                <option value="12">December 2026</option>
+              </select>
+
+              <select id="report-year" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 shadow-2xs focus:ring-2 focus:ring-[#232272]/20 outline-none cursor-pointer">
+                <option value="2026" selected>2026</option>
+                <option value="2027">2027</option>
+              </select>
+            </div>
+
+            <button onclick="loadMonthlyReport()" class="bg-[#232272] hover:bg-indigo-900 active:scale-95 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-xs transition cursor-pointer" title="Fetch attendance records for selected month">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Load Register</span>
+            </button>
+          </div>
+
+          <!-- RIGHT GROUP: PRINT & EXPORT BUTTONS (PROMINENT & CLEAN) -->
+          <div class="flex items-center gap-2.5 self-start lg:self-auto">
+            <button onclick="exportMonthlyRegisterExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-xs transition cursor-pointer" title="Export monthly register to Excel (.xlsx)">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4 text-white"></i>
+              <span>Export Excel</span>
+            </button>
+
+            <button onclick="printMonthlyReport()" class="bg-white hover:bg-slate-50 active:scale-95 text-slate-700 border border-slate-300 font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-2xs transition cursor-pointer" title="Print Monthly Register (A4 Landscape)">
+              <i data-lucide="printer" class="w-4 h-4 text-slate-500"></i>
+              <span>Print Report</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -2256,7 +2314,6 @@
       <div id="printable-report" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden p-5">
         <div class="mb-4 pb-3 border-b border-slate-200 flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <img src="/logo.jpg" alt="Mumtaz Pharmacy" class="h-9 w-auto">
             <div>
               <h4 class="font-black text-[#232272] text-base leading-tight">MUMTAZ PHARMACY — MONTHLY ATTENDANCE REGISTER</h4>
               <p id="report-period-label" class="text-xs text-slate-500 font-medium">Month: September 2026 • Official Master Record</p>
@@ -2309,7 +2366,6 @@
       <div id="printable-slip" class="p-1 sm:p-2 overflow-y-auto flex-1">
         <div class="flex items-center justify-between pb-2 border-b-2 border-[#232272]">
           <div class="flex items-center space-x-2">
-            <img src="/logo.jpg" alt="Mumtaz Pharmacy" class="h-8 sm:h-9 w-auto">
             <div>
               <h2 class="text-sm sm:text-base font-black text-[#232272] leading-tight">MUMTAZ PHARMACY</h2>
               <p class="text-[9px] sm:text-[10px] text-slate-500 font-semibold">Official Biometric Salary Payslip</p>
@@ -2416,7 +2472,7 @@
 
       <!-- ACTION BUTTONS -->
       <div class="mt-2.5 pt-2 border-t border-slate-100 shrink-0">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <button id="slip-pay-btn" onclick="openDisburseModalFromSlip()" class="bg-[#156D38] hover:bg-emerald-800 text-white py-1.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer">
             <i data-lucide="banknote" class="w-3.5 h-3.5"></i>
             <span>Mark Paid</span>
@@ -2429,10 +2485,7 @@
             <i data-lucide="download" class="w-3.5 h-3.5"></i>
             <span>Download PDF</span>
           </button>
-          <button onclick="printPayslip()" class="bg-[#232272] hover:bg-indigo-950 text-white py-1.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer" title="A4 Printout nikalein">
-            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-            <span>Print Slip</span>
-          </button>
+
         </div>
         <button onclick="closeSlipModal()" class="w-full mt-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer">
           Close
@@ -2495,14 +2548,7 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Assigned Shift *</label>
-            <select id="staff-form-shift" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
-              <option value="1">Morning (09:00 - 17:00)</option>
-              <option value="2">Evening / Night (17:00 - 01:00)</option>
-            </select>
-          </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Joining Date *</label>
             <input type="date" id="staff-form-joining" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
@@ -3183,6 +3229,9 @@
           <button id="btn-ledger-print-parchi" onclick="printParchiForCurrentCustomer()" class="bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 border border-slate-300 shadow-xs cursor-pointer">
             <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print Receipt
           </button>
+          <button onclick="exportCustomerLedgerExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow-xs cursor-pointer" title="Export customer ledger to Excel">
+            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> Export Excel
+          </button>
         </div>
       </div>
 
@@ -3431,6 +3480,7 @@
   </div>
 
   <!-- ================================================================= -->
+  <!-- ========================================================================= -->
   <!-- MODAL: BATCH WHATSAPP REMINDERS LAUNCHER -->
   <!-- ================================================================= -->
   <div id="batch-whatsapp-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
@@ -3439,17 +3489,128 @@
         <i data-lucide="x" class="w-6 h-6"></i>
       </button>
 
-      <div class="flex items-center gap-3 mb-3">
-        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
-          <i data-lucide="send" class="w-5 h-5"></i>
+      <div class="flex items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+            <i data-lucide="send" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-slate-900 tracking-tight">⚡ WhatsApp Reminders to Debtors</h3>
+            <p class="text-xs text-slate-500">Select all kar ke aik sath reminder bhejein ya apni marzi ke customers pick karein</p>
+          </div>
         </div>
-        <div>
-          <h3 class="text-base font-bold text-slate-800">⚡ 1-Click WhatsApp Reminders to Debtors</h3>
-          <p class="text-xs text-slate-500">Send polite balance notification in Urdu to all customers with unpaid credit</p>
+        <button type="button" onclick="openCustomerWaTemplateModal()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-2xs">
+          <i data-lucide="settings-2" class="w-3.5 h-3.5 text-emerald-600"></i>
+          <span>Edit Template</span>
+        </button>
+      </div>
+
+      <!-- BATCH SELECTION & MULTI-SEND ACTION STRIP -->
+      <div id="batch-wa-controls-strip" class="bg-gradient-to-r from-emerald-50 via-teal-50/70 to-slate-50 border border-emerald-200/90 p-3 rounded-2xl mb-3 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-2xs">
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-slate-800 select-none bg-white px-3 py-1.5 rounded-xl border border-emerald-200/80 shadow-2xs hover:bg-emerald-50/50 transition">
+            <input type="checkbox" id="batch-wa-select-all" onchange="toggleSelectAllDebtors(this.checked)" checked class="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer">
+            <span id="batch-wa-selected-count-label" class="font-extrabold text-slate-800">Select All (0 Selected)</span>
+          </label>
+          <button type="button" onclick="selectAllDebtorsQuick(false)" class="text-[11px] font-semibold text-slate-500 hover:text-slate-800 underline cursor-pointer">
+            Deselect All
+          </button>
+          <button type="button" onclick="selectAllDebtorsQuick(true)" class="text-[11px] font-semibold text-emerald-700 hover:text-emerald-900 underline cursor-pointer">
+            Select All
+          </button>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="startBatchWaAutoDispatch()" id="batch-wa-auto-send-btn" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs py-2 px-4 rounded-xl shadow-xs transition flex items-center gap-2 cursor-pointer">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            <span id="batch-wa-send-btn-label">Send to All Selected</span>
+          </button>
         </div>
       </div>
 
-      <div id="batch-whatsapp-list" class="flex-1 overflow-y-auto space-y-3 mt-2 pr-1">
+      <!-- AUTO-DISPATCH QUEUE RUNNER CARD (PREMIUM LIGHT ASSISTANT THEME) -->
+      <div id="batch-wa-runner-box" class="hidden mb-3 p-4 bg-gradient-to-br from-white via-emerald-50/40 to-teal-50/50 rounded-2xl border-2 border-emerald-400 shadow-md space-y-3 shrink-0 transition-all">
+        <!-- Top Bar: Title, Progress Badge & Stop Button -->
+        <div class="flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+              <i data-lucide="zap" class="w-4 h-4 fill-white"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="text-xs font-black uppercase tracking-wider text-emerald-950">WhatsApp Sending Queue</h4>
+                <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Active
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-500 font-medium">Automatic step-by-step reminder assistant</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <div class="bg-white border border-emerald-200 px-3 py-1 rounded-xl shadow-2xs flex items-center gap-1.5">
+              <span class="text-[11px] font-bold text-slate-600">Progress:</span>
+              <span id="batch-runner-progress-label" class="text-xs font-mono font-black text-emerald-700">1 of 5</span>
+              <span id="batch-runner-percent-label" class="text-[11px] font-mono text-slate-400 font-bold">(20%)</span>
+            </div>
+            <button type="button" onclick="stopBatchWaRunner()" class="bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-700 border border-slate-200 hover:border-rose-200 text-xs font-bold px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 cursor-pointer shadow-2xs" title="Queue band karein">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+              <span>Stop</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Animated Progress Bar -->
+        <div class="w-full bg-slate-200/80 rounded-full h-2 overflow-hidden">
+          <div id="batch-runner-progress-bar" class="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-300 ease-out" style="width: 20%"></div>
+        </div>
+
+        <!-- Active Customer Showcase Card -->
+        <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div id="batch-runner-cust-avatar" class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 font-black text-sm flex items-center justify-center shrink-0 border border-emerald-200">
+              C
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span id="batch-runner-cust-name" class="font-extrabold text-slate-900 text-sm truncate">Customer Name</span>
+                <span id="batch-runner-cust-bal-pill" class="text-xs font-mono font-extrabold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md">Rs. 0</span>
+              </div>
+              <div id="batch-runner-cust-meta" class="text-xs text-slate-500 font-mono mt-0.5 flex items-center gap-2 flex-wrap">
+                <span>0300-1234567</span>
+                <span>•</span>
+                <span>0 bills pending</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+            <button type="button" onclick="openCurrentRunnerWa()" class="bg-[#25D366] hover:bg-[#1ebe57] active:scale-95 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition cursor-pointer">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+              <span>Re-Open Chat</span>
+            </button>
+            <button type="button" onclick="advanceBatchRunnerNext()" id="batch-runner-next-btn" class="bg-[#232272] hover:bg-indigo-900 active:scale-95 text-white font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition cursor-pointer">
+              <span>Next Customer</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3-Step Guidance Bar -->
+        <div class="bg-emerald-50/60 border border-emerald-200/70 px-3 py-2 rounded-xl flex flex-wrap items-center justify-between text-[11px] text-slate-600 gap-2">
+          <div class="flex items-center gap-3.5 flex-wrap font-medium">
+            <span class="flex items-center gap-1 font-bold text-emerald-800"><span class="w-4 h-4 rounded-full bg-emerald-200 text-emerald-900 inline-flex items-center justify-center text-[10px]">1</span> WhatsApp Web khula</span>
+            <span class="text-slate-300">➔</span>
+            <span class="flex items-center gap-1 font-bold text-slate-800"><span class="w-4 h-4 rounded-full bg-slate-200 text-slate-700 inline-flex items-center justify-center text-[10px]">2</span> Chat mein Send dabayein</span>
+            <span class="text-slate-300">➔</span>
+            <span class="flex items-center gap-1 font-bold text-indigo-800"><span class="w-4 h-4 rounded-full bg-indigo-200 text-indigo-900 inline-flex items-center justify-center text-[10px]">3</span> Yahan "Next Customer" dabayein</span>
+          </div>
+          <span class="text-[10px] text-slate-400 font-semibold">Fast & Safe Workflow</span>
+        </div>
+      </div>
+
+      <div id="batch-whatsapp-list" class="flex-1 overflow-y-auto space-y-3 mt-1 pr-1">
         <!-- Rendered dynamically -->
       </div>
 
@@ -3462,6 +3623,176 @@
   </div>
 
   <!-- ================================================================= -->
+  
+  <!-- ========================================================================= -->
+  <!-- MODAL: CUSTOMER KHATA WHATSAPP REMINDER TEMPLATE (CUSTOMER ONLY)       -->
+  <!-- ========================================================================= -->
+  <div id="customer-wa-template-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl relative border border-slate-200 max-h-[90vh] flex flex-col">
+      <button onclick="closeCustomerWaTemplateModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 cursor-pointer">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+          <i data-lucide="book-open-check" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Customer Khata — WhatsApp Reminder Template</h3>
+          <p class="text-xs text-slate-500">Admin yahan se reminder message set kare ga, to tamam udhardar customers ko unki details ke sath yahi message jayega.</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 flex-1 overflow-y-auto">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-bold text-slate-700 uppercase">Customer Udhar Reminder Template:</label>
+          <span class="text-[11px] text-slate-400 font-medium">Auto substitution of customer balance</span>
+        </div>
+        <textarea id="wa-template-customer-text" rows="7" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none leading-relaxed shadow-inner"></textarea>
+
+        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+          <div class="text-[11px] font-bold text-slate-600 mb-1.5">Click dynamic tags to insert:</div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="insertCustomerWaTag('{customer_name}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-emerald-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer">{customer_name}</button>
+            <button type="button" onclick="insertCustomerWaTag('{balance}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-emerald-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer">{balance}</button>
+            <button type="button" onclick="insertCustomerWaTag('{pending_invoices}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-emerald-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer">{pending_invoices}</button>
+            <button type="button" onclick="insertCustomerWaTag('{pharmacy_name}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-emerald-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer">{pharmacy_name}</button>
+            <button type="button" onclick="insertCustomerWaTag('{phone}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-emerald-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer">{phone}</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-200 flex items-center justify-between gap-3 mt-3">
+        <button type="button" onclick="resetCustomerWaTemplate()" class="text-xs font-bold text-slate-500 hover:text-rose-600 transition cursor-pointer">
+          Reset Default
+        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closeCustomerWaTemplateModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition cursor-pointer">
+            Cancel
+          </button>
+          <button type="button" onclick="saveCustomerWaTemplate()" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-95 transition shadow-xs cursor-pointer flex items-center gap-1.5">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            <span>Save Template for All Customers</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: STAFF SALARY PAYSLIP WHATSAPP TEMPLATE (STAFF PAYROLL ONLY)          -->
+  <!-- ========================================================================= -->
+  <div id="salary-wa-template-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl relative border border-slate-200 max-h-[90vh] flex flex-col">
+      <button onclick="closeSalaryWaTemplateModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 cursor-pointer">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4 pb-3 border-b border-slate-100">
+        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center shrink-0">
+          <i data-lucide="banknote" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Staff Salary — WhatsApp Payslip Template</h3>
+          <p class="text-xs text-slate-500">Admin yahan se payslip message set kare ga, to tamam staff ko unki monthly salary details ke sath yahi message jayega.</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 flex-1 overflow-y-auto">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-bold text-slate-700 uppercase">Staff Salary Slip Template:</label>
+          <span class="text-[11px] text-slate-400 font-medium">Auto gross, leaves, deductions &amp; net salary</span>
+        </div>
+        <textarea id="wa-template-salary-text" rows="8" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none leading-relaxed shadow-inner"></textarea>
+
+        <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+          <div class="text-[11px] font-bold text-slate-600 mb-1.5">Click dynamic tags to insert:</div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="insertSalaryWaTag('{staff_name}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-indigo-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer">{staff_name}</button>
+            <button type="button" onclick="insertSalaryWaTag('{designation}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-indigo-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer">{designation}</button>
+            <button type="button" onclick="insertSalaryWaTag('{month}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-indigo-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer">{month}</button>
+            <button type="button" onclick="insertSalaryWaTag('{days}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-indigo-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer">{days}</button>
+            <button type="button" onclick="insertSalaryWaTag('{basic_salary}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-indigo-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer" title="Gross Base Salary">{basic_salary}</button>
+            <button type="button" onclick="insertSalaryWaTag('{leave_cut}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-indigo-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer" title="Chuti / Absent Deduction">{leave_cut}</button>
+            <button type="button" onclick="insertSalaryWaTag('{advance_cut}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-indigo-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer" title="Staff Advance / Khata Deduction">{advance_cut}</button>
+            <button type="button" onclick="insertSalaryWaTag('{late_cut}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-indigo-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer" title="Late Arrival Penalty">{late_cut}</button>
+            <button type="button" onclick="insertSalaryWaTag('{total_deductions}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-indigo-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer" title="Kul Deductions">{total_deductions}</button>
+            <button type="button" onclick="insertSalaryWaTag('{net_salary}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-indigo-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer" title="Net Payable Salary">{net_salary}</button>
+            <button type="button" onclick="insertSalaryWaTag('{pharmacy_name}')" class="px-2 py-1 bg-white border border-slate-200 hover:border-indigo-500 rounded text-xs font-mono font-bold text-slate-700 cursor-pointer">{pharmacy_name}</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-200 flex items-center justify-between gap-3 mt-3">
+        <button type="button" onclick="resetSalaryWaTemplate()" class="text-xs font-bold text-slate-500 hover:text-rose-600 transition cursor-pointer">
+          Reset Default
+        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closeSalaryWaTemplateModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition cursor-pointer">
+            Cancel
+          </button>
+          <button type="button" onclick="saveSalaryWaTemplate()" class="px-5 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 active:scale-95 transition shadow-xs cursor-pointer flex items-center gap-1.5">
+            <i data-lucide="check" class="w-3.5 h-3.5"></i>
+            <span>Save Template for All Staff</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PREVIEW & EDIT BEFORE SENDING WHATSAPP MESSAGE                      -->
+  <!-- ========================================================================= -->
+  <div id="single-wa-preview-modal" class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200 max-h-[90vh] flex flex-col">
+      <button onclick="closeSingleWaPreviewModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 cursor-pointer">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-3 pb-3 border-b border-slate-100">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
+          <i data-lucide="send" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 id="wa-preview-modal-title" class="text-base font-extrabold text-slate-900 tracking-tight">Preview &amp; Send WhatsApp Message</h3>
+          <p class="text-xs text-slate-500">Bhejne se pehle message check ya edit karein</p>
+        </div>
+      </div>
+
+      <div class="space-y-3 flex-1 overflow-y-auto">
+        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs">
+          <div>
+            <span class="text-slate-400 text-[10px] block uppercase font-bold">Recipient:</span>
+            <strong id="wa-preview-recipient-name" class="text-slate-800 text-sm">Haji Abdul Rehman</strong>
+          </div>
+          <div>
+            <span class="text-slate-400 text-[10px] block uppercase font-bold">WhatsApp Phone:</span>
+            <input type="text" id="wa-preview-phone-input" class="w-full bg-white border border-slate-300 rounded px-2 py-1 text-xs font-mono font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-bold text-slate-700">Message Content (Editable):</label>
+            <button type="button" onclick="openWaTemplateModalFromPreview()" class="text-[11px] font-bold text-indigo-600 hover:underline cursor-pointer">
+              Edit Master Template for All ⚙️
+            </button>
+          </div>
+          <textarea id="wa-preview-message-text" rows="9" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none leading-relaxed shadow-inner"></textarea>
+        </div>
+      </div>
+
+      <div class="pt-4 border-t border-slate-200 flex items-center justify-between gap-3 mt-3">
+        <button type="button" onclick="closeSingleWaPreviewModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition cursor-pointer">
+          Cancel
+        </button>
+        <button type="button" onclick="executeSendSingleWa()" class="px-5 py-2.5 rounded-xl text-xs font-extrabold text-white bg-[#25D366] hover:bg-[#1ebe57] active:scale-95 transition shadow-sm cursor-pointer flex items-center gap-2">
+          <i data-lucide="send" class="w-4 h-4 text-white"></i>
+          <span>Send via WhatsApp Now</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: PRINTABLE CUSTOMER KHATA PARCHI / STATEMENT -->
   <!-- ================================================================= -->
   <div id="customer-parchi-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
@@ -3548,6 +3879,9 @@
         <button onclick="executePrintCustomerParchi()" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
           <i data-lucide="printer" class="w-4 h-4"></i> Print Statement Receipt
         </button>
+        <button onclick="exportCustomerParchiExcel()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer" title="Export receipt to Excel">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Export Excel
+        </button>
         <button onclick="closeCustomerParchiModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-xs cursor-pointer">
           Close
         </button>
@@ -3607,6 +3941,9 @@
       <div class="flex gap-3 pt-4 border-t border-slate-200 mt-3">
         <button onclick="executePrintWeeklyKhataReport()" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
           <i data-lucide="printer" class="w-4 h-4"></i> Print Weekly Report
+        </button>
+        <button onclick="exportWeeklyKhataExcel()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer" title="Export weekly khata report to Excel">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Export Excel
         </button>
         <button onclick="closeWeeklyKhataReportModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-xs cursor-pointer">
           Close
@@ -4133,16 +4470,44 @@
 
     function renderTodayActivitiesFeed(activities) {
       const container = document.getElementById('today-activity-feed');
+      const chipsContainer = document.getElementById('activity-summary-chips');
       if (!container) return;
+
+      // Update One-Eye Quick Summary Count Strip (Spacious White Badges)
+      if (chipsContainer) {
+        const counts = { ATTENDANCE: 0, LEAVE: 0, STAFF_KHATA: 0, CUSTOMER_KHATA: 0, PAYROLL: 0 };
+        (activities || []).forEach(a => {
+          if (counts[a.category] !== undefined) counts[a.category]++;
+        });
+        chipsContainer.innerHTML = `
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white text-emerald-800 border border-emerald-200/80 shadow-2xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Punches: <span class="font-extrabold">${counts.ATTENDANCE}</span>
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white text-indigo-800 border border-indigo-200/80 shadow-2xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Leaves: <span class="font-extrabold">${counts.LEAVE}</span>
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white text-amber-900 border border-amber-200/80 shadow-2xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span> Staff Khata: <span class="font-extrabold">${counts.STAFF_KHATA}</span>
+          </span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white text-sky-900 border border-sky-200/80 shadow-2xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-sky-500"></span> Customer Credit: <span class="font-extrabold">${counts.CUSTOMER_KHATA}</span>
+          </span>
+          ${counts.PAYROLL > 0 ? `
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white text-teal-900 border border-teal-200/80 shadow-2xs font-semibold">
+              <span class="w-2 h-2 rounded-full bg-teal-500"></span> Salaries: <span class="font-extrabold">${counts.PAYROLL}</span>
+            </span>
+          ` : ''}
+        `;
+      }
 
       if (!activities || activities.length === 0) {
         container.innerHTML = `
-          <div class="text-center py-8 text-slate-400">
-            <div class="w-10 h-10 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
-              <i data-lucide="inbox" class="w-5 h-5"></i>
+          <div class="text-center py-10 text-slate-400">
+            <div class="w-12 h-12 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-2.5">
+              <i data-lucide="inbox" class="w-6 h-6"></i>
             </div>
-            <p class="text-xs font-semibold text-slate-600">Aaj ki koi activity darj nahi hui</p>
-            <p class="text-[11px] text-slate-400 mt-0.5">Biometric punch, leave, staff ya customer khata ki entries foran yahan show hongi.</p>
+            <p class="text-xs font-bold text-slate-700">No operations recorded today</p>
+            <p class="text-[11px] text-slate-400 mt-1">Biometric punches, leaves, staff advances and customer credit will appear here live.</p>
           </div>
         `;
         if (window.lucide) lucide.createIcons();
@@ -4150,83 +4515,77 @@
       }
 
       const html = activities.map(act => {
-        // Styling configuration based on category & action
+        // High-contrast clean accent pillars & uncluttered badges
+        let cardStyle = 'border-l-4 border-l-slate-400 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs hover:shadow-xs';
         let iconName = 'activity';
-        let iconBg = 'bg-slate-100 text-slate-600 border-slate-200';
-        let badgeBg = 'bg-slate-100 text-slate-700 border-slate-200';
-        let badgeText = act.category;
+        let iconBg = 'bg-slate-100 text-slate-600 border border-slate-200';
+        let actionBadge = `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">${act.category}</span>`;
 
         if (act.category === 'ATTENDANCE') {
+          cardStyle = 'border-l-4 border-l-emerald-500 bg-emerald-50/20 hover:bg-emerald-50/50 border border-emerald-200/70 shadow-2xs hover:shadow-xs';
           if (act.action_type === 'PUNCH_IN') {
             iconName = 'log-in';
-            iconBg = 'bg-emerald-100 text-emerald-700 border-emerald-200';
-            badgeBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            badgeText = 'Punch IN';
+            iconBg = 'bg-emerald-600 text-white';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Punch IN</span>';
           } else if (act.action_type === 'PUNCH_OUT') {
             iconName = 'log-out';
-            iconBg = 'bg-sky-100 text-sky-700 border-sky-200';
-            badgeBg = 'bg-sky-50 text-sky-700 border-sky-200';
-            badgeText = 'Punch OUT';
+            iconBg = 'bg-emerald-700 text-white';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-300">Punch OUT</span>';
           } else {
             iconName = 'edit-3';
-            iconBg = 'bg-purple-100 text-purple-700 border-purple-200';
-            badgeBg = 'bg-purple-50 text-purple-700 border-purple-200';
-            badgeText = 'Attendance Edit';
+            iconBg = 'bg-emerald-600 text-white';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Punch Edit</span>';
           }
         } else if (act.category === 'LEAVE') {
+          cardStyle = 'border-l-4 border-l-indigo-500 bg-indigo-50/20 hover:bg-indigo-50/50 border border-indigo-200/70 shadow-2xs hover:shadow-xs';
           iconName = 'calendar-off';
-          iconBg = 'bg-amber-100 text-amber-700 border-amber-200';
-          badgeBg = 'bg-amber-50 text-amber-700 border-amber-200';
+          iconBg = 'bg-indigo-600 text-white';
           if (act.action_type === 'LEAVE_CANCELLED') {
-            badgeText = 'Leave Cancelled';
-            iconBg = 'bg-rose-100 text-rose-700 border-rose-200';
-            badgeBg = 'bg-rose-50 text-rose-700 border-rose-200';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">Leave Cancelled</span>';
           } else if (act.action_type === 'LEAVE_UPDATED') {
-            badgeText = 'Leave Updated';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-300">Leave Updated</span>';
           } else {
-            badgeText = 'Leave Approved';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-300">Leave Approved</span>';
           }
         } else if (act.category === 'STAFF_KHATA') {
+          cardStyle = 'border-l-4 border-l-amber-500 bg-amber-50/20 hover:bg-amber-50/50 border border-amber-200/70 shadow-2xs hover:shadow-xs';
           if (act.action_type === 'ADVANCE_SETTLED') {
             iconName = 'check-circle-2';
-            iconBg = 'bg-emerald-100 text-emerald-700 border-emerald-200';
-            badgeBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            badgeText = 'Khata Settled';
+            iconBg = 'bg-amber-600 text-white';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Khata Settled</span>';
           } else {
             iconName = 'wallet';
-            iconBg = 'bg-rose-100 text-rose-700 border-rose-200';
-            badgeBg = 'bg-rose-50 text-rose-700 border-rose-200';
-            badgeText = 'Staff Advance';
+            iconBg = 'bg-amber-500 text-white';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">Staff Advance</span>';
           }
         } else if (act.category === 'CUSTOMER_KHATA') {
+          cardStyle = 'border-l-4 border-l-sky-500 bg-sky-50/20 hover:bg-sky-50/50 border border-sky-200/70 shadow-2xs hover:shadow-xs';
           if (act.action_type === 'CUSTOMER_SETTLED' || act.action_type === 'CUSTOMER_KHATA_SETTLED') {
             iconName = 'receipt';
-            iconBg = 'bg-teal-100 text-teal-700 border-teal-200';
-            badgeBg = 'bg-teal-50 text-teal-700 border-teal-200';
-            badgeText = 'Baqaya Recovered';
+            iconBg = 'bg-sky-600 text-white';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Baqaya Cleared</span>';
           } else {
             iconName = 'shopping-bag';
-            iconBg = 'bg-cyan-100 text-cyan-700 border-cyan-200';
-            badgeBg = 'bg-cyan-50 text-cyan-700 border-cyan-200';
-            badgeText = 'Customer Credit';
+            iconBg = 'bg-sky-500 text-white';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100 text-sky-900 border border-sky-300">Customer Credit</span>';
           }
         } else if (act.category === 'PAYROLL') {
+          cardStyle = 'border-l-4 border-l-teal-500 bg-teal-50/20 hover:bg-teal-50/50 border border-teal-200/70 shadow-2xs hover:shadow-xs';
           iconName = 'banknote';
-          iconBg = 'bg-emerald-100 text-emerald-700 border-emerald-200';
-          badgeBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-          badgeText = 'Salary Paid';
+          iconBg = 'bg-teal-600 text-white';
+          actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-100 text-teal-800 border border-teal-300">Salary Disbursed</span>';
         } else if (act.category === 'STAFF') {
+          cardStyle = 'border-l-4 border-l-purple-500 bg-purple-50/20 hover:bg-purple-50/50 border border-purple-200/70 shadow-2xs hover:shadow-xs';
           iconName = 'user-plus';
-          iconBg = 'bg-indigo-100 text-indigo-700 border-indigo-200';
-          badgeBg = 'bg-indigo-50 text-indigo-700 border-indigo-200';
-          badgeText = 'New Staff';
+          iconBg = 'bg-purple-600 text-white';
+          actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-300">Staff Update</span>';
         }
 
-        // Amount badge if present
+        // Amount badge if present (Crisp & prominent)
         let amountHtml = '';
         if (act.amount && act.amount > 0) {
           amountHtml = `
-            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold font-mono bg-slate-900 text-white shadow-2xs">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-extrabold font-mono bg-slate-900 text-white shadow-2xs">
               Rs. ${Number(act.amount).toLocaleString()}
             </span>
           `;
@@ -4236,7 +4595,7 @@
         let staffHtml = '';
         if (act.staff_name) {
           staffHtml = `
-            <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md">
+            <span class="inline-flex items-center gap-1 font-semibold text-slate-700 bg-white/90 border border-slate-200 px-2 py-0.5 rounded-md text-[11px] shadow-2xs">
               <i data-lucide="user" class="w-3 h-3 text-slate-400"></i>
               ${act.staff_name}
             </span>
@@ -4255,26 +4614,26 @@
         }
 
         return `
-          <div class="flex items-center justify-between gap-3 p-2.5 rounded-xl hover:bg-slate-50/80 transition-all border border-transparent hover:border-slate-100">
-            <div class="flex items-center gap-3 min-w-0 flex-1">
-              <div class="w-9 h-9 rounded-xl ${iconBg} border flex items-center justify-center shrink-0 shadow-2xs">
-                <i data-lucide="${iconName}" class="w-4 h-4"></i>
+          <div class="flex items-center justify-between gap-3.5 p-3.5 rounded-xl ${cardStyle} transition-all duration-150">
+            <div class="flex items-center gap-3.5 min-w-0 flex-1">
+              <div class="w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center shrink-0 shadow-2xs">
+                <i data-lucide="${iconName}" class="w-4.5 h-4.5"></i>
               </div>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <h4 class="text-xs font-bold text-slate-900 truncate">${act.title}</h4>
-                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${badgeBg}">
-                    ${badgeText}
-                  </span>
+                  <h4 class="text-xs sm:text-sm font-bold text-slate-900 tracking-tight">${act.title}</h4>
+                  ${actionBadge}
                   ${amountHtml}
                 </div>
-                <p class="text-[11px] text-slate-500 truncate mt-0.5">${act.description || ''}</p>
+                <div class="flex items-center gap-2 mt-1 text-xs text-slate-500 font-normal">
+                  ${staffHtml}
+                  ${act.description ? `<span class="truncate text-[11px] text-slate-500 font-medium">${act.description}</span>` : ''}
+                </div>
               </div>
             </div>
             <div class="flex items-center gap-2 shrink-0 text-right">
-              ${staffHtml}
-              <div class="px-2 py-1 rounded-lg bg-slate-50 border border-slate-200/80 text-[11px] font-mono font-bold text-slate-700 flex items-center gap-1">
-                <i data-lucide="clock" class="w-3 h-3 text-slate-400"></i>
+              <div class="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-mono font-bold text-slate-700 flex items-center gap-1.5 shadow-2xs">
+                <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-400"></i>
                 ${timeDisplay}
               </div>
             </div>
@@ -4543,6 +4902,7 @@
                   <span>Pay</span>
                 </button>
               ` : ''}
+
               <button onclick="openSlipModal(${p.staff_id})" class="bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 border border-slate-200 shadow-2xs transition cursor-pointer" title="View official payslip">
                 <i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-500"></i>
                 <span>Slip</span>
@@ -5750,7 +6110,7 @@
         document.getElementById('staff-form-address').value = staff.address || '';
         document.getElementById('staff-form-designation').value = staff.designation || staff.role || '';
         document.getElementById('staff-form-salary').value = staff.monthly_salary || '';
-        document.getElementById('staff-form-shift').value = staff.shift_id || 1;
+        // Assigned Shift removed from form
         document.getElementById('staff-form-joining').value = staff.joining_date || '';
         document.getElementById('staff-form-police').value = (staff.police_report === 1 || staff.police_report === '1' || staff.police_report === 'YES' || staff.police_report === true) ? '1' : '0';
         document.getElementById('staff-form-hours').value = staff.daily_hours || 8.0;
@@ -5764,7 +6124,7 @@
         document.getElementById('staff-form-address').value = '';
         document.getElementById('staff-form-designation').value = '';
         document.getElementById('staff-form-salary').value = '';
-        document.getElementById('staff-form-shift').value = '1';
+        // Assigned Shift removed from form
         document.getElementById('staff-form-joining').value = new Date().toISOString().split('T')[0];
         document.getElementById('staff-form-police').value = '1';
         document.getElementById('staff-form-hours').value = '8';
@@ -5790,7 +6150,7 @@
         address: document.getElementById('staff-form-address').value.trim(),
         designation: document.getElementById('staff-form-designation').value.trim(),
         monthly_salary: parseFloat(document.getElementById('staff-form-salary').value),
-        shift_id: parseInt(document.getElementById('staff-form-shift').value),
+        shift_id: (document.getElementById('staff-form-shift') ? parseInt(document.getElementById('staff-form-shift').value) : 1),
         joining_date: document.getElementById('staff-form-joining').value,
         police_report: parseInt(document.getElementById('staff-form-police').value),
         daily_hours: parseFloat(document.getElementById('staff-form-hours').value) || 8.0,
@@ -6017,91 +6377,22 @@
       const staffId = currentOpenSlipStaffId;
       if (!staffId) return;
 
-      const p = (currentPayrollData || []).find(x => x.staff_id === staffId);
+      const p = (currentPayrollData || []).find(x => Number(x.staff_id) === Number(staffId));
       if (!p) {
         alert("Payroll record nahi mila.");
         return;
       }
+      const staff = (staffList || []).find(s => Number(s.id) === Number(staffId));
+      const rawPhone = (p.phone || (staff ? staff.phone : '') || '').replace(/[^0-9]/g, '');
+      let cleanPhone = rawPhone;
+      if (cleanPhone.startsWith('03') && cleanPhone.length === 11) cleanPhone = '92' + cleanPhone.substring(1);
+      else if (cleanPhone.startsWith('3') && cleanPhone.length === 10) cleanPhone = '92' + cleanPhone;
 
-      const staff = (staffList || []).find(s => s.id === staffId);
-      let rawPhone = (p.phone || (staff ? staff.phone : '') || '').trim();
+      const msg = buildSalaryWaMessage(p, staff);
+      const waUrl = cleanPhone 
+        ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`
+        : `https://wa.me/?text=${encodeURIComponent(msg)}`;
 
-      // Normalize phone number to international WhatsApp format (923xxxxxxxxx)
-      let digits = rawPhone.replace(/[^0-9]/g, '');
-      if (digits.startsWith('03') && digits.length === 11) {
-        digits = '92' + digits.substring(1);
-      } else if (digits.startsWith('3') && digits.length === 10) {
-        digits = '92' + digits;
-      }
-
-      // If missing, prompt the user
-      if (!digits || digits.length < 10) {
-        const inputNum = prompt(`Staff member "${p.staff_name}" ka WhatsApp number enter karein:`, rawPhone || '03');
-        if (!inputNum) return;
-        digits = inputNum.replace(/[^0-9]/g, '');
-        if (digits.startsWith('03') && digits.length === 11) {
-          digits = '92' + digits.substring(1);
-        } else if (digits.startsWith('3') && digits.length === 10) {
-          digits = '92' + digits;
-        }
-      }
-
-      const monthSelect = document.getElementById('payroll-month');
-      const monthName = (monthSelect && monthSelect.selectedOptions && monthSelect.selectedOptions[0])
-        ? monthSelect.selectedOptions[0].text.split(' ')[0]
-        : 'Current Month';
-      const yearVal = document.getElementById('payroll-year')?.value || new Date().getFullYear();
-
-      const lines = [
-        `*🏥 MUMTAZ PHARMACY — SALARY PAYSLIP*`,
-        `━━━━━━━━━━━━━━━━━━━━━━━━━`,
-        `👤 *Staff:* ${p.staff_name}`,
-        `💼 *Role:* ${p.designation || p.role || 'Staff Member'}`,
-        `📅 *Month:* ${monthName} ${yearVal}`,
-        `⏱ *Days:* ${p.days_in_month || 30} Days (${p.daily_hours || 8} hrs/day)`,
-        `━━━━━━━━━━━━━━━━━━━━━━━━━`,
-        `*📊 SALARY CALCULATION BREAKDOWN:*`,
-        `• Gross Salary = Rs. ${(p.basic_salary || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}`
-      ];
-
-      // Itemized deductions
-      const absentCut = parseFloat(p.absent_cut || 0);
-      const extraLeaveCut = parseFloat(p.extra_leave_cut || 0);
-      const extraHalfDayCut = parseFloat(p.extra_half_day_cut || 0);
-      const totalLeavesCut = absentCut + extraLeaveCut + extraHalfDayCut;
-
-      let leaveParts = [];
-      if (p.absent_days && p.absent_days > 0) leaveParts.push(`${p.absent_days} Absent`);
-      if (p.extra_leaves && p.extra_leaves > 0) leaveParts.push(`${p.extra_leaves} Extra Leave`);
-      if (p.extra_half_days && p.extra_half_days > 0) leaveParts.push(`${p.extra_half_days} Extra Half Day`);
-      const leaveDetailStr = leaveParts.length > 0 ? ` (${leaveParts.join(', ')})` : '';
-
-      lines.push(`• Leaves Deduction = -Rs. ${totalLeavesCut.toLocaleString('en-US', {minimumFractionDigits: 2})}${leaveDetailStr}`);
-
-      if (p.short_hours_cut && p.short_hours_cut > 0) {
-        lines.push(`• Short Hours Cut = -Rs. ${parseFloat(p.short_hours_cut).toLocaleString('en-US', {minimumFractionDigits: 2})}`);
-      }
-
-      const advTotal = parseFloat(p.advances_deducted || 0);
-      lines.push(`• Khata Deduction = -Rs. ${advTotal.toLocaleString('en-US', {minimumFractionDigits: 2})}`);
-
-      lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━`);
-      lines.push(`*💰 Net Payable = Rs. ${(p.net_payable || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}*`);
-      
-      if (p.status === 'PAID') {
-        lines.push(``);
-        lines.push(`*✅ STATUS: PAID*`);
-        if (p.paid_at) lines.push(`📅 Paid on: ${p.paid_at} (${p.payment_method || 'Cash'})`);
-      } else {
-        lines.push(``);
-        lines.push(`*⏳ STATUS: PENDING PAYMENT*`);
-      }
-
-      lines.push(`━━━━━━━━━━━━━━━━━━━━━━━━━`);
-      lines.push(`_Mumtaz Pharmacy Biometric Core Payroll_`);
-
-      const fullMessage = encodeURIComponent(lines.join('\n'));
-      const waUrl = digits ? `https://wa.me/${digits}?text=${fullMessage}` : `https://wa.me/?text=${fullMessage}`;
       window.open(waUrl, '_blank');
     }
 
@@ -6413,9 +6704,9 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
                 <button onclick="event.stopPropagation(); openCustomerParchiModal(${c.id})" title="Print Receipt" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer">
                   <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                 </button>
-                <a href="https://wa.me/${waPhone}?text=${waMessage}" target="_blank" onclick="event.stopPropagation()" title="Send WhatsApp Reminder" class="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors cursor-pointer ${hasBalance ? '' : 'opacity-40 pointer-events-none'}">
+                <button type="button" onclick="event.stopPropagation(); sendCustomerDirectWhatsApp(${c.id})" title="Send WhatsApp Reminder" class="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors cursor-pointer shadow-2xs">
                   <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
-                </a>
+                </button>
                 <button onclick="event.stopPropagation(); ${hasBalance ? `quickSettleCustomerMaster(${c.id})` : `openCustomerLedgerModal(${c.id})`}" title="${hasBalance ? 'Wasooli / Settle Baqaya (Full or Partial)' : 'View Khata Book'}" class="p-1.5 rounded-lg ${hasBalance ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'} transition-colors cursor-pointer">
                   <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
                 </button>
@@ -7193,41 +7484,310 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     }
 
     // Batch WhatsApp Reminders Modal
-    function openBatchWhatsAppModal() {
-      const debtors = (allCustomers || []).filter(c => c.current_balance > 0);
-      const container = document.getElementById('batch-whatsapp-list');
-
-      if (!debtors || debtors.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-sm">Alhamdulillah! Kisi customer ka udhar baqaya nahi hai.</div>`;
-      } else {
-        container.innerHTML = debtors.map(c => {
-          const msg = `Assalam-o-Alaikum ${c.name} Sahab!\nMumtaz Pharmacy ki janib se reminder hai ke aap ke Series Khata mein Kul Baqaya Raqam Rs. ${c.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} due hai.\nBaraye meherbani pharmacy par balance clear farma dein. Shukriya!\n— Mumtaz Pharmacy, Model Town, Lahore`;
-          const waLink = c.wa_phone ? `https://wa.me/${c.wa_phone}?text=${encodeURIComponent(msg)}` : '#';
-
-          return `
-            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <div>
-                <div class="font-bold text-slate-800 text-sm">${c.name}</div>
-                <div class="text-xs text-slate-500 font-mono">${c.phone} • ${c.address || 'Lahore'}</div>
-                <div class="text-xs font-bold text-rose-600 mt-0.5">Baqaya: Rs. ${c.current_balance.toLocaleString()} (${c.pending_invoices_count} pending invoices)</div>
-              </div>
-              <div class="flex items-center gap-2">
-                <a href="${waLink}" target="_blank" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-3.5 rounded-lg text-xs flex items-center gap-1.5 shadow cursor-pointer">
-                  <i data-lucide="message-circle" class="w-4 h-4"></i>
-                  <span>Send WhatsApp</span>
-                </a>
-              </div>
-            </div>
-          `;
-        }).join('');
+    async function openBatchWhatsAppModal() {
+      try {
+        if (!allCustomers || allCustomers.length === 0) {
+          if (typeof loadCustomers === 'function') await loadCustomers();
+        }
+        renderBatchDebtorsList();
+        const modal = document.getElementById('batch-whatsapp-modal');
+        if (modal) modal.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+      } catch (err) {
+        console.error("Error opening batch WhatsApp modal:", err);
       }
-
-      document.getElementById('batch-whatsapp-modal').classList.remove('hidden');
-      lucide.createIcons();
     }
 
     function closeBatchWhatsAppModal() {
-      document.getElementById('batch-whatsapp-modal').classList.add('hidden');
+      const modal = document.getElementById('batch-whatsapp-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function getWaCustomerTemplate() {
+      return localStorage.getItem('wa_template_customer_khata') || `Assalam-o-Alaikum {customer_name} Sahab!\nMumtaz Pharmacy ki janib se reminder hai ke aap ke Series Khata mein Kul Baqaya Raqam Rs. {balance} due hai ({pending_invoices} bills).\nBaraye meherbani pharmacy par balance clear farma dein. Shukriya!\n— {pharmacy_name}, Model Town, Lahore`;
+    }
+
+    // Helper: Substitute dynamic customer data into template
+    function buildCustomerWaMessage(c) {
+      if (!c) return '';
+      const tpl = (typeof getWaCustomerTemplate === 'function')
+        ? getWaCustomerTemplate()
+        : 'Assalam-o-Alaikum {customer_name} Sahab! Baqaya: Rs. {balance}.';
+      const currentBal = Number(c.current_balance || 0);
+      const balFormatted = currentBal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const pendingCount = c.pending_invoices_count || c.pending_count || 0;
+      const phone = c.phone || '';
+
+      return tpl
+        .replace(/\{customer_name\}/g, c.name || 'Customer')
+        .replace(/\{balance\}/g, balFormatted)
+        .replace(/\{pending_invoices\}/g, pendingCount)
+        .replace(/\{phone\}/g, phone)
+        .replace(/\{pharmacy_name\}/g, 'Mumtaz Pharmacy');
+    }
+
+    // Helper: Direct 1-Click WhatsApp reminder for a customer
+    function sendCustomerDirectWhatsApp(customerId) {
+      const c = (allCustomers || []).find(x => Number(x.id) === Number(customerId));
+      if (!c) {
+        alert("Customer record nahi mila.");
+        return;
+      }
+      const rawPhone = (c.wa_phone || c.phone || '').replace(/[^0-9]/g, '');
+      let cleanPhone = rawPhone;
+      if (cleanPhone.startsWith('03') && cleanPhone.length === 11) cleanPhone = '92' + cleanPhone.substring(1);
+      else if (cleanPhone.startsWith('3') && cleanPhone.length === 10) cleanPhone = '92' + cleanPhone;
+
+      const msg = buildCustomerWaMessage(c);
+      const waUrl = cleanPhone 
+        ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`
+        : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+      window.open(waUrl, '_blank');
+    }
+
+    let batchSelectedCustomerIds = new Set();
+    let batchDispatchQueue = [];
+    let batchDispatchIndex = 0;
+
+    function renderBatchDebtorsList() {
+      const container = document.getElementById('batch-whatsapp-list');
+      if (!container) return;
+
+      const debtors = (allCustomers || []).filter(c => parseFloat(c.current_balance || 0) > 0);
+
+      if (!debtors || debtors.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-sm font-semibold">Alhamdulillah! Kisi customer ka udhar baqaya nahi hai.</div>`;
+        const countLabel = document.getElementById('batch-wa-selected-count-label');
+        if (countLabel) countLabel.innerText = "0 Selected";
+        const btn = document.getElementById('batch-wa-auto-send-btn');
+        if (btn) btn.disabled = true;
+        return;
+      }
+
+      // Initialize all selected by default
+      if (batchSelectedCustomerIds.size === 0) {
+        debtors.forEach(c => batchSelectedCustomerIds.add(Number(c.id)));
+      }
+
+      container.innerHTML = debtors.map(c => {
+        const msg = buildCustomerWaMessage(c);
+        const rawPhone = (c.wa_phone || c.phone || '').replace(/[^0-9]/g, '');
+        let cleanPhone = rawPhone;
+        if (cleanPhone.startsWith('03') && cleanPhone.length === 11) cleanPhone = '92' + cleanPhone.substring(1);
+        else if (cleanPhone.startsWith('3') && cleanPhone.length === 10) cleanPhone = '92' + cleanPhone;
+
+        const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}` : '#';
+        const isChecked = batchSelectedCustomerIds.has(Number(c.id));
+
+        return `
+          <div id="debtor-row-${c.id}" class="debtor-list-item p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 hover:bg-white transition shadow-2xs">
+            <div class="flex items-start gap-3 min-w-0 flex-1">
+              <input type="checkbox" onchange="toggleDebtorSelection(${c.id}, this.checked)" ${isChecked ? 'checked' : ''} class="debtor-row-check mt-1 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer shrink-0">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-extrabold text-slate-900 text-sm">${c.name}</span>
+                  <span class="text-[11px] font-mono font-bold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-md">Rs. ${parseFloat(c.current_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  <span class="text-[10px] text-slate-400 font-semibold">(${c.pending_invoices_count || 0} bills)</span>
+                  <span id="debtor-status-badge-${c.id}" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-600 uppercase">Pending</span>
+                </div>
+                <div class="text-xs text-slate-500 font-mono mt-0.5">${c.phone || 'No phone'} • ${c.address || 'Lahore'}</div>
+                <div class="text-[11px] text-slate-600 line-clamp-1 italic mt-1 bg-white/80 p-1.5 rounded-lg border border-slate-200/70 font-mono">"${msg.replace(/\n/g, ' ')}"</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <a href="${waLink}" target="_blank" onclick="markDebtorSent(${c.id})" class="bg-[#25D366] hover:bg-[#1ebe57] text-white font-extrabold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer">
+                <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+                <span>Direct WhatsApp</span>
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      updateBatchSelectionCount();
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function toggleSelectAllDebtors(checked) {
+      const debtors = (allCustomers || []).filter(c => parseFloat(c.current_balance || 0) > 0);
+      batchSelectedCustomerIds.clear();
+      if (checked) {
+        debtors.forEach(c => batchSelectedCustomerIds.add(Number(c.id)));
+      }
+      document.querySelectorAll('.debtor-row-check').forEach(cb => {
+        cb.checked = checked;
+      });
+      updateBatchSelectionCount();
+    }
+
+    function selectAllDebtorsQuick(select) {
+      const cb = document.getElementById('batch-wa-select-all');
+      if (cb) cb.checked = select;
+      toggleSelectAllDebtors(select);
+    }
+
+    function toggleDebtorSelection(customerId, checked) {
+      const id = Number(customerId);
+      if (checked) {
+        batchSelectedCustomerIds.add(id);
+      } else {
+        batchSelectedCustomerIds.delete(id);
+      }
+      const debtors = (allCustomers || []).filter(c => parseFloat(c.current_balance || 0) > 0);
+      const allCb = document.getElementById('batch-wa-select-all');
+      if (allCb) allCb.checked = (batchSelectedCustomerIds.size === debtors.length && debtors.length > 0);
+      updateBatchSelectionCount();
+    }
+
+    function updateBatchSelectionCount() {
+      const debtors = (allCustomers || []).filter(c => parseFloat(c.current_balance || 0) > 0);
+      const totalSelected = batchSelectedCustomerIds.size;
+      const countLabel = document.getElementById('batch-wa-selected-count-label');
+      if (countLabel) {
+        countLabel.innerText = `Select All (${totalSelected} / ${debtors.length} Selected)`;
+      }
+      const btn = document.getElementById('batch-wa-auto-send-btn');
+      const btnLabel = document.getElementById('batch-wa-send-btn-label');
+      if (btnLabel) {
+        btnLabel.innerText = totalSelected > 0 ? `Send to ${totalSelected} Selected` : 'Select Customers First';
+      }
+      if (btn) {
+        btn.disabled = (totalSelected === 0);
+        btn.className = (totalSelected > 0)
+          ? "bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs py-2 px-4 rounded-xl shadow-xs transition flex items-center gap-2 cursor-pointer"
+          : "bg-slate-200 text-slate-400 font-extrabold text-xs py-2 px-4 rounded-xl transition flex items-center gap-2 cursor-not-allowed";
+      }
+    }
+
+    function markDebtorSent(customerId) {
+      const badge = document.getElementById(`debtor-status-badge-${customerId}`);
+      if (badge) {
+        badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase flex items-center gap-1";
+        badge.innerHTML = "<span>Sent ✅</span>";
+      }
+      const row = document.getElementById(`debtor-row-${customerId}`);
+      if (row) {
+        row.classList.remove('bg-slate-50');
+        row.classList.add('bg-emerald-50/40', 'border-emerald-200');
+      }
+    }
+
+    // ----------------------------------------------------
+    // Auto-Dispatch Queue Runner
+    // ----------------------------------------------------
+    function startBatchWaAutoDispatch() {
+      const debtors = (allCustomers || []).filter(c => parseFloat(c.current_balance || 0) > 0 && batchSelectedCustomerIds.has(Number(c.id)));
+      if (!debtors || debtors.length === 0) {
+        alert("Baraye meherbani kam az kam aik customer select karein.");
+        return;
+      }
+
+      batchDispatchQueue = debtors;
+      batchDispatchIndex = 0;
+
+      // HIDE the controls strip so there are never two conflicting boxes stacked together!
+      const controlsStrip = document.getElementById('batch-wa-controls-strip');
+      if (controlsStrip) controlsStrip.classList.add('hidden');
+
+      const runnerBox = document.getElementById('batch-wa-runner-box');
+      if (runnerBox) runnerBox.classList.remove('hidden');
+
+      displayCurrentRunnerStep();
+    }
+
+    function displayCurrentRunnerStep() {
+      if (batchDispatchIndex >= batchDispatchQueue.length) {
+        alert("🎉 Zabardast! Tamam selected customers ko reminders process ho chuke hain.");
+        stopBatchWaRunner();
+        return;
+      }
+
+      const total = batchDispatchQueue.length;
+      const currentNum = batchDispatchIndex + 1;
+      const pct = Math.round((currentNum / total) * 100);
+      const c = batchDispatchQueue[batchDispatchIndex];
+
+      const avatarEl = document.getElementById('batch-runner-cust-avatar');
+      const nameEl = document.getElementById('batch-runner-cust-name');
+      const balPillEl = document.getElementById('batch-runner-cust-bal-pill');
+      const metaEl = document.getElementById('batch-runner-cust-meta');
+      const progressLabel = document.getElementById('batch-runner-progress-label');
+      const percentLabel = document.getElementById('batch-runner-percent-label');
+      const progressBar = document.getElementById('batch-runner-progress-bar');
+      const nextBtn = document.getElementById('batch-runner-next-btn');
+
+      if (avatarEl) avatarEl.innerText = (c.name || 'C').trim().charAt(0).toUpperCase();
+      if (nameEl) nameEl.innerText = c.name;
+      if (balPillEl) balPillEl.innerText = `Rs. ${parseFloat(c.current_balance || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      if (metaEl) {
+        metaEl.innerHTML = `<span>${c.phone || 'No phone'}</span> <span>•</span> <span>${c.pending_invoices_count || 0} bills pending</span> <span>•</span> <span>${c.address || 'Lahore'}</span>`;
+      }
+      if (progressLabel) progressLabel.innerText = `${currentNum} of ${total}`;
+      if (percentLabel) percentLabel.innerText = `(${pct}%)`;
+      if (progressBar) progressBar.style.width = `${pct}%`;
+
+      if (nextBtn) {
+        if (currentNum === total) {
+          nextBtn.innerHTML = `<span>Finish Queue</span> <i data-lucide="check" class="w-3.5 h-3.5"></i>`;
+        } else {
+          nextBtn.innerHTML = `<span>Next Customer</span> <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>`;
+        }
+      }
+
+      // Visual active card highlight in the list below
+      document.querySelectorAll('.debtor-list-item').forEach(el => {
+        el.classList.remove('ring-2', 'ring-emerald-500', 'bg-emerald-50/70', 'border-emerald-300');
+      });
+      const row = document.getElementById(`debtor-row-${c.id}`);
+      if (row) {
+        row.classList.add('ring-2', 'ring-emerald-500', 'bg-emerald-50/70', 'border-emerald-300');
+        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // Automatically launch WhatsApp for this customer
+      openCurrentRunnerWa();
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function openCurrentRunnerWa() {
+      if (batchDispatchIndex >= batchDispatchQueue.length) return;
+      const c = batchDispatchQueue[batchDispatchIndex];
+      const msg = buildCustomerWaMessage(c);
+      const rawPhone = (c.wa_phone || c.phone || '').replace(/[^0-9]/g, '');
+      let cleanPhone = rawPhone;
+      if (cleanPhone.startsWith('03') && cleanPhone.length === 11) cleanPhone = '92' + cleanPhone.substring(1);
+      else if (cleanPhone.startsWith('3') && cleanPhone.length === 10) cleanPhone = '92' + cleanPhone;
+
+      markDebtorSent(c.id);
+
+      const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}` : '#';
+      if (waLink !== '#') {
+        window.open(waLink, '_blank');
+      } else {
+        alert(`Customer "${c.name}" ka WhatsApp number dastiyab nahi hai.`);
+      }
+    }
+
+    function advanceBatchRunnerNext() {
+      batchDispatchIndex++;
+      displayCurrentRunnerStep();
+    }
+
+    function stopBatchWaRunner() {
+      batchDispatchQueue = [];
+      batchDispatchIndex = 0;
+      const runnerBox = document.getElementById('batch-wa-runner-box');
+      if (runnerBox) runnerBox.classList.add('hidden');
+      
+      // RESTORE the controls strip when stopped
+      const controlsStrip = document.getElementById('batch-wa-controls-strip');
+      if (controlsStrip) controlsStrip.classList.remove('hidden');
+
+      document.querySelectorAll('.debtor-list-item').forEach(el => {
+        el.classList.remove('ring-2', 'ring-emerald-500', 'bg-emerald-50/70', 'border-emerald-300');
+      });
     }
 
     async function clearAllSettledCustomerKhata() {
@@ -7376,9 +7936,15 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         { id: 'customer-ledger-modal', close: closeCustomerLedgerModal },
         { id: 'customer-modal', close: closeCustomerModal },
         { id: 'settle-customer-khata-modal', close: closeSettleCustomerKhataModal },
+          { id: 'single-wa-preview-modal', close: closeSingleWaPreviewModal },
+          { id: 'customer-wa-template-modal', close: closeCustomerWaTemplateModal },
+          { id: 'salary-wa-template-modal', close: closeSalaryWaTemplateModal },
         { id: 'batch-whatsapp-modal', close: closeBatchWhatsAppModal },
         { id: 'customer-parchi-modal', close: closeCustomerParchiModal },
-        { id: 'weekly-khata-modal', close: closeWeeklyKhataReportModal }
+        { id: 'weekly-khata-modal', close: closeWeeklyKhataReportModal },
+        { id: 'customer-wa-template-modal', close: closeCustomerWaTemplateModal },
+        { id: 'salary-wa-template-modal', close: closeSalaryWaTemplateModal },
+        { id: 'single-wa-preview-modal', close: closeSingleWaPreviewModal }
       ];
       modalList.forEach(m => {
         const el = document.getElementById(m.id);
@@ -7901,6 +8467,8 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       }
     }
 
+    window.returnToStaffLeaveDetailsId = null;
+
     function openEditLeaveModal(leaveId) {
       const leave = (allLeaves || []).find(l => l.id === leaveId);
       if (!leave) return;
@@ -7918,6 +8486,13 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       if (typeInput) typeInput.value = leave.leave_type || 'FULL_DAY';
       if (reasonInput) reasonInput.value = leave.reason || '';
 
+      // Close previous Leave Details modal if opened, saving staff ID to restore
+      if (typeof currentLeaveDetailStaffId !== 'undefined' && currentLeaveDetailStaffId) {
+        window.returnToStaffLeaveDetailsId = currentLeaveDetailStaffId;
+        const detailModalEl = document.getElementById('staff-leave-detail-modal');
+        if (detailModalEl) detailModalEl.classList.add('hidden');
+      }
+
       const modalEl = document.getElementById('edit-leave-modal');
       if (modalEl) modalEl.classList.remove('hidden');
       if (window.lucide) lucide.createIcons();
@@ -7926,6 +8501,13 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     function closeEditLeaveModal() {
       const modalEl = document.getElementById('edit-leave-modal');
       if (modalEl) modalEl.classList.add('hidden');
+
+      // Re-open Leave Details modal smoothly if user came from there
+      if (window.returnToStaffLeaveDetailsId) {
+        const sid = window.returnToStaffLeaveDetailsId;
+        window.returnToStaffLeaveDetailsId = null;
+        openStaffLeaveDetailsModal(sid);
+      }
     }
 
     async function submitEditLeave(e) {
@@ -7947,20 +8529,22 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         });
         const result = await res.json();
         if (res.ok && result.success) {
+          const sidToRestore = window.returnToStaffLeaveDetailsId || currentLeaveDetailStaffId;
+          window.returnToStaffLeaveDetailsId = null;
           closeEditLeaveModal();
           await loadLeaves();
           await loadTodayAttendance();
           if (typeof generatePayroll === 'function') generatePayroll();
-          if (typeof currentLeaveDetailStaffId !== 'undefined' && currentLeaveDetailStaffId) {
-            openStaffLeaveDetailsModal(currentLeaveDetailStaffId);
+          if (sidToRestore) {
+            openStaffLeaveDetailsModal(sidToRestore);
           }
-          alert("Leave record kamyabi se update ho gaya!");
+          alert("Leave record successfully updated!");
         } else {
           alert("Error: " + (result.detail || result.message || "Failed to update leave"));
         }
       } catch (err) {
         console.error("Leave update error", err);
-        alert("Leave update nahi ho saki: " + err.message);
+        alert("Leave update error: " + err.message);
       }
     }
 
@@ -8064,34 +8648,31 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
             return `
               <tr class="hover:bg-slate-50/80 transition-colors">
-                <td class="py-3 px-3 font-mono font-bold text-slate-400 text-xs">#${idx + 1}</td>
-                <td class="py-3 px-3 font-mono font-bold text-slate-900 text-xs whitespace-nowrap">
-                  <div class="flex items-center gap-1.5">
-                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-600"></i>
+                <td class="py-3 px-3 font-mono font-bold text-slate-400 text-xs text-center">#${idx + 1}</td>
+                <td class="py-3 px-3 text-xs">
+                  <div class="flex items-center gap-1.5 font-bold font-mono text-slate-900">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-600 shrink-0"></i>
                     <span>${formattedDate}</span>
                   </div>
+                  <div class="text-[10px] font-semibold text-slate-500 pl-5">${dayName}</div>
                 </td>
-                <td class="py-3 px-3 text-xs whitespace-nowrap">
-                  <span class="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">${dayName}</span>
-                </td>
-                <td class="py-3 px-3 text-xs whitespace-nowrap">
+                <td class="py-3 px-3 text-xs">
                   ${isHalf
-                    ? '<span class="inline-flex items-center gap-1 font-bold text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full"><i data-lucide="clock" class="w-3 h-3 text-amber-600"></i> Half Day (0.5)</span>'
-                    : '<span class="inline-flex items-center gap-1 font-bold text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full"><i data-lucide="sun" class="w-3 h-3 text-indigo-600"></i> Full Day (1.0)</span>'
+                    ? '<span class="inline-flex items-center gap-1 font-bold text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full whitespace-nowrap"><i data-lucide="clock" class="w-3 h-3 text-amber-600"></i> Half Day (0.5)</span>'
+                    : '<span class="inline-flex items-center gap-1 font-bold text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-0.5 rounded-full whitespace-nowrap"><i data-lucide="sun" class="w-3 h-3 text-indigo-600"></i> Full Day (1.0)</span>'
                   }
                 </td>
                 <td class="py-3 px-3 text-xs">
-                  <div class="font-medium text-slate-800 bg-amber-50/50 p-2 rounded-lg border border-amber-100/80 leading-snug">
-                    <i data-lucide="help-circle" class="w-3 h-3 text-amber-600 inline mr-1 -mt-0.5"></i>
+                  <div class="font-medium text-slate-800 bg-amber-50/60 p-2 rounded-lg border border-amber-100/80 leading-snug break-words">
                     ${safeReason}
                   </div>
                 </td>
-                <td class="py-3 px-3 text-xs whitespace-nowrap">
-                  <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <td class="py-3 px-3 text-xs">
+                  <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 whitespace-nowrap">
                     <i data-lucide="check" class="w-3 h-3 text-emerald-600"></i> ${l.approved_by || 'Admin'}
                   </span>
                 </td>
-                <td class="py-3 px-3 text-center whitespace-nowrap">
+                <td class="py-3 px-3 text-center">
                   <div class="inline-flex items-center justify-center gap-1">
                     <button onclick="openEditLeaveModal(${l.id})" title="Edit this leave" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 transition cursor-pointer">
                       <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
@@ -8226,7 +8807,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
     <!-- STAFF LEAVE DETAILS MODAL -->
     <div id="staff-leave-detail-modal" onclick="if (event.target === this) closeStaffLeaveDetailsModal()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
-      <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 relative animate-in fade-in zoom-in duration-150 flex flex-col max-h-[90vh]">
+      <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl border border-slate-200 relative animate-in fade-in zoom-in duration-150 flex flex-col max-h-[90vh]">
         <!-- Header -->
         <div class="flex items-center justify-between pb-4 border-b border-slate-100">
           <div class="flex items-center gap-3">
@@ -8248,18 +8829,17 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           <!-- Populated by JS -->
         </div>
 
-        <!-- Leaves Breakdown Table -->
-        <div class="overflow-y-auto flex-1 border border-slate-200 rounded-xl">
-          <table class="w-full text-left border-collapse text-xs">
+        <!-- Leaves Breakdown Table - ZERO HORIZONTAL SCROLL -->
+        <div class="overflow-y-auto overflow-x-hidden flex-1 border border-slate-200 rounded-xl">
+          <table class="w-full table-fixed text-left border-collapse text-xs">
             <thead class="bg-slate-50 text-slate-500 text-[11px] uppercase font-bold tracking-wider border-b border-slate-200 sticky top-0">
               <tr>
-                <th class="py-2.5 px-3">#</th>
-                <th class="py-2.5 px-3">Leave Date</th>
-                <th class="py-2.5 px-3">Day</th>
-                <th class="py-2.5 px-3">Type</th>
-                <th class="py-2.5 px-3">Reason for Leave</th>
-                <th class="py-2.5 px-3">Approved By</th>
-                <th class="py-2.5 px-3 text-center">Action</th>
+                <th class="py-2.5 px-3 w-[7%] text-center">#</th>
+                <th class="py-2.5 px-3 w-[25%]">Leave Date &amp; Day</th>
+                <th class="py-2.5 px-3 w-[18%]">Type</th>
+                <th class="py-2.5 px-3 w-[30%]">Reason for Leave</th>
+                <th class="py-2.5 px-3 w-[11%]">Approved By</th>
+                <th class="py-2.5 px-3 w-[9%] text-center">Action</th>
               </tr>
             </thead>
             <tbody id="staff-detail-modal-tbody" class="divide-y divide-slate-100">
@@ -8281,6 +8861,584 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       </div>
     </div>
 
+
+    <!-- ========================================================================= -->
+  <!-- UNIVERSAL EXCEL EXPORT ENGINE (SheetJS xlsx.full.min.js)                  -->
+  <!-- ========================================================================= -->
+  <script>
+    // Universal helper to convert data rows to .xlsx and trigger download
+    function downloadExcelWorkbook(rows, sheetName, filename) {
+      if (typeof XLSX === 'undefined') {
+        alert("Spreadsheet library load nahi ho saki. Internet connection check karein ya page reload karein.");
+        return;
+      }
+      if (!rows || rows.length === 0) {
+        alert("Export karne ke liye koi data mojood nahi hai.");
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+
+      // Auto-size columns based on maximum cell lengths
+      const keys = Object.keys(rows[0]);
+      worksheet['!cols'] = keys.map(key => {
+        let maxLen = key.length;
+        rows.forEach(r => {
+          const val = r[key] !== null && r[key] !== undefined ? String(r[key]) : '';
+          if (val.length > maxLen) maxLen = val.length;
+        });
+        return { wch: Math.min(Math.max(maxLen + 4, 10), 45) };
+      });
+
+      const workbook = XLSX.utils.book_new();
+      const safeSheetName = (sheetName || "Report").replace(/[*?:\/\[\]]/g, '').slice(0, 31);
+      XLSX.utils.book_append_sheet(workbook, worksheet, safeSheetName);
+      XLSX.writeFile(workbook, `${filename || 'Mumtaz_Pharmacy_Export'}.xlsx`);
+    }
+
+    // 1. Export Monthly Attendance Register to Excel
+    async function exportMonthlyRegisterExcel() {
+      try {
+        const monthEl = document.getElementById('report-month');
+        const yearEl = document.getElementById('report-year');
+        const month = monthEl ? monthEl.value : (new Date().getMonth() + 1);
+        const year = yearEl ? yearEl.value : new Date().getFullYear();
+
+        const res = await fetch(`/api/attendance/monthly?month=${month}&year=${year}`);
+        const data = await res.json();
+        const daysCount = data.days_in_month || 30;
+        const matrix = data.matrix || [];
+
+        if (matrix.length === 0) {
+          alert("Is mahine ka koi attendance record mojood nahi hai.");
+          return;
+        }
+
+        const rows = matrix.map((row, idx) => {
+          const rowData = {
+            "SR #": idx + 1,
+            "Staff Name": row.name,
+            "Designation": row.designation || 'Staff'
+          };
+
+          for (let d = 1; d <= daysCount; d++) {
+            const st = (row.days && (row.days[d] || row.days[String(d)])) || '—';
+            let mark = '—';
+            if (st === 'ON_TIME' || st === 'PRESENT') mark = 'P';
+            else if (st === 'LATE') mark = 'L';
+            else if (st === 'HALF_DAY') mark = 'HD';
+            else if (st === 'LEAVE') mark = 'LV';
+            else if (st === 'ABSENT') mark = 'A';
+            rowData[`Day ${d}`] = mark;
+          }
+
+          const stats = row.stats || {};
+          rowData["Total Present (P)"] = stats.present !== undefined ? stats.present : 0;
+          rowData["Total Late (L)"] = stats.late !== undefined ? stats.late : 0;
+          rowData["Total Half-Day (HD)"] = stats.half_day !== undefined ? stats.half_day : 0;
+          rowData["Total Leave (LV)"] = stats.leave !== undefined ? stats.leave : 0;
+          rowData["Total Absent (A)"] = stats.absent !== undefined ? stats.absent : 0;
+
+          return rowData;
+        });
+
+        downloadExcelWorkbook(rows, "Attendance Register", `Mumtaz_Pharmacy_Attendance_${year}_${String(month).padStart(2, '0')}`);
+      } catch (err) {
+        console.error("Attendance export error:", err);
+        alert("Attendance register export error: " + err.message);
+      }
+    }
+
+    // 2. Export Monthly Payroll Register to Excel
+    async function exportPayrollExcel() {
+      try {
+        let sheet = currentPayrollData;
+        const monthEl = document.getElementById('payroll-month');
+        const yearEl = document.getElementById('payroll-year');
+        const month = monthEl ? monthEl.value : (new Date().getMonth() + 1);
+        const year = yearEl ? yearEl.value : new Date().getFullYear();
+
+        if (!sheet || sheet.length === 0) {
+          const res = await fetch(`/api/payroll/calculate?month=${month}&year=${year}`);
+          const data = await res.json();
+          sheet = data.sheet || [];
+          currentPayrollData = sheet;
+        }
+
+        if (!sheet || sheet.length === 0) {
+          alert("Payroll records calculate nahi ho sake.");
+          return;
+        }
+
+        const rows = sheet.map((p, idx) => ({
+          "SR #": idx + 1,
+          "Staff Name": p.staff_name || p.name,
+          "Designation": p.designation || p.role || 'Staff',
+          "Base Monthly Salary (Rs)": p.basic_salary || p.base_salary || 0,
+          "Daily Rate (Rs)": Math.round(p.daily_wage || 0),
+          "Present Days": p.present_days || 0,
+          "Late Days": p.late_days || 0,
+          "Late Cut (Rs)": p.late_cut || p.late_penalties || 0,
+          "Approved Leaves": p.leave_days || 0,
+          "Extra Leave Cut (Rs)": p.extra_leave_cut || p.unpaid_leave_deduction || 0,
+          "Absent Days": p.absent_days || 0,
+          "Absent Cut (Rs)": p.absent_cut || 0,
+          "Khata Advance Deductions (Rs)": p.advance_deduction || p.advances_deducted || 0,
+          "Net Payable Salary (Rs)": p.net_salary || 0,
+          "Status": p.status || (p.is_paid ? 'PAID' : 'PENDING'),
+          "Payment Date": p.paid_at || p.paid_date || '—',
+          "Payment Method": p.payment_method || '—'
+        }));
+
+        downloadExcelWorkbook(rows, "Payroll", `Mumtaz_Pharmacy_Payroll_${year}_${String(month).padStart(2, '0')}`);
+      } catch (err) {
+        console.error("Payroll export error:", err);
+        alert("Payroll export error: " + err.message);
+      }
+    }
+
+    // 3. Export Staff Directory to Excel
+    async function exportStaffExcel() {
+      try {
+        let data = staffList;
+        if (!data || data.length === 0) {
+          const res = await fetch('/api/staff');
+          data = await res.json();
+        }
+
+        if (!data || data.length === 0) {
+          alert("Staff records mojood nahi hain.");
+          return;
+        }
+
+        const rows = data.map(s => ({
+          "Staff ID": s.id,
+          "Name": s.name,
+          "Phone": s.phone || '—',
+          "CNIC": s.cnic || '—',
+          "Designation": s.designation || s.role || 'Staff',
+          "Monthly Salary (Rs)": s.monthly_salary || 0,
+          "Daily Hours": s.daily_hours || 8,
+          "Monthly Free Leaves Quota": s.allowed_leaves !== undefined ? s.allowed_leaves : 2,
+          "Joining Date": s.joining_date || '—',
+          "Police Verification": (s.police_report === 1 || s.police_report === '1' || s.police_report === 'YES' || s.police_report === true) ? 'Verified' : 'Pending',
+          "Address": s.address || '—',
+          "Status": s.is_active !== 0 ? 'Active' : 'Inactive'
+        }));
+
+        downloadExcelWorkbook(rows, "Staff Directory", `Mumtaz_Pharmacy_Staff_Directory_${new Date().toISOString().split('T')[0]}`);
+      } catch (err) {
+        console.error("Staff export error:", err);
+        alert("Staff export error: " + err.message);
+      }
+    }
+
+    // 4. Export Customer Khata Weekly Report to Excel
+    async function exportWeeklyKhataExcel() {
+      try {
+        const res = await fetch('/api/customer-khata/weekly-report');
+        const data = await res.json();
+        const debtors = data.debtors || [];
+        if (debtors.length === 0) {
+          alert("Koi active debtor mojood nahi hai.");
+          return;
+        }
+        const rows = debtors.map(d => ({
+          "Customer Name": d.name,
+          "Phone": d.phone || '—',
+          "Address": d.address || '—',
+          "Unpaid Bills Count": d.pending_count,
+          "Total Outstanding Balance (Rs)": d.current_balance,
+          "Audit Period": data.period || '7 Days Audit'
+        }));
+        downloadExcelWorkbook(rows, "Weekly Debtors", `Mumtaz_Pharmacy_Customer_Khata_Weekly_${new Date().toISOString().split('T')[0]}`);
+      } catch (err) {
+        console.error("Weekly report export error:", err);
+        alert("Weekly report export nahi ho saki: " + err.message);
+      }
+    }
+
+    // 5. Export Customer Ledger to Excel
+    async function exportCustomerLedgerExcel() {
+      if (!currentOpenLedgerCustomerId) {
+        alert("Baraye meherbani pehle kisi customer ka ledger open karein.");
+        return;
+      }
+      try {
+        const res = await fetch(`/api/customers/${currentOpenLedgerCustomerId}/ledger`);
+        const data = await res.json();
+        const c = data.customer || {};
+        const entries = data.ledger || [];
+        if (entries.length === 0) {
+          alert("Is customer ka koi ledger record nahi mila.");
+          return;
+        }
+        const rows = entries.map(e => ({
+          "Customer": c.name,
+          "Phone": c.phone || '—',
+          "Date": e.date,
+          "Invoice #": e.invoice_no || '—',
+          "Item Description": e.item_description,
+          "Amount (Rs)": parseFloat(e.amount),
+          "Payment Status": e.is_settled ? 'Paid / Settled' : 'Unpaid / Due',
+          "Settled Date": e.settled_at || '—'
+        }));
+        downloadExcelWorkbook(rows, "Ledger", `Ledger_${(c.name || 'Customer').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}`);
+      } catch (err) {
+        console.error("Customer ledger export error:", err);
+        alert("Customer ledger export error: " + err.message);
+      }
+    }
+
+    // 6. Export Customer Parchi Statement to Excel
+    async function exportCustomerParchiExcel() {
+      if (!currentOpenParchiCustomerId) {
+        alert("Baraye meherbani pehle customer parchi statement open karein.");
+        return;
+      }
+      try {
+        const res = await fetch(`/api/customers/${currentOpenParchiCustomerId}/ledger`);
+        const data = await res.json();
+        const c = data.customer || {};
+        const entries = data.ledger || [];
+        const rows = entries.map(e => ({
+          "Customer Name": c.name,
+          "Phone": c.phone || '—',
+          "Date": e.date,
+          "Invoice #": e.invoice_no || '—',
+          "Description": e.item_description,
+          "Amount (Rs)": parseFloat(e.amount),
+          "Status": e.is_settled ? 'PAID' : 'DUE'
+        }));
+        downloadExcelWorkbook(rows, "Receipt", `Parchi_${(c.name || 'Customer').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}`);
+      } catch (err) {
+        console.error("Parchi export error:", err);
+        alert("Parchi export error: " + err.message);
+      }
+    }
+
+    // 7. Export Approved Leaves Register to Excel
+    async function exportLeavesExcel() {
+      try {
+        let list = allLeaves;
+        if (!list || list.length === 0) {
+          const res = await fetch('/api/leaves');
+          if (res.ok) list = await res.json();
+        }
+        if (!list || list.length === 0) {
+          alert("Koi leave record mojood nahi hai.");
+          return;
+        }
+        const rows = list.map((l, idx) => ({
+          "Record #": idx + 1,
+          "Staff ID": l.staff_id,
+          "Staff Name": l.staff_name || ('Staff #' + l.staff_id),
+          "Designation": l.designation || l.role || 'Staff',
+          "Leave Date": l.date,
+          "Type": l.leave_type === 'HALF_DAY' ? 'Half Day (0.5)' : 'Full Day (1.0)',
+          "Reason for Leave": l.reason || '—',
+          "Approved By": l.approved_by || 'Owner'
+        }));
+        downloadExcelWorkbook(rows, "Leaves Register", `Mumtaz_Pharmacy_Leaves_Register_${new Date().toISOString().split('T')[0]}`);
+      } catch (err) {
+        console.error("Leaves export error:", err);
+        alert("Leaves export error: " + err.message);
+      }
+    }
+
+    // 8. Export Staff Advances Khata to Excel
+    async function exportStaffAdvancesExcel() {
+      try {
+        const res = await fetch('/api/advances');
+        const data = await res.json();
+        const list = Array.isArray(data) ? data : (data.advances || []);
+        if (list.length === 0) {
+          alert("Koi staff khata record nahi mila.");
+          return;
+        }
+        const rows = list.map(a => ({
+          "ID": a.id,
+          "Staff Name": a.staff_name,
+          "Type": a.entry_type === 'MEDICINE_CREDIT' ? 'Medicine Credit' : 'Cash Advance',
+          "Original Amount (Rs)": parseFloat(a.amount || 0),
+          "Remaining Balance (Rs)": parseFloat(a.remaining_amount !== undefined ? a.remaining_amount : a.amount),
+          "Date": a.date || a.created_at,
+          "Reason": a.reason || '—',
+          "Status": a.is_settled ? 'Settled' : 'Pending',
+          "Settled Date": a.settled_at || '—',
+          "Settlement Type": a.settlement_type || '—'
+        }));
+        downloadExcelWorkbook(rows, "Staff Khata", `Mumtaz_Pharmacy_Staff_Khata_${new Date().toISOString().split('T')[0]}`);
+      } catch (err) {
+        console.error("Staff advances export error:", err);
+        alert("Staff advances export error: " + err.message);
+      }
+    }
+
+    // =========================================================================
+    // UNIVERSAL WHATSAPP MESSAGE TEMPLATES & DYNAMIC PLACEHOLDERS ENGINE
+    // =========================================================================
+
+    const DEFAULT_WA_CUSTOMER_TEMPLATE = `Assalam-o-Alaikum {customer_name} Sahab!\nMumtaz Pharmacy ki janib se reminder hai ke aap ke Series Khata mein Kul Baqaya Raqam Rs. {balance} due hai ({pending_invoices} bills).\nBaraye meherbani pharmacy par balance clear farma dein. Shukriya!\n— {pharmacy_name}, Model Town, Lahore`;
+
+    const DEFAULT_WA_SALARY_TEMPLATE = `*🏥 {pharmacy_name} — SALARY PAYSLIP*\n━━━━━━━━━━━━━━━━━━━━━━━━━\n👤 *Staff:* {staff_name}\n💼 *Role:* {designation}\n📅 *Month:* {month}\n⏱ *Duty:* {days} Days ({daily_hours} hrs/day)\n━━━━━━━━━━━━━━━━━━━━━━━━━\n*📊 SALARY CALCULATION BREAKDOWN:*\n• Gross Base Salary = Rs. {basic_salary}\n• Chuti / Leave Cuts = -Rs. {leave_cut}\n• Advance Khata Cuts = -Rs. {advance_cut}\n• Kul Deductions = -Rs. {total_deductions}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n*💰 NET PAYABLE SALARY:*\n*👉 Rs. {net_salary}*\n━━━━━━━━━━━━━━━━━━━━━━━━━\n{pharmacy_name} • Official Computerized Payslip`;
+
+    let currentWaActiveTab = 'customer';
+    let currentPreviewWaData = { phone: '', message: '' };
+
+    function getWaCustomerTemplate() {
+      return localStorage.getItem('wa_template_customer_khata') || DEFAULT_WA_CUSTOMER_TEMPLATE;
+    }
+
+    // Helper: Substitute dynamic customer data into template
+    function buildCustomerWaMessage(c) {
+      if (!c) return '';
+      const tpl = getWaCustomerTemplate();
+      const currentBal = Number(c.current_balance || 0);
+      const balFormatted = currentBal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const pendingCount = c.pending_invoices_count || c.pending_count || 0;
+      const phone = c.phone || '';
+
+      return tpl
+        .replace(/\{customer_name\}/g, c.name || 'Customer')
+        .replace(/\{balance\}/g, balFormatted)
+        .replace(/\{pending_invoices\}/g, pendingCount)
+        .replace(/\{phone\}/g, phone)
+        .replace(/\{pharmacy_name\}/g, 'Mumtaz Pharmacy');
+    }
+
+    function getWaSalaryTemplate() {
+      const saved = localStorage.getItem('wa_template_staff_salary');
+      // If no saved template or if saved template contains old combined line, use new default
+      if (!saved || saved.includes('Deductions (Leaves/Late/Khata)')) return DEFAULT_WA_SALARY_TEMPLATE;
+      return saved;
+    }
+
+    // Helper: Substitute dynamic salary payslip data into template
+    function buildSalaryWaMessage(p, staff) {
+      const tpl = getWaSalaryTemplate();
+      const monthSelect = document.getElementById('payroll-month');
+      const monthName = (monthSelect && monthSelect.selectedOptions && monthSelect.selectedOptions[0])
+        ? monthSelect.selectedOptions[0].text.split(' ')[0]
+        : 'Current Month';
+      const yearVal = document.getElementById('payroll-year')?.value || new Date().getFullYear();
+
+      const basic = Number(p.basic_salary || p.base_salary || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+      const netVal = (p.net_payable !== undefined && p.net_payable !== null) ? p.net_payable : (p.net_salary || 0);
+      const net = Number(netVal).toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+      const absentCut = parseFloat(p.absent_cut || 0);
+      const extraLeaveCut = parseFloat(p.extra_leave_cut || 0);
+      const leaveCutVal = (absentCut + extraLeaveCut);
+      const leaveCut = leaveCutVal.toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+      const advCutVal = parseFloat(p.advance_deduction || p.advances_deducted || 0);
+      const advCut = advCutVal.toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+      const lateCutVal = parseFloat(p.late_cut || p.late_penalties || 0);
+      const lateCut = lateCutVal.toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+      const totalDedVal = (leaveCutVal + advCutVal + lateCutVal);
+      const totalDed = totalDedVal.toLocaleString('en-US', { minimumFractionDigits: 2 });
+
+      return tpl
+        .replace(/\{staff_name\}/g, p.staff_name || p.name || (staff ? staff.name : 'Staff Member'))
+        .replace(/\{designation\}/g, p.designation || p.role || (staff ? (staff.designation || staff.role) : 'Staff'))
+        .replace(/\{month\}/g, `${monthName} ${yearVal}`)
+        .replace(/\{days\}/g, p.days_in_month || 30)
+        .replace(/\{daily_hours\}/g, p.daily_hours || (staff ? staff.daily_hours : 8) || 8)
+        .replace(/\{basic_salary\}/g, basic)
+        .replace(/\{leave_cut\}/g, leaveCut)
+        .replace(/\{leave_deductions\}/g, leaveCut)
+        .replace(/\{advance_cut\}/g, advCut)
+        .replace(/\{advance_deductions\}/g, advCut)
+        .replace(/\{late_cut\}/g, lateCut)
+        .replace(/\{total_deductions\}/g, totalDed)
+        .replace(/\{net_salary\}/g, net)
+        .replace(/\{pharmacy_name\}/g, 'Mumtaz Pharmacy');
+    }
+
+    function openCustomerWaTemplateModal() {
+      const modal = document.getElementById('customer-wa-template-modal');
+      if (!modal) return;
+      const txt = document.getElementById('wa-template-customer-text');
+      if (txt) txt.value = getWaCustomerTemplate();
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeCustomerWaTemplateModal() {
+      const modal = document.getElementById('customer-wa-template-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function insertCustomerWaTag(tag) {
+      insertWaSettingTag(tag, 'wa-template-customer-text');
+    }
+
+    function saveCustomerWaTemplate() {
+      const txt = document.getElementById('wa-template-customer-text');
+      if (!txt) return;
+      const val = txt.value.trim();
+      if (!val) { alert("Customer template khali nahi ho sakta."); return; }
+      localStorage.setItem('wa_template_customer_khata', val);
+      alert("✅ Customer Khata WhatsApp Template save ho gaya! Tamam customers ko yahi message deliver hoga.");
+      closeCustomerWaTemplateModal();
+      if (typeof renderCustomerTable === 'function') renderCustomerTable();
+      if (typeof renderBatchDebtorsList === 'function') renderBatchDebtorsList();
+    }
+
+    function resetCustomerWaTemplate() {
+      if (!confirm("Default Customer message template par wapis jana chahte hain?")) return;
+      localStorage.removeItem('wa_template_customer_khata');
+      const txt = document.getElementById('wa-template-customer-text');
+      if (txt) txt.value = DEFAULT_WA_CUSTOMER_TEMPLATE;
+      alert("Customer default message template restore ho gaya.");
+      if (typeof renderCustomerTable === 'function') renderCustomerTable();
+      if (typeof renderBatchDebtorsList === 'function') renderBatchDebtorsList();
+    }
+
+    // ----------------------------------------------------
+    // Staff Salary WhatsApp Template Handlers (Staff Only)
+    // ----------------------------------------------------
+    function openSalaryWaTemplateModal() {
+      const modal = document.getElementById('salary-wa-template-modal');
+      if (!modal) return;
+      const txt = document.getElementById('wa-template-salary-text');
+      if (txt) txt.value = getWaSalaryTemplate();
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeSalaryWaTemplateModal() {
+      const modal = document.getElementById('salary-wa-template-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function insertSalaryWaTag(tag) {
+      insertWaSettingTag(tag, 'wa-template-salary-text');
+    }
+
+    function saveSalaryWaTemplate() {
+      const txt = document.getElementById('wa-template-salary-text');
+      if (!txt) return;
+      const val = txt.value.trim();
+      if (!val) { alert("Salary slip template khali nahi ho sakta."); return; }
+      localStorage.setItem('wa_template_staff_salary', val);
+      alert("✅ Staff Salary WhatsApp Template save ho gaya! Tamam staff ko yahi payslip message deliver hoga.");
+      closeSalaryWaTemplateModal();
+      if (typeof renderBatchSalaryList === 'function') renderBatchSalaryList();
+    }
+
+    function resetSalaryWaTemplate() {
+      if (!confirm("Default Salary slip message par wapis jana chahte hain?")) return;
+      localStorage.removeItem('wa_template_staff_salary');
+      const txt = document.getElementById('wa-template-salary-text');
+      if (txt) txt.value = DEFAULT_WA_SALARY_TEMPLATE;
+      alert("Salary slip default message template restore ho gaya.");
+      if (typeof renderBatchSalaryList === 'function') renderBatchSalaryList();
+    }
+
+    function openWaTemplateModalFromPreview() {
+      const type = currentPreviewRecipientType;
+      closeSingleWaPreviewModal();
+      if (type === 'customer') {
+        openCustomerWaTemplateModal();
+      } else {
+        openSalaryWaTemplateModal();
+      }
+    }
+
+    function executeSendSingleWa() {
+      const phoneInput = document.getElementById('wa-preview-phone-input').value.trim();
+      const msgText = document.getElementById('wa-preview-message-text').value.trim();
+
+      if (!msgText) { alert("Message khali nahi ho sakta."); return; }
+
+      let digits = phoneInput.replace(/[^0-9]/g, '');
+      if (digits.startsWith('03') && digits.length === 11) digits = '92' + digits.substring(1);
+      else if (digits.startsWith('3') && digits.length === 10) digits = '92' + digits;
+
+      const waUrl = digits 
+        ? `https://wa.me/${digits}?text=${encodeURIComponent(msgText)}`
+        : `https://wa.me/?text=${encodeURIComponent(msgText)}`;
+
+      window.open(waUrl, '_blank');
+      closeSingleWaPreviewModal();
+    }
+
+
+    // ----------------------------------------------------
+    // WhatsApp Single Preview & Dispatch Handlers
+    // ----------------------------------------------------
+    let currentPreviewRecipientType = 'customer';
+    let currentPreviewRecipientId = null;
+
+    function openCustomerWaPreviewModal(customerId) {
+      currentPreviewRecipientType = 'customer';
+      currentPreviewRecipientId = customerId;
+
+      const c = (allCustomers || []).find(x => Number(x.id) === Number(customerId));
+      if (!c) {
+        alert("Customer record nahi mila.");
+        return;
+      }
+
+      const modal = document.getElementById('single-wa-preview-modal');
+      if (!modal) return;
+
+      const titleEl = document.getElementById('wa-preview-modal-title');
+      if (titleEl) titleEl.innerText = "Preview & Send Customer WhatsApp";
+
+      const nameEl = document.getElementById('wa-preview-recipient-name');
+      if (nameEl) nameEl.innerText = c.name || 'Customer';
+
+      const phoneInput = document.getElementById('wa-preview-phone-input');
+      if (phoneInput) phoneInput.value = (c.wa_phone || c.phone || '').trim();
+
+      const msgBox = document.getElementById('wa-preview-message-text');
+      if (msgBox) msgBox.value = buildCustomerWaMessage(c);
+
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function openSalaryWaPreviewModal(staffId) {
+      currentPreviewRecipientType = 'salary';
+      currentPreviewRecipientId = staffId;
+
+      const p = (currentPayrollData || []).find(x => Number(x.staff_id) === Number(staffId));
+      if (!p) {
+        alert("Payroll record nahi mila.");
+        return;
+      }
+      const staff = (staffList || []).find(s => Number(s.id) === Number(staffId));
+      const rawPhone = (p.phone || (staff ? staff.phone : '') || '').trim();
+
+      const modal = document.getElementById('single-wa-preview-modal');
+      if (!modal) return;
+
+      const titleEl = document.getElementById('wa-preview-modal-title');
+      if (titleEl) titleEl.innerText = "Preview & Send Staff Salary Payslip";
+
+      const nameEl = document.getElementById('wa-preview-recipient-name');
+      if (nameEl) nameEl.innerText = p.staff_name || (staff ? staff.name : 'Staff Member');
+
+      const phoneInput = document.getElementById('wa-preview-phone-input');
+      if (phoneInput) phoneInput.value = rawPhone;
+
+      const msgBox = document.getElementById('wa-preview-message-text');
+      if (msgBox) msgBox.value = buildSalaryWaMessage(p);
+
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function closeSingleWaPreviewModal() {
+      const modal = document.getElementById('single-wa-preview-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+  </script>
 </body>
 </html>
-

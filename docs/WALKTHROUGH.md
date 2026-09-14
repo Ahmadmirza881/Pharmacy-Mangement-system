@@ -1,7 +1,5 @@
 # Mumtaz Pharmacy — Biometric Attendance & Payroll System Walkthrough
 
-![Mumtaz Pharmacy Logo](C:\Users\M.Husnain\.gemini\antigravity\brain\794dfdeb-2520-4409-a9a6-c6087e8e241a\mumtaz_pharmacy_logo.jpg)
-
 The standalone **Biometric Staff Attendance & Automated Payroll Management System** for **Mumtaz Pharmacy** has been fully built, tested, and is currently running locally.
 
 ---

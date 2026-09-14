@@ -1,8 +1,6 @@
 # Mumtaz Pharmacy — HR & Payroll Management System
 ## Active Implementation Plan (18 Features) + Standalone Biometric Plan
 
-![Mumtaz Pharmacy Logo](../static/logo.jpg)
-
 ---
 
 ## 1. Executive Summary
