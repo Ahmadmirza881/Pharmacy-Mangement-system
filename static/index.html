@@ -509,12 +509,14 @@
               border: '#E2E8F0',
               blue: '#0284C7',
               rose: '#E11D48',
-              emerald: '#16A34A',
-              purple: '#9333EA',
+              emerald: '#156D38',
+              emeraldhover: '#0E4D27',
+              softemerald: '#E8F5EE',
+              navy: '#0F172A',
               amber: '#D97706',
               teal: '#0D9488',
-              indigo: '#4F46E5',
             }
+          }
           }
         }
       }
@@ -542,8 +544,8 @@
       transform: translateY(-2px);
     }
     #pulse-card-ALL.active-filter {
-      box-shadow: 0 0 0 3px rgba(35, 34, 114, 0.35), 0 4px 12px -2px rgba(35, 34, 114, 0.2);
-      border-color: #232272 !important;
+      box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.35), 0 4px 12px -2px rgba(15, 23, 42, 0.2);
+      border-color: #0F172A !important;
     }
     #pulse-card-PRESENT.active-filter {
       box-shadow: 0 0 0 3px rgba(21, 109, 56, 0.35), 0 4px 12px -2px rgba(21, 109, 56, 0.2);
@@ -642,7 +644,7 @@
         overflow: visible !important;
         margin: 0 auto !important;
         background: white !important;
-        border: 1.5px solid #232272 !important;
+        border: 1.5px solid #156D38 !important;
         border-radius: 8px !important;
         padding: 14px 18px !important;
         box-shadow: none !important;
@@ -912,76 +914,143 @@
   </style>
 <style>
     /* ============================================================ */
-    /* PHARMACY MANAGER SAAS THEME (MATCHING USER SCREENSHOT)       */
+    /* PHARMACY MANAGER SAAS THEME - ULTRA-SMOOTH LUXURY EDITION    */
     /* ============================================================ */
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
-      font-family: 'Inter', sans-serif !important;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
       background-color: #F4F7FC !important;
       color: #1E293B !important;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
     }
+
     h1, h2, h3, h4, .font-heading {
       font-family: 'Plus Jakarta Sans', sans-serif !important;
       letter-spacing: -0.02em;
     }
+
     .font-mono, #live-time, .currency-amount, td.time-cell, .stat-num {
       font-family: 'JetBrains Mono', monospace !important;
       font-variant-numeric: tabular-nums !important;
     }
 
-    /* Print media hiding sidebar & header */
-    @media print {
-      #sidebar, header, .no-print {
-        display: none !important;
-        visibility: hidden !important;
+    /* Silky Smooth Fast View Transitions */
+    @keyframes view-fade-in {
+      0% {
+        opacity: 0.88;
       }
-      body.printing-slip #sidebar,
-      body.printing-slip header,
-      body.printing-slip main,
-      body.printing-slip .flex-1,
-      body.printing-slip > *:not(#slip-modal) {
-        display: none !important;
-        visibility: hidden !important;
+      100% {
+        opacity: 1;
       }
     }
 
-    /* Pulse Card Interactions (Reports Colorful Badges) */
+    .view-tab-animate {
+      animation: view-fade-in 0.12s ease-out forwards;
+    }
+
+    /* Modal Backdrop & Spring Pop Animation */
+    @keyframes modal-pop {
+      0% {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .fixed.inset-0.z-50:not(.hidden),
+    .fixed.inset-0.z-\[60\]:not(.hidden) {
+      backdrop-filter: blur(5px) !important;
+      -webkit-backdrop-filter: blur(5px) !important;
+      background-color: rgba(15, 23, 42, 0.6) !important;
+      transition: all 0.25s ease-out;
+    }
+
+    .fixed.inset-0.z-50 > div,
+    .fixed.inset-0.z-\[60\] > div {
+      animation: modal-pop 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    /* Smooth Micro-Interactions for Buttons & Links */
+    button, a, select, input, textarea {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    /* Glassmorphic Sticky Header */
+    header {
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      background-color: rgba(255, 255, 255, 0.92) !important;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+      transition: all 0.3s ease;
+    }
+
+    /* Silky Table Hover & Row Styling */
+    tbody tr {
+      transition: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    tbody tr:hover {
+      background-color: rgba(241, 245, 249, 0.65) !important;
+    }
+
+    /* Sidebar nav items */
+    aside nav button {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+    aside nav button:hover:not(.bg-\[\#156D38\]) {
+      transform: translateX(3px);
+    }
+
+    /* Pulse Card Interactions */
     .pulse-card {
       cursor: pointer;
       user-select: none;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .pulse-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.03);
     }
     .pulse-card.active-filter {
       transform: translateY(-2px);
     }
     #pulse-card-ALL.active-filter {
-      box-shadow: 0 0 0 2px #0284C7, 0 8px 16px -2px rgba(2, 132, 199, 0.3) !important;
-      border-color: #0284C7 !important;
+      box-shadow: 0 0 0 2px #0F172A, 0 8px 16px -2px rgba(15, 23, 42, 0.25) !important;
+      border-color: #0F172A !important;
     }
     #pulse-card-PRESENT.active-filter {
-      box-shadow: 0 0 0 2px #16A34A, 0 8px 16px -2px rgba(22, 163, 74, 0.3) !important;
-      border-color: #16A34A !important;
+      box-shadow: 0 0 0 2px #156D38, 0 8px 16px -2px rgba(21, 109, 56, 0.25) !important;
+      border-color: #156D38 !important;
     }
     #pulse-card-LATE.active-filter {
-      box-shadow: 0 0 0 2px #D97706, 0 8px 16px -2px rgba(217, 119, 6, 0.3) !important;
+      box-shadow: 0 0 0 2px #D97706, 0 8px 16px -2px rgba(217, 119, 6, 0.25) !important;
       border-color: #D97706 !important;
     }
     #pulse-card-LEAVE.active-filter {
-      box-shadow: 0 0 0 2px #4F46E5, 0 8px 16px -2px rgba(79, 70, 229, 0.3) !important;
-      border-color: #4F46E5 !important;
+      box-shadow: 0 0 0 2px #0284C7, 0 8px 16px -2px rgba(2, 132, 199, 0.25) !important;
+      border-color: #0284C7 !important;
     }
     #pulse-card-ABSENT.active-filter {
-      box-shadow: 0 0 0 2px #E11D48, 0 8px 16px -2px rgba(225, 29, 72, 0.3) !important;
+      box-shadow: 0 0 0 2px #E11D48, 0 8px 16px -2px rgba(225, 29, 72, 0.25) !important;
       border-color: #E11D48 !important;
     }
 
     /* Laser Scanner & Pulse */
     @keyframes scan-sweep {
       0% { top: 6%; opacity: 0.2; }
-      50% { top: 88%; opacity: 1; filter: drop-shadow(0 0 10px #0284c7); }
+      50% { top: 88%; opacity: 1; filter: drop-shadow(0 0 10px #156d38); }
       100% { top: 6%; opacity: 0.2; }
     }
     @keyframes pulse-ring {
@@ -999,7 +1068,7 @@
       height: 6px;
     }
     ::-webkit-scrollbar-track {
-      background: #F1F5F9;
+      background: transparent;
     }
     ::-webkit-scrollbar-thumb {
       background: #CBD5E1;
@@ -1011,7 +1080,7 @@
 </style>
 </head>
 
-<body class="bg-[#F4F7FC] text-slate-800 min-h-screen flex font-sans antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-[#F4F7FC] text-slate-800 min-h-screen flex font-sans antialiased selection:bg-[#156D38] selection:text-white">
 
   <!-- ================================================================= -->
   <!-- 1. LEFT SIDEBAR (DARK ROYAL BLUE / NAVY - MATCHING SCREENSHOT)   -->
@@ -1019,7 +1088,7 @@
   <aside id="sidebar" class="w-64 bg-[#0F172A] text-slate-300 flex-shrink-0 min-h-screen flex flex-col border-r border-slate-800 sticky top-0 h-screen z-40 transition-all duration-300">
     <!-- Brand Header -->
     <div class="p-5 border-b border-slate-800 flex items-center gap-3">
-      <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-lg shadow-sm shadow-emerald-900/30 flex-shrink-0">
+      <div class="w-10 h-10 rounded-xl bg-[#156D38] text-white flex items-center justify-center font-black text-lg shadow-sm shadow-emerald-950/40 flex-shrink-0">
         <i data-lucide="cross" class="w-5 h-5"></i>
       </div>
       <div>
@@ -1031,10 +1100,10 @@
     <!-- Navigation Menu Items (Matching Screenshot) -->
     <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
       <!-- DASHBOARD TAB (ACTIVE BY DEFAULT) -->
-      <button onclick="switchTab('live')" id="side-tab-live" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-white bg-indigo-600 shadow-sm shadow-indigo-900/30 transition-colors cursor-pointer">
+      <button onclick="switchTab('live')" id="side-tab-live" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-white bg-[#156D38] shadow-sm shadow-emerald-950/40 transition-colors cursor-pointer">
         <i data-lucide="layout-dashboard" class="w-4 h-4 text-white"></i>
         <span>Dashboard</span>
-        <span class="ml-auto w-2 h-2 rounded-full bg-emerald-400"></span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
       </button>
 
       <!-- STAFF MANAGEMENT TAB -->
@@ -1118,7 +1187,7 @@
       <!-- Right: Search, Clock, Notifications, Admin Profile -->
       <div class="flex items-center gap-4 sm:gap-5">
         <!-- Add New Pill Button (from screenshot) -->
-        <button onclick="openStaffModal()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-sm shadow-indigo-600/30 flex items-center gap-1.5 transition cursor-pointer">
+        <button onclick="openStaffModal()" class="bg-[#156D38] hover:bg-[#0E4D27] text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-sm shadow-emerald-950/30 flex items-center gap-1.5 transition cursor-pointer">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
           <span>Add New</span>
         </button>
@@ -1135,10 +1204,61 @@
           <div id="live-date" class="text-[10px] text-slate-400 font-medium">Wednesday, 10 Sept 2026</div>
         </div>
 
-        <!-- Notification Bell with Badge (from screenshot) -->
-        <div class="relative text-slate-500 hover:text-slate-700 cursor-pointer p-1">
-          <i data-lucide="bell" class="w-5 h-5"></i>
-          <span class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full"></span>
+        <!-- Notification Bell with Interactive Dropdown & Quick Drawer -->
+        <div class="relative" id="notif-dropdown-wrapper">
+          <button id="notif-bell-btn" onclick="toggleNotificationDropdown(event)" class="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer focus:outline-none" title="Notifications & Quick Operations">
+            <i data-lucide="bell" class="w-5 h-5"></i>
+            <span id="notif-badge-count" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white rounded-full text-[10px] font-black flex items-center justify-center border-2 border-white shadow-xs">0</span>
+          </button>
+
+          <!-- Notification Dropdown Panel -->
+          <div id="notif-dropdown-panel" class="hidden absolute right-0 mt-2.5 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden transform transition-all duration-150 origin-top-right">
+            <!-- Header -->
+            <div class="p-3.5 bg-gradient-to-r from-slate-900 to-[#0F172A] text-white flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-[#156D38] flex items-center justify-center text-white shadow-2xs">
+                  <i data-lucide="bell" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold tracking-tight">System Notifications</h4>
+                  <p class="text-[10px] text-slate-300">Live operational alerts &amp; pending actions</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span id="notif-header-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-500 text-white shadow-2xs">0 New</span>
+                <button onclick="refreshNotificationData(event)" title="Refresh Notifications" class="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Category Filter Pills -->
+            <div class="p-2 bg-slate-50 border-b border-slate-100 flex items-center gap-1 overflow-x-auto text-[11px] font-semibold">
+              <button onclick="filterNotificationList('ALL', event)" id="notif-tab-ALL" class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs font-bold transition cursor-pointer whitespace-nowrap">All</button>
+              <button onclick="filterNotificationList('PUNCH', event)" id="notif-tab-PUNCH" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 transition cursor-pointer whitespace-nowrap flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Punches</button>
+              <button onclick="filterNotificationList('LEAVE', event)" id="notif-tab-LEAVE" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 transition cursor-pointer whitespace-nowrap flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#156D38]"></span>Leaves</button>
+              <button onclick="filterNotificationList('OVERDUE', event)" id="notif-tab-OVERDUE" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 transition cursor-pointer whitespace-nowrap flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Overdue</button>
+            </div>
+
+            <!-- Notification Items Scroll List -->
+            <div id="notif-items-list" class="max-h-[320px] overflow-y-auto divide-y divide-slate-100 p-1">
+              <div class="text-center py-8 text-slate-400 text-xs">
+                <i data-lucide="bell-off" class="w-6 h-6 mx-auto mb-1 text-slate-300"></i>
+                Loading notifications...
+              </div>
+            </div>
+
+            <!-- Footer Action Links -->
+            <div class="p-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
+              <button onclick="openTabFromNotif('live')" class="text-[11px] font-bold text-[#156D38] hover:text-[#0E4D27] flex items-center gap-1 transition cursor-pointer">
+                <span>View Full Activity Stream</span>
+                <i data-lucide="arrow-right" class="w-3 h-3"></i>
+              </button>
+              <button onclick="closeNotificationDropdown()" class="text-[11px] text-slate-400 hover:text-slate-600 transition cursor-pointer">
+                Close
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Admin Profile Pill (from prompt) -->
@@ -1184,13 +1304,13 @@
           </div>
 
           <!-- 2. SOFT MINT GREEN STAT CARD -->
-          <div id="pulse-card-PRESENT" onclick="filterLiveRoster('PRESENT')" class="pulse-card bg-[#DCFCE7] p-4 rounded-2xl border border-emerald-200/80 shadow-xs flex items-center justify-between cursor-pointer" title="Click to filter present staff">
+          <div id="pulse-card-PRESENT" onclick="filterLiveRoster('PRESENT')" class="pulse-card bg-[#ECFDF5] p-4 rounded-2xl border border-emerald-200/80 shadow-xs flex items-center justify-between cursor-pointer" title="Click to filter present staff">
             <div>
-              <div class="w-8 h-8 rounded-full bg-[#16A34A] text-white flex items-center justify-center shadow-sm mb-2">
+              <div class="w-8 h-8 rounded-full bg-[#156D38] text-white flex items-center justify-center shadow-sm mb-2">
                 <i data-lucide="user-check" class="w-4 h-4"></i>
               </div>
               <h3 id="pulse-present" class="text-2xl font-black text-slate-900 tracking-tight">0</h3>
-              <p class="text-xs font-semibold text-emerald-900/80 mt-0.5">Present On-Time</p>
+              <p class="text-xs font-semibold text-emerald-950 mt-0.5">Present On-Time</p>
             </div>
             <i data-lucide="info" class="w-4 h-4 text-emerald-600/50 self-start"></i>
           </div>
@@ -1232,7 +1352,7 @@
         <!-- TIER 1: CLEAN HEADER -->
         <div class="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 bg-gradient-to-r from-slate-50 to-white">
           <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-[#232272] text-white flex items-center justify-center shadow-xs shrink-0">
+            <div class="w-9 h-9 rounded-xl bg-[#156D38] text-white flex items-center justify-center shadow-xs shrink-0">
               <i data-lucide="activity" class="w-4.5 h-4.5"></i>
             </div>
             <div>
@@ -1282,7 +1402,7 @@
 
       <!-- TODAY'S SHIFT ATTENDANCE ROSTER (FULL-WIDTH AUTHORITATIVE LEDGER) -->
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div class="bg-[#0284C7] text-white px-5 py-3.5 flex items-center justify-between font-bold text-xs uppercase tracking-wider">
+        <div class="bg-[#0F172A] text-white px-5 py-3.5 flex items-center justify-between font-bold text-xs uppercase tracking-wider border-b border-slate-800">
           <div class="flex items-center gap-2">
             <i data-lucide="activity" class="w-4 h-4"></i>
             <span>Today's Shift Attendance Roster</span>
@@ -1336,7 +1456,7 @@
         <!-- Page Action Buttons -->
         <div class="flex items-center gap-2.5 self-start sm:self-auto">
           <!-- Secondary: Export Excel (High Visibility Solid Button) -->
-          <button onclick="exportStaffExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Export staff roster as Excel spreadsheet (.xlsx)">
+          <button onclick="exportStaffExcel()" class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Export staff roster as Excel spreadsheet (.xlsx)">
             <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-white"></i>
             <span>Export Excel</span>
           </button>
@@ -1448,7 +1568,7 @@
           <p class="text-xs text-slate-500">Official staff leave register, real-time presence, and monthly 2-day quota tracking</p>
         </div>
         <div class="flex items-center gap-2.5 self-start sm:self-auto">
-          <button onclick="exportLeavesExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Export leaves to Excel">
+          <button onclick="exportLeavesExcel()" class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Export leaves to Excel">
             <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
             <span>Export Excel</span>
           </button>
@@ -1464,10 +1584,10 @@
         <div onclick="switchLeaveSection('monthly-summary')" class="bg-white p-4 rounded-xl border border-slate-200 hover:border-indigo-300 shadow-xs hover:shadow-sm flex items-center justify-between cursor-pointer transition">
           <div>
             <p class="text-xs font-medium text-slate-500">This Month Leaves</p>
-            <h4 id="leaves-kpi-month" class="text-2xl font-black text-indigo-600 tracking-tight mt-0.5">0</h4>
-            <p id="leaves-kpi-month-label" class="text-[11px] font-medium text-indigo-500 mt-0.5">September 2026</p>
+            <h4 id="leaves-kpi-month" class="text-2xl font-black text-[#0F172A] tracking-tight mt-0.5">0</h4>
+            <p id="leaves-kpi-month-label" class="text-[11px] font-medium text-slate-500 mt-0.5">September 2026</p>
           </div>
-          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center border border-emerald-100">
             <i data-lucide="calendar" class="w-5 h-5"></i>
           </div>
         </div>
@@ -1486,7 +1606,7 @@
         <div onclick="switchLeaveSection('on-duty')" class="bg-white p-4 rounded-xl border border-emerald-200 hover:border-emerald-400 shadow-xs hover:shadow-sm flex items-center justify-between cursor-pointer transition">
           <div>
             <p class="text-xs font-medium text-slate-500">On Duty Today</p>
-            <h4 id="leaves-kpi-working" class="text-2xl font-black text-emerald-600 tracking-tight mt-0.5">0</h4>
+            <h4 id="leaves-kpi-working" class="text-2xl font-black text-[#156D38] tracking-tight mt-0.5">0</h4>
             <p class="text-[11px] font-medium text-emerald-600 mt-0.5">Not on leave (Available)</p>
           </div>
           <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
@@ -1521,7 +1641,7 @@
         </button>
 
         <button type="button" onclick="switchLeaveSection('monthly-summary')" id="leave-sec-btn-monthly-summary" class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition text-slate-600 hover:text-slate-900 cursor-pointer whitespace-nowrap">
-          <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-indigo-600"></i>
+          <i data-lucide="bar-chart-2" class="w-3.5 h-3.5 text-[#156D38]"></i>
           <span>Monthly Leaves Summary</span>
         </button>
 
@@ -1613,8 +1733,8 @@
       <div id="leave-section-monthly-summary" class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden hidden">
         <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs shadow-2xs">
-              <i data-lucide="bar-chart-2" class="w-4 h-4 text-indigo-600"></i>
+            <div class="w-8 h-8 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center font-bold text-xs shadow-2xs border border-emerald-100">
+              <i data-lucide="bar-chart-2" class="w-4 h-4 text-[#156D38]"></i>
             </div>
             <div>
               <h4 class="font-bold text-sm text-slate-900">Staff Monthly Leaves Summary (Mahana Leaves Khata)</h4>
@@ -1712,15 +1832,15 @@
         <div class="flex items-center gap-2.5">
           <!-- Compact Integrated WhatsApp All + Template Button -->
           <div class="inline-flex rounded-xl shadow-xs">
-            <button onclick="openBatchWhatsAppModal()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-l-xl flex items-center gap-1.5 transition cursor-pointer" title="Send WhatsApp payment reminders to all pending khata customers">
+            <button onclick="openBatchWhatsAppModal()" class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-l-xl flex items-center gap-1.5 transition cursor-pointer" title="Send WhatsApp payment reminders to all pending khata customers">
               <i data-lucide="send" class="w-4 h-4 text-white"></i>
               <span>WhatsApp All</span>
             </button>
-            <button onclick="openCustomerWaTemplateModal()" class="bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white px-2.5 py-2 rounded-r-xl border-l border-emerald-500 flex items-center justify-center transition cursor-pointer" title="Edit Customer WhatsApp Reminder Template">
+            <button onclick="openCustomerWaTemplateModal()" class="bg-[#0E4D27] hover:bg-[#09351a] active:scale-95 text-white px-2.5 py-2 rounded-r-xl border-l border-emerald-600 flex items-center justify-center transition cursor-pointer" title="Edit Customer WhatsApp Reminder Template">
               <i data-lucide="settings-2" class="w-3.5 h-3.5 text-white"></i>
             </button>
           </div>
-          <button onclick="openWeeklyKhataReportModal()" class="bg-[#232272] hover:bg-indigo-900 active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Open and print Weekly Khata Report">
+          <button onclick="openWeeklyKhataReportModal()" class="bg-[#0F172A] hover:bg-slate-800 active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Open and print Weekly Khata Report">
             <i data-lucide="printer" class="w-4 h-4 text-white"></i>
             <span>Weekly Report</span>
           </button>
@@ -1732,11 +1852,11 @@
 
         <!-- Right: Primary Add Actions -->
         <div class="flex items-center gap-2">
-          <button onclick="openAddCustomerKhataModal()" class="bg-white hover:bg-indigo-50 text-[#232272] border border-indigo-200 hover:border-indigo-300 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-2xs transition cursor-pointer">
-            <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-600"></i>
+          <button onclick="openAddCustomerKhataModal()" class="bg-white hover:bg-emerald-50 text-[#156D38] border border-emerald-200 hover:border-emerald-300 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-2xs transition cursor-pointer">
+            <i data-lucide="plus-circle" class="w-4 h-4 text-[#156D38]"></i>
             <span>+ Add Credit Purchase</span>
           </button>
-          <button onclick="openCustomerModal()" class="bg-[#232272] hover:bg-indigo-900 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm shadow-indigo-950/20 transition cursor-pointer">
+          <button onclick="openCustomerModal()" class="bg-[#156D38] hover:bg-[#0E4D27] text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm shadow-emerald-950/20 transition cursor-pointer">
             <i data-lucide="user-plus" class="w-4 h-4"></i>
             <span>+ New Customer</span>
           </button>
@@ -1774,10 +1894,10 @@
         <div class="bg-white rounded-xl p-4 border border-emerald-200 shadow-xs flex items-center justify-between">
           <div>
             <p class="text-xs font-medium text-slate-500">7-Day Recoveries</p>
-            <h4 id="cust-kpi-week-recovered" class="text-2xl font-black text-emerald-600 tracking-tight mt-0.5">Rs. 0.00</h4>
-            <p class="text-[11px] font-medium text-emerald-600 mt-0.5">Recoveries (Cash Received)</p>
+            <h4 id="cust-kpi-week-recovered" class="text-2xl font-black text-[#156D38] tracking-tight mt-0.5">Rs. 0.00</h4>
+            <p class="text-[11px] font-medium text-[#156D38] mt-0.5">Recoveries (Cash Received)</p>
           </div>
-          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center border border-emerald-100">
             <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
           </div>
         </div>
@@ -1789,7 +1909,7 @@
             <h4 id="cust-kpi-debtors-count" class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">0 Customers</h4>
             <p class="text-[11px] font-medium text-slate-400 mt-0.5">Pending Unpaid Khata</p>
           </div>
-          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center border border-indigo-100">
+          <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center border border-slate-200">
             <i data-lucide="users" class="w-5 h-5"></i>
           </div>
         </div>
@@ -1822,7 +1942,7 @@
               <span class="text-[10px] font-semibold text-slate-400 uppercase block">Total Overdue Balance</span>
               <strong id="header-overdue-total-amount" class="text-sm font-bold text-slate-800 font-mono">Rs. 0.00</strong>
             </div>
-            <button onclick="sendBatchOverdueReminders()" title="Send WhatsApp Reminders to all overdue customers" class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer transition active:scale-95">
+            <button onclick="sendBatchOverdueReminders()" title="Send WhatsApp Reminders to all overdue customers" class="px-3.5 py-2 rounded-lg bg-[#156D38] hover:bg-[#0E4D27] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer transition active:scale-95">
               <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Send WhatsApp to All Overdue
             </button>
           </div>
@@ -1864,7 +1984,7 @@
             <button onclick="setCustomerFilter('all')" id="btn-cust-filter-all" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer transition">
               All (<span id="count-cust-all">0</span>)
             </button>
-            <button onclick="setCustomerFilter('pending')" id="btn-cust-filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#232272] text-white shadow-xs cursor-pointer transition">
+            <button onclick="setCustomerFilter('pending')" id="btn-cust-filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#0F172A] text-white shadow-xs cursor-pointer transition">
               Has Pending Balance (<span id="count-cust-pending">0</span>)
             </button>
             <button onclick="setCustomerFilter('overdue')" id="btn-cust-filter-overdue" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer transition flex items-center gap-1.5">
@@ -1900,7 +2020,7 @@
 
     </section>
 
-      <section id="view-kiosk" class="space-y-6">
+      <section id="view-kiosk" class="space-y-6 hidden">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
         <!-- PUNCH INTERACTIVE TERMINAL -->
@@ -1910,21 +2030,21 @@
             SCANNER ACTIVE • READY FOR PUNCH
           </div>
 
-          <h2 class="text-2xl font-black text-[#232272]">Place Your Thumb on Scanner</h2>
+          <h2 class="text-2xl font-black text-[#0F172A]">Place Your Thumb on Scanner</h2>
           <p class="text-sm text-slate-500 max-w-md mt-1">Scan your thumb when you arrive (Time-IN) and when your shift ends (Time-OUT).</p>
 
           <!-- SCANNER VISUAL BUTTON -->
           <div class="my-8 relative group cursor-pointer" onclick="simulatePunch()">
-            <div class="w-40 h-40 rounded-full bg-indigo-50 border-4 border-[#232272] flex items-center justify-center shadow-inner relative z-10 transition-transform transform active:scale-95">
-              <i data-lucide="fingerprint" class="w-24 h-24 text-[#232272] group-hover:text-[#156D38] transition-colors"></i>
+            <div class="w-40 h-40 rounded-full bg-emerald-50 border-4 border-[#156D38] flex items-center justify-center shadow-inner relative z-10 transition-transform transform active:scale-95">
+              <i data-lucide="fingerprint" class="w-24 h-24 text-[#156D38] group-hover:scale-105 transition-transform"></i>
             </div>
-            <div class="absolute inset-0 rounded-full bg-indigo-200 scanner-pulse -z-0"></div>
+            <div class="absolute inset-0 rounded-full bg-emerald-200/50 scanner-pulse -z-0"></div>
           </div>
 
           <!-- STAFF SELECTION FOR DEMO / USB PUNCH -->
           <div class="w-full max-w-md bg-slate-50 p-4 rounded-xl border border-slate-200 text-left">
             <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Select Staff Member (Scanner Identification)</label>
-            <select id="kiosk-staff-select" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <select id="kiosk-staff-select" class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
               <!-- Populated via API -->
             </select>
 
@@ -1948,7 +2068,7 @@
         <div class="lg:col-span-5 bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col">
           <div class="flex items-center justify-between pb-4 border-b border-slate-100">
             <h3 class="font-bold text-slate-800 flex items-center gap-2">
-              <i data-lucide="history" class="w-5 h-5 text-[#232272]"></i>
+              <i data-lucide="history" class="w-5 h-5 text-[#156D38]"></i>
               Today's Punches Stream
             </h3>
             <span class="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded font-medium">Live Activity</span>
@@ -1997,7 +2117,7 @@
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               <span>Recalculate</span>
             </button>
-            <button onclick="exportPayrollExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold py-2 px-3.5 rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Export payroll register to Excel (.xlsx)">
+            <button onclick="exportPayrollExcel()" class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white text-xs font-bold py-2 px-3.5 rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Export payroll register to Excel (.xlsx)">
               <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
               <span>Export Excel</span>
             </button>
@@ -2013,10 +2133,10 @@
           <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex items-center justify-between">
             <div>
               <span class="text-xs text-slate-500 font-semibold">Total Net Payable</span>
-              <h4 id="summary-net" class="text-2xl font-black text-emerald-600 mt-0.5 tracking-tight">Rs. 0</h4>
+              <h4 id="summary-net" class="text-2xl font-black text-[#156D38] mt-0.5 tracking-tight">Rs. 0</h4>
               <p class="text-[11px] text-slate-400 font-medium">Final net salary amount</p>
             </div>
-            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center border border-emerald-100">
               <i data-lucide="banknote" class="w-5 h-5"></i>
             </div>
           </div>
@@ -2148,7 +2268,7 @@
         <!-- TOP ACTION BAR (CLEAN & MINIMALIST) -->
         <div class="flex items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
           <div class="flex items-center gap-2.5">
-            <button onclick="exportStaffAdvancesExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Export staff advances to Excel">
+            <button onclick="exportStaffAdvancesExcel()" class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition cursor-pointer" title="Export staff advances to Excel">
               <i data-lucide="file-spreadsheet" class="w-4 h-4 text-white"></i>
               <span>Export Excel</span>
             </button>
@@ -2159,7 +2279,7 @@
           </div>
 
           <div class="flex items-center gap-2">
-            <button onclick="openRecordAdvanceModal()" class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm shadow-emerald-900/20 transition cursor-pointer">
+            <button onclick="openRecordAdvanceModal()" class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm shadow-emerald-950/20 transition cursor-pointer">
               <i data-lucide="plus-circle" class="w-4 h-4"></i>
               <span>+ Record Khata Entry</span>
             </button>
@@ -2187,13 +2307,13 @@
           <!-- KPI 2: ACTIVE STAFF IN KHATA -->
           <div class="bg-white rounded-xl px-4 py-3 border border-slate-200/90 shadow-2xs flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg bg-indigo-50 text-[#232272] flex items-center justify-center flex-shrink-0 border border-indigo-100/80">
+              <div class="w-9 h-9 rounded-lg bg-slate-100 text-[#0F172A] flex items-center justify-center flex-shrink-0 border border-slate-200">
                 <i data-lucide="users" class="w-4.5 h-4.5"></i>
               </div>
               <div>
                 <p class="text-xs font-semibold text-slate-400 leading-tight">Staff with Active Khata</p>
                 <div class="flex items-baseline gap-2 mt-0.5">
-                  <h4 id="adv-kpi-staff-count" class="text-base font-black text-[#232272] tracking-tight">0 Staff</h4>
+                  <h4 id="adv-kpi-staff-count" class="text-base font-black text-[#0F172A] tracking-tight">0 Staff</h4>
                   <span class="text-xs text-slate-400 font-medium">with pending balance</span>
                 </div>
               </div>
@@ -2209,7 +2329,7 @@
             
             <!-- SEGMENTED TABS (SLEEK PILL SWITCH) -->
             <div class="inline-flex p-1 bg-slate-200/70 rounded-xl w-full sm:w-auto">
-              <button onclick="setAdvanceStatusFilter('pending')" id="btn-adv-filter-pending" class="flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-[#232272] text-white shadow-xs">
+              <button onclick="setAdvanceStatusFilter('pending')" id="btn-adv-filter-pending" class="flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-[#0F172A] text-white shadow-xs">
                 <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
                 <span>Pending</span>
                 <span id="adv-tab-pending-count" class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20">0</span>
@@ -2231,7 +2351,7 @@
                      id="adv-search-input" 
                      oninput="handleAdvanceFilterChange()" 
                      placeholder="Search staff, reason, medicine..." 
-                     class="w-full pl-9 pr-8 py-2 bg-white border border-slate-200 hover:border-slate-300 focus:border-[#232272] rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#232272]/15 transition shadow-2xs">
+                     class="w-full pl-9 pr-8 py-2 bg-white border border-slate-200 hover:border-slate-300 focus:border-[#156D38] rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#156D38]/15 transition shadow-2xs">
               <button type="button" 
                       id="adv-search-clear" 
                       onclick="clearAdvanceSearch()" 
@@ -2290,7 +2410,7 @@
         <!-- TOP TIER: TITLE & AUDIT BADGE -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-slate-100">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-[#232272] text-white flex items-center justify-center shadow-xs shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-[#0F172A] text-white flex items-center justify-center shadow-xs shrink-0">
               <i data-lucide="calendar-range" class="w-5 h-5"></i>
             </div>
             <div>
@@ -2313,7 +2433,7 @@
           <!-- LEFT GROUP: MONTH & YEAR PICKER + LOAD REGISTER -->
           <div class="flex flex-wrap items-center gap-2.5">
             <div class="flex items-center gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200/80">
-              <select id="report-month" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 shadow-2xs focus:ring-2 focus:ring-[#232272]/20 outline-none cursor-pointer">
+              <select id="report-month" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 shadow-2xs focus:ring-2 focus:ring-[#156D38]/20 outline-none cursor-pointer">
                 <option value="1">January 2026</option>
                 <option value="2">February 2026</option>
                 <option value="3">March 2026</option>
@@ -2328,13 +2448,13 @@
                 <option value="12">December 2026</option>
               </select>
 
-              <select id="report-year" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 shadow-2xs focus:ring-2 focus:ring-[#232272]/20 outline-none cursor-pointer">
+              <select id="report-year" class="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-800 shadow-2xs focus:ring-2 focus:ring-[#156D38]/20 outline-none cursor-pointer">
                 <option value="2026" selected>2026</option>
                 <option value="2027">2027</option>
               </select>
             </div>
 
-            <button onclick="loadMonthlyReport()" class="bg-[#232272] hover:bg-indigo-900 active:scale-95 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-xs transition cursor-pointer" title="Fetch attendance records for selected month">
+            <button onclick="loadMonthlyReport()" class="bg-[#0F172A] hover:bg-slate-800 active:scale-95 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-xs transition cursor-pointer" title="Fetch attendance records for selected month">
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               <span>Load Register</span>
             </button>
@@ -2342,7 +2462,7 @@
 
           <!-- RIGHT GROUP: PRINT & EXPORT BUTTONS (PROMINENT & CLEAN) -->
           <div class="flex items-center gap-2.5 self-start lg:self-auto">
-            <button onclick="exportMonthlyRegisterExcel()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-xs transition cursor-pointer" title="Export monthly register to Excel (.xlsx)">
+            <button onclick="exportMonthlyRegisterExcel()" class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center gap-2 shadow-xs transition cursor-pointer" title="Export monthly register to Excel (.xlsx)">
               <i data-lucide="file-spreadsheet" class="w-4 h-4 text-white"></i>
               <span>Export Excel</span>
             </button>
@@ -2373,7 +2493,7 @@
         <div class="mb-4 pb-3 border-b border-slate-200 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div>
-              <h4 class="font-black text-[#232272] text-base leading-tight">MUMTAZ PHARMACY — MONTHLY ATTENDANCE REGISTER</h4>
+              <h4 class="font-black text-[#0F172A] text-base leading-tight">MUMTAZ PHARMACY — MONTHLY ATTENDANCE REGISTER</h4>
               <p id="report-period-label" class="text-xs text-slate-500 font-medium">Month: September 2026 • Official Master Record</p>
             </div>
           </div>
@@ -2426,11 +2546,11 @@
         <!-- HEADER -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-3 pr-12">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-[#232272] border border-indigo-100 flex items-center justify-center font-bold shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] border border-emerald-100 flex items-center justify-center font-bold shrink-0">
               <i data-lucide="file-badge-2" class="w-5 h-5"></i>
             </div>
             <div>
-              <h2 class="text-base font-black text-[#232272] tracking-wide leading-tight">MUMTAZ PHARMACY</h2>
+              <h2 class="text-base font-black text-[#0F172A] tracking-wide leading-tight">MUMTAZ PHARMACY</h2>
               <p class="text-xs text-slate-500 font-medium mt-0.5">Official Biometric Salary Payslip</p>
             </div>
           </div>
@@ -2524,7 +2644,7 @@
               <!-- Itemized Khata Advances if present -->
               <tr id="slip-advances-details-row" class="hidden text-xs text-slate-600 bg-slate-50">
                 <td colspan="2" class="py-2 px-3.5 border-t border-slate-200">
-                  <div class="font-bold text-[10px] text-[#232272] mb-1 flex items-center justify-between">
+                  <div class="font-bold text-[10px] text-[#156D38] mb-1 flex items-center justify-between">
                     <span>Itemized Khata Deductions:</span>
                     <span class="text-[9px] text-slate-400 font-normal">Auto-deducted from salary</span>
                   </div>
@@ -2564,12 +2684,12 @@
           Close
         </button>
         <button onclick="downloadPayslipPDF()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="Download slip as PDF file">
-          <i data-lucide="download" class="w-3.5 h-3.5 text-indigo-600"></i> Download PDF
+          <i data-lucide="download" class="w-3.5 h-3.5 text-[#156D38]"></i> Download PDF
         </button>
-        <button onclick="sendPayslipWhatsApp()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition" title="Send digital slip to staff via WhatsApp">
+        <button onclick="sendPayslipWhatsApp()" class="px-4 py-2 rounded-lg bg-[#156D38] hover:bg-[#0E4D27] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition" title="Send digital slip to staff via WhatsApp">
           <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
         </button>
-        <button id="slip-pay-btn" onclick="openDisburseModalFromSlip()" class="px-4 py-2 rounded-lg bg-[#156D38] hover:bg-[#12582d] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition">
+        <button id="slip-pay-btn" onclick="openDisburseModalFromSlip()" class="px-4 py-2 rounded-lg bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition">
           <i data-lucide="banknote" class="w-3.5 h-3.5"></i> Mark Paid
         </button>
       </div>
@@ -2586,7 +2706,7 @@
       </button>
 
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-[#232272] flex items-center justify-center">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center border border-emerald-100">
           <i data-lucide="user-check" class="w-5 h-5"></i>
         </div>
         <div>
@@ -2600,44 +2720,44 @@
         
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Full Name *</label>
-          <input type="text" id="staff-form-name" required placeholder="e.g. Muhammad Kashif" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <input type="text" id="staff-form-name" required placeholder="e.g. Muhammad Kashif" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">CNIC Number *</label>
-            <input type="text" id="staff-form-cnic" required placeholder="35202-XXXXXXX-X" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <input type="text" id="staff-form-cnic" required placeholder="35202-XXXXXXX-X" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Phone Number</label>
-            <input type="text" id="staff-form-phone" placeholder="0300-XXXXXXX" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <input type="text" id="staff-form-phone" placeholder="0300-XXXXXXX" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
           </div>
         </div>
 
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Home Address</label>
-          <input type="text" id="staff-form-address" placeholder="e.g. House 12, St 4, Model Town, Lahore" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <input type="text" id="staff-form-address" placeholder="e.g. House 12, St 4, Model Town, Lahore" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Designation / Role *</label>
-            <input type="text" id="staff-form-designation" required placeholder="e.g. Senior Pharmacist" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <input type="text" id="staff-form-designation" required placeholder="e.g. Senior Pharmacist" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Monthly Basic Salary (PKR) *</label>
-            <input type="number" id="staff-form-salary" required min="1000" placeholder="e.g. 40000" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <input type="number" id="staff-form-salary" required min="1000" placeholder="e.g. 40000" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Joining Date *</label>
-            <input type="date" id="staff-form-joining" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <input type="date" id="staff-form-joining" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Police Report *</label>
-            <select id="staff-form-police" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <select id="staff-form-police" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
               <option value="1">Yes (Verified)</option>
               <option value="0">No (Pending)</option>
             </select>
@@ -2646,19 +2766,19 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
           <div>
-            <label class="block text-xs font-bold text-[#232272] uppercase mb-1">Daily Duty Hours *</label>
-            <input type="number" step="0.5" id="staff-form-hours" required min="1" max="24" value="8" placeholder="e.g. 8" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Daily Duty Hours *</label>
+            <input type="number" step="0.5" id="staff-form-hours" required min="1" max="24" value="8" placeholder="e.g. 8" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
             <span class="text-[10px] text-slate-400">Duty ghante (Flexible entry, 8h target)</span>
           </div>
           <div>
             <label class="block text-xs font-bold text-[#156D38] uppercase mb-1">Free Paid Leaves (Monthly) *</label>
-            <input type="number" id="staff-form-leaves" required min="0" max="15" value="2" placeholder="e.g. 2" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+            <input type="number" id="staff-form-leaves" required min="0" max="15" value="2" placeholder="e.g. 2" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
             <span class="text-[10px] text-slate-400">Mahana free leaves quota (Default: 2)</span>
           </div>
         </div>
 
         <div class="flex gap-3 pt-3">
-          <button type="submit" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 shadow">
+          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-[#0E4D27] text-white font-bold py-2.5 rounded-lg text-sm flex items-center justify-center gap-2 shadow cursor-pointer">
             <i data-lucide="check" class="w-4 h-4"></i> Save Staff Member
           </button>
           <button type="button" onclick="closeStaffModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-sm">
@@ -2680,12 +2800,12 @@
 
       <!-- DOSSIER HEADER -->
       <div class="flex items-center gap-4 pb-4 border-b border-slate-200">
-        <div class="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[#232272] font-black text-xl">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#156D38] font-black text-xl">
           <span id="dossier-avatar">MR</span>
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h3 id="dossier-name" class="text-lg font-black text-[#232272]">Staff Name</h3>
+            <h3 id="dossier-name" class="text-lg font-black text-[#0F172A]">Staff Name</h3>
             <span id="dossier-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">Active</span>
           </div>
           <p id="dossier-sub" class="text-xs text-slate-500">Designation • CNIC: 35202-XXXXXXX-X</p>
@@ -2704,7 +2824,7 @@
         </div>
         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
           <span class="text-[10px] uppercase font-bold text-slate-400">Total Present Days</span>
-          <div id="dossier-present-days" class="text-sm font-black text-indigo-700">0 Days</div>
+          <div id="dossier-present-days" class="text-sm font-black text-[#156D38]">0 Days</div>
         </div>
         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
           <span class="text-[10px] uppercase font-bold text-slate-400">Khata Balance</span>
@@ -2713,7 +2833,7 @@
       </div>
 
       <!-- BIO ADDRESS & PHONE & POLICE VERIFICATION -->
-      <div class="bg-indigo-50/50 p-3 rounded-xl text-xs text-slate-600 mb-4 flex flex-col sm:flex-row justify-between gap-2 border border-indigo-100 items-start sm:items-center">
+      <div class="bg-slate-50 p-3 rounded-xl text-xs text-slate-600 mb-4 flex flex-col sm:flex-row justify-between gap-2 border border-slate-200 items-start sm:items-center">
         <div><strong>Address:</strong> <span id="dossier-address">—</span></div>
         <div><strong>Phone:</strong> <span id="dossier-phone">—</span></div>
         <div><strong>Shift:</strong> <span id="dossier-shift">—</span></div>
@@ -2722,7 +2842,7 @@
 
       <!-- DOSSIER TABS -->
       <div class="flex border-b border-slate-200 text-xs font-bold gap-4 mb-3">
-        <button onclick="switchDossierTab('att')" id="dossier-tab-att" class="pb-2 border-b-2 border-[#232272] text-[#232272] flex items-center gap-1.5">
+        <button onclick="switchDossierTab('att')" id="dossier-tab-att" class="pb-2 border-b-2 border-[#156D38] text-[#156D38] flex items-center gap-1.5">
           <i data-lucide="clock" class="w-3.5 h-3.5"></i> Attendance History
         </button>
         <button onclick="switchDossierTab('leaves')" id="dossier-tab-leaves" class="pb-2 border-b-2 border-transparent text-slate-400 hover:text-slate-600 flex items-center gap-1.5">
@@ -2822,7 +2942,7 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Attendance Date</label>
-          <input type="date" id="override-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#232272]">
+          <input type="date" id="override-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#156D38]">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -2852,7 +2972,7 @@
         </div>
 
         <div class="flex gap-3 pt-3">
-          <button type="submit" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow">
+          <button type="submit" class="flex-1 bg-[#0F172A] hover:bg-slate-800 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
             <i data-lucide="check" class="w-4 h-4"></i> Save Adjustment
           </button>
           <button type="button" onclick="closeManualAttendanceModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs">
@@ -2877,7 +2997,7 @@
           <i data-lucide="hand-coins" class="w-5 h-5"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-[#232272]">Record Staff Khata Entry</h3>
+          <h3 class="text-base font-bold text-[#0F172A]">Record Staff Khata Entry</h3>
           <p class="text-xs text-slate-500">Counter daraz cash advance ya store medicine credit purchase</p>
         </div>
       </div>
@@ -2915,7 +3035,7 @@
         </div>
 
         <div class="flex gap-2.5 pt-2">
-          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow transition cursor-pointer">
+          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow transition cursor-pointer">
             <i data-lucide="plus-circle" class="w-4 h-4"></i> Save Khata Entry
           </button>
           <button type="button" onclick="closeRecordAdvanceModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer transition">
@@ -3084,7 +3204,7 @@
         </div>
 
         <div class="flex gap-3 pt-3">
-          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
             <i data-lucide="check" class="w-4 h-4"></i> Confirm Payment &amp; Settle
           </button>
           <button type="button" onclick="closeDisburseModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer">
@@ -3105,7 +3225,7 @@
       </button>
 
       <div class="flex items-center gap-3 mb-4">
-        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-[#232272] flex items-center justify-center">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center border border-emerald-100">
           <i data-lucide="user-plus" class="w-5 h-5"></i>
         </div>
         <div>
@@ -3119,27 +3239,27 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Customer Full Name *</label>
-          <input type="text" id="customer-form-name" required placeholder="e.g. Haji Abdul Rehman" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <input type="text" id="customer-form-name" required placeholder="e.g. Haji Abdul Rehman" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
         </div>
 
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">WhatsApp / Phone Number *</label>
-          <input type="text" id="customer-form-phone" required placeholder="e.g. 0300-1234567" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <input type="text" id="customer-form-phone" required placeholder="e.g. 0300-1234567" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
           <span class="text-[10px] text-slate-400">Used for 1-click WhatsApp payment reminders</span>
         </div>
 
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Address / Shop / Mohalla</label>
-          <input type="text" id="customer-form-address" placeholder="e.g. House 22, Model Town, Lahore" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <input type="text" id="customer-form-address" placeholder="e.g. House 22, Model Town, Lahore" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
         </div>
 
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Credit Limit (PKR)</label>
-          <input type="number" id="customer-form-limit" min="1000" step="500" value="15000" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <input type="number" id="customer-form-limit" min="1000" step="500" value="15000" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
         </div>
 
         <div class="flex gap-3 pt-3">
-          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
             <i data-lucide="check" class="w-4 h-4"></i> Save Customer
           </button>
           <button type="button" onclick="closeCustomerModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer">
@@ -3170,7 +3290,7 @@
       </div>
 
       <!-- CONTEXTUAL NOTICE WHEN OPENED FROM LEDGER -->
-      <div id="khata-from-ledger-notice" class="hidden p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl mb-3 flex items-center justify-between text-xs text-[#232272]">
+      <div id="khata-from-ledger-notice" class="hidden p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl mb-3 flex items-center justify-between text-xs text-[#156D38]">
         <div class="flex items-center gap-1.5 font-bold">
           <i data-lucide="info" class="w-4 h-4"></i>
           <span id="khata-from-ledger-text">Adding bill for customer</span>
@@ -3180,7 +3300,7 @@
 
       <!-- MODE TOGGLE: EXISTING vs NEW CUSTOMER -->
       <div id="khata-mode-toggle-container" class="flex items-center p-1 bg-slate-100 rounded-xl mb-3">
-        <button type="button" id="toggle-khata-mode-existing" onclick="setAddKhataMode('existing')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-[#232272] shadow-xs transition-all cursor-pointer">
+        <button type="button" id="toggle-khata-mode-existing" onclick="setAddKhataMode('existing')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-[#156D38] shadow-xs transition-all cursor-pointer">
           Existing Customer
         </button>
         <button type="button" id="toggle-khata-mode-new" onclick="setAddKhataMode('new')" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer">
@@ -3194,9 +3314,9 @@
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Select Customer *</label>
           <div class="relative mb-1">
             <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
-            <input type="text" id="khata-customer-search" oninput="filterKhataCustomerSelect()" placeholder="Type name or phone to filter list..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+            <input type="text" id="khata-customer-search" oninput="filterKhataCustomerSelect()" placeholder="Type name or phone to filter list..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#156D38]">
           </div>
-          <select id="khata-customer-select" onchange="checkCreditLimitWarning()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <select id="khata-customer-select" onchange="checkCreditLimitWarning()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
             <!-- Populated via JS -->
           </select>
         </div>
@@ -3209,11 +3329,11 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <div>
               <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Customer Full Name *</label>
-              <input type="text" id="khata-new-name" placeholder="e.g. Muhammad Aslam" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+              <input type="text" id="khata-new-name" placeholder="e.g. Muhammad Aslam" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#156D38]">
             </div>
             <div>
               <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Phone / WhatsApp *</label>
-              <input type="text" id="khata-new-phone" placeholder="e.g. 0300-1234567" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+              <input type="text" id="khata-new-phone" placeholder="e.g. 0300-1234567" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#156D38]">
             </div>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -3246,7 +3366,7 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Bill Amount (PKR) *</label>
-          <input type="number" id="khata-amount" oninput="checkCreditLimitWarning()" required min="1" step="0.5" placeholder="e.g. 2450" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-bold text-rose-600 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <input type="number" id="khata-amount" oninput="checkCreditLimitWarning()" required min="1" step="0.5" placeholder="e.g. 2450" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-bold text-rose-600 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
         </div>
 
         <!-- REAL-TIME CREDIT LIMIT WARNING BANNER -->
@@ -3313,44 +3433,44 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <button id="btn-ledger-settle-all" onclick="settleAllBalanceForCurrentCustomer()" class="bg-[#232272] hover:bg-indigo-950 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow cursor-pointer">
+          <button id="btn-ledger-settle-all" onclick="settleAllBalanceForCurrentCustomer()" class="bg-[#0F172A] hover:bg-slate-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow cursor-pointer">
             <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Clear Full Balance
           </button>
           <button id="btn-ledger-print-parchi" onclick="printParchiForCurrentCustomer()" class="bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 border border-slate-300 shadow-xs cursor-pointer">
             <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print Receipt
           </button>
-          <button onclick="exportCustomerLedgerExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow-xs cursor-pointer" title="Export customer ledger to Excel">
+          <button onclick="exportCustomerLedgerExcel()" class="bg-[#156D38] hover:bg-[#0E4D27] text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow-xs cursor-pointer" title="Export customer ledger to Excel">
             <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i> Export Excel
           </button>
         </div>
       </div>
 
       <!-- INLINE QUICK ADD BILL BAR -->
-      <div class="bg-indigo-50/70 border border-indigo-100 p-3.5 rounded-xl mt-3">
+      <div class="bg-emerald-50/50 border border-emerald-100 p-3.5 rounded-xl mt-3">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-bold text-[#232272] flex items-center gap-1.5">
+          <span class="text-xs font-bold text-[#156D38] flex items-center gap-1.5">
             <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500"></i> Quick Add Credit Purchase
           </span>
           <span class="text-[11px] text-slate-500 font-medium">Record a credit invoice directly to ledger</span>
         </div>
         <form onsubmit="submitInlineLedgerBill(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
           <div class="sm:col-span-2">
-            <input type="date" id="inline-ledger-date" required title="Bill Date" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+            <input type="date" id="inline-ledger-date" required title="Bill Date" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#156D38]">
           </div>
           <div class="sm:col-span-2">
-            <input type="text" id="inline-ledger-invoice-no" placeholder="Invoice # (Auto)" title="Invoice Number (Optional)" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+            <input type="text" id="inline-ledger-invoice-no" placeholder="Invoice # (Auto)" title="Invoice Number (Optional)" class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#156D38]">
           </div>
           <div class="sm:col-span-4">
-            <input type="text" id="inline-ledger-items" required placeholder="Medicines / Items description..." class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+            <input type="text" id="inline-ledger-items" required placeholder="Medicines / Items description..." class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#156D38]">
           </div>
           <div class="sm:col-span-2">
             <div class="relative">
               <span class="absolute left-2.5 top-2 text-xs font-bold text-rose-600">Rs.</span>
-              <input type="number" id="inline-ledger-amount" required min="1" step="0.5" placeholder="Amount" class="w-full pl-8 pr-2.5 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-rose-600 focus:outline-none focus:ring-1 focus:ring-[#232272]">
+              <input type="number" id="inline-ledger-amount" required min="1" step="0.5" placeholder="Amount" class="w-full pl-8 pr-2.5 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-rose-600 focus:outline-none focus:ring-1 focus:ring-[#156D38]">
             </div>
           </div>
           <div class="sm:col-span-2">
-            <button type="submit" class="w-full bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center gap-1 shadow-sm cursor-pointer transition">
+            <button type="submit" class="w-full bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center gap-1 shadow-sm cursor-pointer transition">
               <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Bill
             </button>
           </div>
@@ -3443,7 +3563,7 @@
         </div>
 
         <div class="flex gap-3 pt-3">
-          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+          <button type="submit" class="flex-1 bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
             <i data-lucide="check" class="w-4 h-4"></i>
             <span id="settle-entry-btn-text">Confirm &amp; Clear</span>
           </button>
@@ -3508,7 +3628,7 @@
           <!-- Quick Presets -->
           <div class="flex items-center gap-2 mt-1.5">
             <span class="text-[11px] text-slate-400 font-medium">Quick Presets:</span>
-            <button type="button" onclick="setQuickSettleAmountPreset('full')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-[#232272] hover:bg-indigo-100 border border-indigo-100 cursor-pointer">
+            <button type="button" onclick="setQuickSettleAmountPreset('full')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-[#156D38] hover:bg-emerald-100 border border-emerald-200 cursor-pointer">
               100% Full Balance
             </button>
             <button type="button" onclick="setQuickSettleAmountPreset('half')" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 cursor-pointer">
@@ -3680,7 +3800,7 @@
               <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
               <span>Re-Open Chat</span>
             </button>
-            <button type="button" onclick="advanceBatchRunnerNext()" id="batch-runner-next-btn" class="bg-[#232272] hover:bg-indigo-900 active:scale-95 text-white font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition cursor-pointer">
+            <button type="button" onclick="advanceBatchRunnerNext()" id="batch-runner-next-btn" class="bg-[#0F172A] hover:bg-slate-800 active:scale-95 text-white font-extrabold text-xs px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition cursor-pointer">
               <span>Next Customer</span>
               <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
             </button>
@@ -3863,7 +3983,7 @@
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="text-xs font-bold text-slate-700">Message Content (Editable):</label>
-            <button type="button" onclick="openWaTemplateModalFromPreview()" class="text-[11px] font-bold text-indigo-600 hover:underline cursor-pointer">
+            <button type="button" onclick="openWaTemplateModalFromPreview()" class="text-[11px] font-bold text-[#156D38] hover:underline cursor-pointer">
               Edit Master Template for All ⚙️
             </button>
           </div>
@@ -3903,7 +4023,7 @@
               <i data-lucide="receipt" class="w-5 h-5"></i>
             </div>
             <div>
-              <h2 class="text-base font-black text-[#232272] tracking-wide">MUMTAZ PHARMACY &amp; WELLNESS</h2>
+              <h2 class="text-base font-black text-[#0F172A] tracking-wide">MUMTAZ PHARMACY &amp; WELLNESS</h2>
               <p class="text-xs text-slate-500 mt-0.5">Model Town, Lahore • Phone: 0300-0000000</p>
             </div>
           </div>
@@ -3989,7 +4109,7 @@
         <button onclick="exportCustomerParchiExcel()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="Export receipt to Excel">
           <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i> Export Excel
         </button>
-        <button onclick="executePrintCustomerParchi()" class="px-4 py-2 rounded-lg bg-[#232272] hover:bg-indigo-950 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition">
+        <button onclick="executePrintCustomerParchi()" class="px-4 py-2 rounded-lg bg-[#0F172A] hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition">
           <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print Statement Receipt
         </button>
       </div>
@@ -4008,7 +4128,7 @@
       <!-- PRINTABLE WEEKLY REPORT CONTAINER -->
       <div id="printable-weekly-khata" class="flex-1 overflow-y-auto font-sans">
         <div class="text-center pb-3 border-b border-slate-200">
-          <h2 class="text-lg font-black text-[#232272]">MUMTAZ PHARMACY - WEEKLY CUSTOMER KHATA RECOVERY REPORT</h2>
+          <h2 class="text-lg font-black text-[#0F172A]">MUMTAZ PHARMACY - WEEKLY CUSTOMER KHATA RECOVERY REPORT</h2>
           <p id="weekly-report-period" class="text-xs text-slate-500 font-medium mt-0.5">Period: 7 Days Audit</p>
         </div>
 
@@ -4046,7 +4166,7 @@
       </div>
 
       <div class="flex gap-3 pt-4 border-t border-slate-200 mt-3">
-        <button onclick="executePrintWeeklyKhataReport()" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
+        <button onclick="executePrintWeeklyKhataReport()" class="flex-1 bg-[#0F172A] hover:bg-slate-800 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
           <i data-lucide="printer" class="w-4 h-4"></i> Print Weekly Report
         </button>
         <button onclick="exportWeeklyKhataExcel()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer" title="Export weekly khata report to Excel">
@@ -4068,6 +4188,7 @@
     // Initialize Page
     document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
+      switchTab('live');
       startLiveClock();
       loadStaff();
       loadTodayAttendance();
@@ -4076,7 +4197,218 @@
       loadLeaves();
       loadCustomers();
       loadCustomerKpis();
+
+      // Outside click listener for notification dropdown
+      document.addEventListener('click', (e) => {
+        const wrapper = document.getElementById('notif-dropdown-wrapper');
+        if (wrapper && !wrapper.contains(e.target)) {
+          closeNotificationDropdown();
+        }
+      });
     });
+
+    // ==========================================
+    // NOTIFICATION DROPDOWN & QUICK DRAWER
+    // ==========================================
+    let currentNotifFilter = 'ALL';
+    let systemNotifications = [];
+
+    function toggleNotificationDropdown(e) {
+      if (e) e.stopPropagation();
+      const panel = document.getElementById('notif-dropdown-panel');
+      if (!panel) return;
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        renderNotificationDropdown();
+      } else {
+        panel.classList.add('hidden');
+      }
+    }
+
+    function closeNotificationDropdown() {
+      const panel = document.getElementById('notif-dropdown-panel');
+      if (panel) panel.classList.add('hidden');
+    }
+
+    function filterNotificationList(cat, e) {
+      if (e) e.stopPropagation();
+      currentNotifFilter = cat;
+      const tabs = ['ALL', 'PUNCH', 'LEAVE', 'OVERDUE'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`notif-tab-${t}`);
+        if (btn) {
+          if (t === cat) {
+            btn.className = "px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs font-bold transition cursor-pointer whitespace-nowrap";
+          } else {
+            btn.className = "px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 transition cursor-pointer whitespace-nowrap flex items-center gap-1";
+          }
+        }
+      });
+      renderNotificationDropdown();
+    }
+
+    function refreshNotificationData(e) {
+      if (e) e.stopPropagation();
+      loadTodayAttendance();
+      if (typeof loadLeaves === 'function') loadLeaves();
+      if (typeof loadCustomers === 'function') loadCustomers();
+      buildNotificationList();
+      renderNotificationDropdown();
+    }
+
+    function buildNotificationList() {
+      const items = [];
+
+      // 1. Punches from rawTodayRoster
+      if (typeof rawTodayRoster !== 'undefined' && Array.isArray(rawTodayRoster)) {
+        rawTodayRoster.forEach(s => {
+          if (s.time_in) {
+            items.push({
+              id: `punch-in-${s.id}`,
+              type: 'PUNCH',
+              title: `${s.name}`,
+              subtitle: s.status === 'LATE' ? `⚠️ Late Clock-In (${s.late_minutes || '—'}m delay)` : `🟢 Clocked IN on-time (${s.shift_name || 'Duty'})`,
+              time: s.time_in,
+              tab: 'live',
+              badge: s.status === 'LATE' ? 'Late' : 'Clock IN',
+              badgeClass: s.status === 'LATE' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-[#156D38]',
+              icon: 'log-in',
+              iconBg: s.status === 'LATE' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-[#156D38]'
+            });
+          }
+          if (s.time_out) {
+            items.push({
+              id: `punch-out-${s.id}`,
+              type: 'PUNCH',
+              title: `${s.name}`,
+              subtitle: `Shift Completed (${s.time_out})`,
+              time: s.time_out,
+              tab: 'live',
+              badge: 'Clock OUT',
+              badgeClass: 'bg-sky-100 text-sky-800',
+              icon: 'log-out',
+              iconBg: 'bg-sky-100 text-sky-700'
+            });
+          }
+        });
+      }
+
+      // 2. Approved Leaves Today
+      if (typeof allLeaves !== 'undefined' && Array.isArray(allLeaves)) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        allLeaves.filter(l => l.date === todayStr).forEach(l => {
+          items.push({
+            id: `leave-${l.id}`,
+            type: 'LEAVE',
+            title: `${l.staff_name}`,
+            subtitle: `Approved Leave today (${l.reason || 'Personal'})`,
+            time: 'Today',
+            tab: 'leaves',
+            badge: l.leave_type === 'HALF_DAY' ? 'Half Day' : 'Full Leave',
+            badgeClass: 'bg-emerald-100 text-[#156D38]',
+            icon: 'calendar-off',
+            iconBg: 'bg-emerald-50 text-[#156D38]'
+          });
+        });
+      }
+
+      // 3. 30+ Days Overdue Customers
+      if (typeof allCustomers !== 'undefined' && Array.isArray(allCustomers)) {
+        allCustomers.filter(c => Number(c.current_balance || 0) > 0 && Number(c.overdue_days || 0) >= 30).slice(0, 5).forEach(c => {
+          items.push({
+            id: `overdue-${c.id}`,
+            type: 'OVERDUE',
+            title: `${c.name}`,
+            subtitle: `Due Rs. ${Number(c.current_balance).toLocaleString()} (${c.overdue_days} days overdue)`,
+            time: `${c.overdue_days}d ago`,
+            tab: 'customer-khata',
+            badge: 'Overdue',
+            badgeClass: 'bg-rose-100 text-rose-800',
+            icon: 'alert-triangle',
+            iconBg: 'bg-rose-100 text-rose-700'
+          });
+        });
+      }
+
+      systemNotifications = items;
+      updateNotificationBadge();
+    }
+
+    function updateNotificationBadge() {
+      const countEl = document.getElementById('notif-badge-count');
+      const headerBadge = document.getElementById('notif-header-badge');
+      const count = systemNotifications.length;
+
+      if (countEl) {
+        countEl.innerText = count > 99 ? '99+' : count;
+        if (count > 0) {
+          countEl.classList.remove('hidden');
+        } else {
+          countEl.classList.add('hidden');
+        }
+      }
+      if (headerBadge) {
+        headerBadge.innerText = `${count} Alert${count === 1 ? '' : 's'}`;
+      }
+    }
+
+    function renderNotificationDropdown() {
+      const container = document.getElementById('notif-items-list');
+      if (!container) return;
+
+      buildNotificationList();
+
+      const filtered = currentNotifFilter === 'ALL'
+        ? systemNotifications
+        : systemNotifications.filter(n => n.type === currentNotifFilter);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-8 text-slate-400 text-xs">
+            <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
+              <i data-lucide="bell-off" class="w-5 h-5"></i>
+            </div>
+            <p class="font-bold text-slate-700">No notifications in this category</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">All pharmacy operations are up-to-date</p>
+          </div>
+        `;
+        if (window.lucide) {
+          try { lucide.createIcons({ root: container }); } catch (e) { lucide.createIcons(); }
+        }
+        return;
+      }
+
+      const html = filtered.map(item => `
+        <div onclick="openTabFromNotif('${item.tab}')" class="p-3 hover:bg-slate-50 transition cursor-pointer flex items-center justify-between gap-3 group">
+          <div class="flex items-center gap-2.5 min-w-0 flex-1">
+            <div class="w-8 h-8 rounded-lg ${item.iconBg} flex items-center justify-center shrink-0">
+              <i data-lucide="${item.icon}" class="w-4 h-4"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <h5 class="text-xs font-bold text-slate-900 truncate">${item.title}</h5>
+                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold ${item.badgeClass}">${item.badge}</span>
+              </div>
+              <p class="text-[11px] text-slate-500 truncate mt-0.5">${item.subtitle}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <span class="text-[10px] font-mono font-semibold text-slate-400">${item.time}</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-[#156D38] group-hover:translate-x-0.5 transition-all"></i>
+          </div>
+        </div>
+      `).join('');
+
+      container.innerHTML = html;
+      if (window.lucide) {
+        try { lucide.createIcons({ root: container }); } catch (e) { lucide.createIcons(); }
+      }
+    }
+
+    function openTabFromNotif(tabId) {
+      closeNotificationDropdown();
+      switchTab(tabId);
+    }
 
     // 1. Live Clock
     function startLiveClock() {
@@ -4095,17 +4427,16 @@
       }, 15000);
     }
 
-    // 2. Navigation Tabs
+    // 2. Navigation Tabs (High-Performance 0ms Switching)
     function switchTab(tabId) {
       const allTabs = ['kiosk', 'live', 'payroll', 'advances', 'customer-khata', 'staff', 'leaves', 'reports'];
       allTabs.forEach(t => {
         const viewEl = document.getElementById(`view-${t}`);
         const sideEl = document.getElementById(`side-tab-${t}`);
         const legacyTab = document.getElementById(`tab-${t}`);
-        if (viewEl) viewEl.classList.add('hidden');
+        if (viewEl && t !== tabId) viewEl.classList.add('hidden');
         if (sideEl) {
-          sideEl.classList.remove('bg-indigo-600', 'text-white', 'shadow-sm', 'font-semibold');
-          sideEl.classList.add('text-slate-400', 'font-medium');
+          sideEl.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer";
         }
         if (legacyTab) legacyTab.classList.remove('border-emerald-400', 'text-white');
       });
@@ -4113,10 +4444,12 @@
       const targetView = document.getElementById(`view-${tabId}`);
       const targetSide = document.getElementById(`side-tab-${tabId}`);
       const targetLegacy = document.getElementById(`tab-${tabId}`);
-      if (targetView) targetView.classList.remove('hidden');
+      if (targetView) {
+        targetView.classList.remove('hidden');
+        targetView.classList.add('view-tab-animate');
+      }
       if (targetSide) {
-        targetSide.classList.remove('text-slate-400', 'font-medium');
-        targetSide.classList.add('bg-indigo-600', 'text-white', 'shadow-sm', 'font-semibold');
+        targetSide.className = "w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-white bg-[#156D38] shadow-sm shadow-emerald-950/40 transition-colors cursor-pointer";
       }
       if (targetLegacy) targetLegacy.classList.add('border-emerald-400', 'text-white');
 
@@ -4151,17 +4484,32 @@
         }
       }
 
-      if (tabId === 'live') loadTodayAttendance();
-      if (tabId === 'payroll') generatePayroll();
-      if (tabId === 'advances') loadAdvances();
-      if (tabId === 'customer-khata') {
+      // Trigger targeted data load
+      if (tabId === 'live') {
+        loadTodayAttendance();
+        loadTodayActivities();
+      } else if (tabId === 'payroll') {
+        generatePayroll();
+      } else if (tabId === 'advances') {
+        loadAdvances();
+      } else if (tabId === 'customer-khata') {
         loadCustomers();
         loadCustomerKpis();
+      } else if (tabId === 'staff') {
+        renderStaffDirectory();
+      } else if (tabId === 'leaves') {
+        loadLeaves();
+      } else if (tabId === 'reports') {
+        loadMonthlyReport();
       }
-      if (tabId === 'staff') renderStaffDirectory();
-      if (tabId === 'leaves') loadLeaves();
-      if (tabId === 'reports') loadMonthlyReport();
-      lucide.createIcons();
+
+      if (window.lucide && targetView) {
+        try {
+          lucide.createIcons({ root: targetView });
+        } catch (e) {
+          // fallback
+        }
+      }
     }
 
     // 3. Load Staff
@@ -4379,6 +4727,7 @@
 
         renderLiveRosterTable();
         loadTodayActivities();
+        if (typeof buildNotificationList === 'function') buildNotificationList();
       } catch (err) {
         console.error("Failed to load today attendance", err);
       }
@@ -4437,7 +4786,7 @@
         badgeEl.innerText = `Showing: ${filterNames[currentLiveFilter] || 'Staff'} (${filtered.length})`;
         badgeEl.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full border transition-all ';
         if (currentLiveFilter === 'ALL') {
-          badgeEl.className += 'bg-indigo-50 text-[#232272] border-indigo-200';
+          badgeEl.className += 'bg-slate-100 text-slate-800 border-slate-300';
         } else if (currentLiveFilter === 'PRESENT') {
           badgeEl.className += 'bg-emerald-50 text-[#156D38] border-emerald-200';
         } else if (currentLiveFilter === 'LATE') {
@@ -4500,14 +4849,14 @@
             <td class="py-3 px-4 text-slate-600">${item.designation || item.role}</td>
             <td class="py-3 px-4 text-xs font-mono text-slate-500">
               ${item.shift_name}
-              <div class="text-[10px] text-indigo-700 font-bold font-sans">${item.daily_hours || 8}h Daily Target</div>
+              <div class="text-[10px] text-[#156D38] font-bold font-sans">${item.daily_hours || 8}h Daily Target</div>
             </td>
             <td class="py-3 px-4 font-mono font-semibold text-emerald-700">${item.time_in || '—'}</td>
             <td class="py-3 px-4 font-mono font-semibold text-slate-600">${item.time_out || '—'}</td>
             <td class="py-3 px-4">${badge}</td>
             <td class="py-3 px-4">
               <div class="flex items-center gap-1.5">
-                <button onclick="openManualAttendanceModal(${item.id}, '${item.name}', '${item.time_in || ''}', '${item.time_out || ''}', '${item.status || 'ON_TIME'}')" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-[#232272] px-2.5 py-1 rounded-md font-bold transition-colors">
+                <button onclick="openManualAttendanceModal(${item.id}, '${item.name}', '${item.time_in || ''}', '${item.time_out || ''}', '${item.status || 'ON_TIME'}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-[#0F172A] px-2.5 py-1 rounded-md font-bold transition-colors">
                   Edit
                 </button>
                 ${leaveActionBtn}
@@ -4590,8 +4939,8 @@
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white text-emerald-800 border border-emerald-200/80 shadow-2xs font-semibold">
             <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Punches: <span class="font-extrabold">${counts.ATTENDANCE}</span>
           </span>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white text-indigo-800 border border-indigo-200/80 shadow-2xs font-semibold">
-            <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Leaves: <span class="font-extrabold">${counts.LEAVE}</span>
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white text-[#156D38] border border-emerald-200/80 shadow-2xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-[#156D38]"></span> Leaves: <span class="font-extrabold">${counts.LEAVE}</span>
           </span>
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white text-amber-900 border border-amber-200/80 shadow-2xs font-semibold">
             <span class="w-2 h-2 rounded-full bg-amber-500"></span> Staff Khata: <span class="font-extrabold">${counts.STAFF_KHATA}</span>
@@ -4644,15 +4993,15 @@
             actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Punch Edit</span>';
           }
         } else if (act.category === 'LEAVE') {
-          cardStyle = 'border-l-4 border-l-indigo-500 bg-indigo-50/20 hover:bg-indigo-50/50 border border-indigo-200/70 shadow-2xs hover:shadow-xs';
+          cardStyle = 'border-l-4 border-l-[#156D38] bg-emerald-50/20 hover:bg-emerald-50/50 border border-emerald-200/70 shadow-2xs hover:shadow-xs';
           iconName = 'calendar-off';
-          iconBg = 'bg-indigo-600 text-white';
+          iconBg = 'bg-[#156D38] text-white';
           if (act.action_type === 'LEAVE_CANCELLED') {
             actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300">Leave Cancelled</span>';
           } else if (act.action_type === 'LEAVE_UPDATED') {
-            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-300">Leave Updated</span>';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-[#156D38] border border-emerald-300">Leave Updated</span>';
           } else {
-            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-300">Leave Approved</span>';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-[#156D38] border border-emerald-300">Leave Approved</span>';
           }
         } else if (act.category === 'STAFF_KHATA') {
           cardStyle = 'border-l-4 border-l-amber-500 bg-amber-50/20 hover:bg-amber-50/50 border border-amber-200/70 shadow-2xs hover:shadow-xs';
@@ -4682,10 +5031,10 @@
           iconBg = 'bg-teal-600 text-white';
           actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-100 text-teal-800 border border-teal-300">Salary Paid</span>';
         } else if (act.category === 'STAFF') {
-          cardStyle = 'border-l-4 border-l-purple-500 bg-purple-50/20 hover:bg-purple-50/50 border border-purple-200/70 shadow-2xs hover:shadow-xs';
+          cardStyle = 'border-l-4 border-l-[#0F172A] bg-slate-50 hover:bg-slate-100 border border-slate-200 shadow-2xs hover:shadow-xs';
           iconName = 'user-plus';
-          iconBg = 'bg-purple-600 text-white';
-          actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-300">Staff Update</span>';
+          iconBg = 'bg-[#0F172A] text-white';
+          actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-300">Staff Update</span>';
         }
 
         // Amount badge if present (Crisp & prominent)
@@ -5554,7 +5903,7 @@
         if (tabAllEl) tabAllEl.className = "ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-slate-300/80 text-slate-700";
 
         if (advFilterStatus === 'pending') {
-          btnPending.className = "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-[#232272] text-white shadow-xs";
+          btnPending.className = "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-[#0F172A] text-white shadow-xs";
           if (tabPendingEl) tabPendingEl.className = "ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 text-white";
         } else if (advFilterStatus === 'settled') {
           btnSettled.className = "flex-1 md:flex-none px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer bg-[#156D38] text-white shadow-xs";
@@ -5693,7 +6042,7 @@
           const isActive = (p === advCurrentPage);
           pagesHtml += `
             <button onclick="goToAdvancePage(${p})" 
-                    class="w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${isActive ? 'bg-[#232272] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}">
+                    class="w-7 h-7 rounded-lg text-xs font-bold transition cursor-pointer ${isActive ? 'bg-[#0F172A] text-white shadow-xs' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}">
               ${p}
             </button>
           `;
@@ -6121,7 +6470,7 @@
                   </button>
 
                   <!-- Edit (Pencil icon) -->
-                  <button onclick="openStaffModal(${s.id})" title="Edit Staff Profile" class="p-1.5 rounded-lg text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 transition-colors cursor-pointer">
+                  <button onclick="openStaffModal(${s.id})" title="Edit Staff Profile" class="p-1.5 rounded-lg text-slate-500 hover:text-[#156D38] hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 transition-colors cursor-pointer">
                     <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                   </button>
 
@@ -6184,7 +6533,7 @@
                 <button onclick="openStaffHistoryModal(${s.id})" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 flex items-center gap-1 cursor-pointer">
                   <i data-lucide="eye" class="w-3.5 h-3.5"></i> View
                 </button>
-                <button onclick="openStaffModal(${s.id})" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-indigo-600 hover:bg-indigo-50 border border-indigo-200 flex items-center gap-1 cursor-pointer">
+                <button onclick="openStaffModal(${s.id})" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#156D38] hover:bg-emerald-50 border border-emerald-200 flex items-center gap-1 cursor-pointer">
                   <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Edit
                 </button>
                 <button onclick="deleteStaff(${s.id}, '${(s.name || '').replace(/'/g, "\'")}')" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-rose-200 flex items-center gap-1 cursor-pointer">
@@ -6443,12 +6792,18 @@
     function switchDossierTab(tab) {
       ['att', 'leaves', 'adv'].forEach(t => {
         document.getElementById(`dossier-content-${t}`).classList.add('hidden');
-        document.getElementById(`dossier-tab-${t}`).classList.remove('border-[#232272]', 'text-[#232272]');
+        document.getElementById(`dossier-tab-${t}`).classList.remove('border-[#156D38]', 'text-[#156D38]');
         document.getElementById(`dossier-tab-${t}`).classList.add('border-transparent', 'text-slate-400');
       });
-      document.getElementById(`dossier-content-${tab}`).classList.remove('hidden');
+      const targetContent = document.getElementById(`dossier-content-${tab}`);
+      if (targetContent) {
+        targetContent.classList.remove('hidden');
+        targetContent.classList.remove('view-tab-animate');
+        void targetContent.offsetWidth;
+        targetContent.classList.add('view-tab-animate');
+      }
       document.getElementById(`dossier-tab-${tab}`).classList.remove('border-transparent', 'text-slate-400');
-      document.getElementById(`dossier-tab-${tab}`).classList.add('border-[#232272]', 'text-[#232272]');
+      document.getElementById(`dossier-tab-${tab}`).classList.add('border-[#156D38]', 'text-[#156D38]');
     }
 
     // 10. Monthly Attendance Register & Matrix (Feature 6 & 17)
@@ -6656,6 +7011,7 @@
         renderOverdueSection();
         updateCustomerCounts();
         populateCustomerDropdowns();
+        if (typeof buildNotificationList === 'function') buildNotificationList();
       } catch (err) {
         console.error("Error loading customers", err);
       }
@@ -6701,7 +7057,7 @@
         const btn = document.getElementById(`btn-cust-filter-${f}`);
         if (btn) {
           if (f === filterType) {
-            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-[#232272] text-white shadow-xs cursor-pointer flex items-center gap-1.5';
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-[#0F172A] text-white shadow-xs cursor-pointer flex items-center gap-1.5';
           } else {
             btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer transition flex items-center gap-1.5';
           }
@@ -6794,12 +7150,12 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
             <!-- 1. Customer Details -->
             <td class="py-3 px-4">
               <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-full bg-indigo-50 text-[#232272] border border-indigo-100 flex items-center justify-center font-bold text-xs flex-shrink-0 group-hover:bg-[#232272] group-hover:text-white transition-colors">
+                <div class="w-8 h-8 rounded-full bg-emerald-50 text-[#156D38] border border-emerald-100 flex items-center justify-center font-bold text-xs flex-shrink-0 group-hover:bg-[#156D38] group-hover:text-white transition-colors">
                   ${(c.name || 'C').charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <div class="flex items-center gap-1.5">
-                    <span class="font-bold text-slate-800 text-xs group-hover:text-[#232272] transition-colors">${c.name}</span>
+                    <span class="font-bold text-slate-800 text-xs group-hover:text-[#156D38] transition-colors">${c.name}</span>
                     <button onclick="event.stopPropagation(); openCustomerModal(${c.id})" title="Edit Customer Details" class="text-slate-400 hover:text-blue-600 transition-colors p-0.5 rounded cursor-pointer">
                       <i data-lucide="pencil" class="w-3 h-3"></i>
                     </button>
@@ -6908,12 +7264,12 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
             <!-- 1. Overdue Customer -->
             <td class="py-3 px-4">
               <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs flex-shrink-0 group-hover:bg-[#232272] group-hover:text-white transition-colors">
+                <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs flex-shrink-0 group-hover:bg-[#156D38] group-hover:text-white transition-colors">
                   ${(c.name || 'C').charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <div class="flex items-center gap-1.5">
-                    <span class="font-bold text-slate-800 text-xs group-hover:text-[#232272] transition-colors">${c.name}</span>
+                    <span class="font-bold text-slate-800 text-xs group-hover:text-[#156D38] transition-colors">${c.name}</span>
                     <button onclick="event.stopPropagation(); openCustomerModal(${c.id})" title="Edit Profile" class="text-slate-400 hover:text-blue-600 p-0.5 rounded cursor-pointer">
                       <i data-lucide="pencil" class="w-3 h-3"></i>
                     </button>
@@ -7101,7 +7457,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         if (nameEl) nameEl.setAttribute('required', 'required');
         if (phoneEl) phoneEl.setAttribute('required', 'required');
       } else {
-        if (btnExisting) btnExisting.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-[#232272] shadow-xs transition-all cursor-pointer';
+        if (btnExisting) btnExisting.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg bg-white text-[#156D38] shadow-xs transition-all cursor-pointer';
         if (btnNew) btnNew.className = 'flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-600 hover:text-slate-900 transition-all cursor-pointer';
         if (existingSec) existingSec.classList.remove('hidden');
         if (newSec) newSec.classList.add('hidden');
@@ -7532,7 +7888,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                   ${e.date}
                   ${isOverdue ? `<div class="text-[10px] text-slate-400 font-sans">${ageDays} days ago</div>` : ''}
                 </td>
-                <td class="py-2.5 px-3 font-bold font-mono text-[#232272]">${e.invoice_no}</td>
+                <td class="py-2.5 px-3 font-bold font-mono text-[#156D38]">${e.invoice_no}</td>
                 <td class="py-2.5 px-3">
                   <div class="font-medium text-slate-800">${e.item_description}</div>
                   ${e.notes ? `<div class="text-[10px] text-slate-400 italic">${e.notes}</div>` : ''}
@@ -8388,6 +8744,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
     // Universal ESC key dismissal
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
+        closeNotificationDropdown();
         const priorityModals = [
           { id: 'edit-leave-modal', close: closeEditLeaveModal },
           { id: 'staff-leave-detail-modal', close: closeStaffLeaveDetailsModal },
@@ -8433,6 +8790,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         renderTodayPresence();
         renderStaffLeaveSummary();
         filterLeavesTable();
+        if (typeof buildNotificationList === 'function') buildNotificationList();
         if (typeof currentLeaveDetailStaffId !== 'undefined' && currentLeaveDetailStaffId) {
           const detailModal = document.getElementById('staff-leave-detail-modal');
           if (detailModal && !detailModal.classList.contains('hidden')) {
@@ -8518,6 +8876,9 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         if (!el) return;
         if (sec === 'all' || sec === s) {
           el.classList.remove('hidden');
+          el.classList.remove('view-tab-animate');
+          void el.offsetWidth;
+          el.classList.add('view-tab-animate');
         } else {
           el.classList.add('hidden');
         }
@@ -8591,7 +8952,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                 <div class="text-[10px] text-slate-400 font-medium">${l.designation || l.role || 'Staff'}</div>
               </td>
               <td class="py-3.5 px-4">
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700">${l.role || 'Staff'}</span>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">${l.role || 'Staff'}</span>
               </td>
               <td class="py-3.5 px-4 text-xs whitespace-nowrap">
                 ${isHalf
@@ -8610,7 +8971,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
               </td>
               <td class="py-3.5 px-4 text-center">
                 <div class="inline-flex items-center justify-center gap-1">
-                  <button onclick="openEditLeaveModal(${l.id})" title="Edit Leave" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 transition cursor-pointer">
+                  <button onclick="openEditLeaveModal(${l.id})" title="Edit Leave" class="p-1.5 rounded-lg text-[#156D38] hover:bg-emerald-50 hover:text-emerald-900 transition cursor-pointer">
                     <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                   </button>
                   <button onclick="deleteLeaveRecord(${l.id}, '${(l.staff_name || '').replace(/'/g, "\\'")}', '${l.date}')" title="Cancel Leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer">
@@ -8650,7 +9011,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                 </span>
               </td>
               <td class="py-3.5 px-4 text-right">
-                <button onclick="openApplyLeaveModal(${s.id})" class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition cursor-pointer" title="Apply Leave for ${s.name}">
+                <button onclick="openApplyLeaveModal(${s.id})" class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#156D38] border border-emerald-200 transition cursor-pointer" title="Apply Leave for ${s.name}">
                   <i data-lucide="plus" class="w-3 h-3"></i> Apply Leave
                 </button>
               </td>
@@ -8709,7 +9070,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         if (taken === 0) {
           statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i> ${quota} Leaves Available</span>`;
         } else if (!isExceeded) {
-          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200"><i data-lucide="check" class="w-3 h-3 text-indigo-600"></i> ${remDisp} Leave${remDisp == 1 ? '' : 's'} Remaining</span>`;
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#156D38] border border-emerald-200"><i data-lucide="check" class="w-3 h-3 text-[#156D38]"></i> ${remDisp} Leave${remDisp == 1 ? '' : 's'} Remaining</span>`;
         } else {
           statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-600"></i> ${extraDisp} Extra Leave${extraDisp == 1 ? '' : 's'} (Cut in Payroll)</span>`;
         }
@@ -8720,8 +9081,8 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
           detailsHtml = `<span class="text-slate-400 font-mono font-medium text-xs">N/A</span>`;
         } else {
           detailsHtml = `
-            <button onclick="openStaffLeaveDetailsModal(${s.id})" class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition cursor-pointer shadow-2xs group" title="View leave dates and reasons for ${s.name}">
-              <i data-lucide="eye" class="w-3.5 h-3.5 text-indigo-600 group-hover:scale-110 transition-transform"></i>
+            <button onclick="openStaffLeaveDetailsModal(${s.id})" class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#156D38] border border-emerald-200 transition cursor-pointer shadow-2xs group" title="View leave dates and reasons for ${s.name}">
+              <i data-lucide="eye" class="w-3.5 h-3.5 text-[#156D38] group-hover:scale-110 transition-transform"></i>
               <span>View Details (${sLeaves.length})</span>
             </button>
           `;
@@ -8738,7 +9099,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
             </td>
             <td class="py-3 px-4 text-center">
               <div>
-                <span class="font-black text-xs px-2.5 py-0.5 rounded-full ${taken > 0 ? (isExceeded ? 'bg-rose-100 text-rose-700' : 'bg-indigo-100 text-indigo-700') : 'bg-slate-100 text-slate-500'}">
+                <span class="font-black text-xs px-2.5 py-0.5 rounded-full ${taken > 0 ? (isExceeded ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-[#156D38]') : 'bg-slate-100 text-slate-500'}">
                   ${takenDisp} ${takenDisp == 1 ? 'Day' : 'Days'}
                 </span>
               </div>
@@ -8751,7 +9112,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
               ${detailsHtml}
             </td>
             <td class="py-3 px-4 text-right">
-              <button onclick="openApplyLeaveModal(${s.id})" class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition cursor-pointer" title="Approve leave for ${s.name}">
+              <button onclick="openApplyLeaveModal(${s.id})" class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#156D38] border border-emerald-200 transition cursor-pointer" title="Approve leave for ${s.name}">
                 <i data-lucide="plus" class="w-3 h-3"></i>
                 <span>Add Leave</span>
               </button>
@@ -8800,7 +9161,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
             <div class="text-[10px] text-slate-400 font-medium">${l.designation || l.role || 'Staff'}</div>
           </td>
           <td class="py-3 px-4">
-            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-50 text-indigo-700">${l.role || 'Staff'}</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">${l.role || 'Staff'}</span>
           </td>
           <td class="py-3 px-4 font-mono text-xs">
             <div class="font-bold text-slate-800">${l.date}</div>
@@ -8816,7 +9177,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
           </td>
           <td class="py-3 px-4 text-center">
             <div class="inline-flex items-center justify-center gap-1">
-              <button onclick="openEditLeaveModal(${l.id})" title="Edit Leave" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 transition cursor-pointer">
+              <button onclick="openEditLeaveModal(${l.id})" title="Edit Leave" class="p-1.5 rounded-lg text-[#156D38] hover:bg-emerald-50 hover:text-emerald-900 transition cursor-pointer">
                 <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
               </button>
               <button onclick="deleteLeaveRecord(${l.id}, '${(l.staff_name || '').replace(/'/g, "\\'")}', '${l.date}')" title="Cancel Leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer">
@@ -9022,7 +9383,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         if (taken === 0) {
           statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i> ${quota} Available</span>`;
         } else if (!isExceeded) {
-          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200"><i data-lucide="check" class="w-3 h-3 text-indigo-600"></i> ${remDisp} Left</span>`;
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-[#156D38] border border-emerald-200"><i data-lucide="check" class="w-3 h-3 text-[#156D38]"></i> ${remDisp} Left</span>`;
         } else {
           statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200"><i data-lucide="alert-triangle" class="w-3 h-3 text-rose-600"></i> ${extraDisp} Cut in Payroll</span>`;
         }
@@ -9034,7 +9395,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
           </div>
           <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center">
             <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Leaves Taken</div>
-            <div class="text-sm font-black ${taken > quota ? 'text-rose-600' : (taken > 0 ? 'text-indigo-600' : 'text-slate-800')} mt-0.5">${takenDisp} ${takenDisp == 1 ? 'Day' : 'Days'}</div>
+            <div class="text-sm font-black ${taken > quota ? 'text-rose-600' : (taken > 0 ? 'text-[#156D38]' : 'text-slate-800')} mt-0.5">${takenDisp} ${takenDisp == 1 ? 'Day' : 'Days'}</div>
           </div>
           <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl text-center flex flex-col items-center justify-center">
             <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-0.5">Quota Status</div>
@@ -9082,7 +9443,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                 <td class="py-3 px-3 font-mono font-bold text-slate-400 text-xs text-center">#${idx + 1}</td>
                 <td class="py-3 px-3 text-xs">
                   <div class="flex items-center gap-1.5 font-bold font-mono text-slate-900">
-                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-indigo-600 shrink-0"></i>
+                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-[#156D38] shrink-0"></i>
                     <span>${formattedDate}</span>
                   </div>
                   <div class="text-[10px] font-semibold text-slate-500 pl-5">${dayName}</div>
@@ -9090,7 +9451,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                 <td class="py-3 px-3 text-xs">
                   ${isHalf
                     ? '<span class="inline-flex items-center gap-1 font-bold text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full whitespace-nowrap"><i data-lucide="clock" class="w-3 h-3 text-amber-600"></i> Half Day (0.5)</span>'
-                    : '<span class="inline-flex items-center gap-1 font-bold text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 px-2.5 py-0.5 rounded-full whitespace-nowrap"><i data-lucide="sun" class="w-3 h-3 text-indigo-600"></i> Full Day (1.0)</span>'
+                    : '<span class="inline-flex items-center gap-1 font-bold text-[10px] bg-emerald-50 text-[#156D38] border border-emerald-200 px-2.5 py-0.5 rounded-full whitespace-nowrap"><i data-lucide="sun" class="w-3 h-3 text-[#156D38]"></i> Full Day (1.0)</span>'
                   }
                 </td>
                 <td class="py-3 px-3 text-xs">
@@ -9105,7 +9466,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                 </td>
                 <td class="py-3 px-3 text-center">
                   <div class="inline-flex items-center justify-center gap-1">
-                    <button onclick="openEditLeaveModal(${l.id})" title="Edit this leave" class="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 hover:text-indigo-800 transition cursor-pointer">
+                    <button onclick="openEditLeaveModal(${l.id})" title="Edit this leave" class="p-1.5 rounded-lg text-[#156D38] hover:bg-emerald-50 hover:text-emerald-900 transition cursor-pointer">
                       <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
                     </button>
                     <button onclick="deleteLeaveRecord(${l.id}, '${safeStaffName}', '${l.date}')" title="Cancel this leave" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer">
@@ -9147,7 +9508,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
         <div class="flex items-center gap-3 mb-4">
-          <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 text-[#156D38] flex items-center justify-center font-bold border border-emerald-100">
             <i data-lucide="calendar-plus" class="w-5 h-5"></i>
           </div>
           <div>
@@ -9281,7 +9642,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
         <!-- Footer -->
         <div class="flex items-center justify-between pt-4 mt-2 border-t border-slate-100">
-          <button id="staff-detail-add-leave-btn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition cursor-pointer">
+          <button id="staff-detail-add-leave-btn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-[#156D38] bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition cursor-pointer">
             <i data-lucide="plus" class="w-3.5 h-3.5"></i>
             <span>Add Leave</span>
           </button>
