@@ -709,7 +709,7 @@ def settle_advance(advance_id: int, req: Optional[AdvanceSettleRequest] = None):
         cursor.execute("""
             INSERT INTO advance_salaries (staff_id, entry_type, amount, date, reason, is_settled)
             VALUES (?, ?, ?, ?, ?, 0)
-        """, (adv["staff_id"], adv["entry_type"], rem_amt, adv["date"], f"{adv['reason']} (Baqaya / Remainder)"))
+        """, (adv["staff_id"], adv["entry_type"], rem_amt, adv["date"], f"{adv['reason']} (Remaining Balance)"))
         conn.commit()
         conn.close()
 
@@ -722,7 +722,7 @@ def settle_advance(advance_id: int, req: Optional[AdvanceSettleRequest] = None):
             "settled_at": settled_date,
             "settlement_type": settlement_type,
             "notes": notes_val,
-            "message": f"Partial settlement of Rs. {paid_amt:,.2f} recorded for {adv['staff_name']}. Baqaya remaining: Rs. {rem_amt:,.2f}."
+            "message": f"Partial payment of Rs. {paid_amt:,.2f} recorded for {adv['staff_name']}. Remaining balance: Rs. {rem_amt:,.2f}."
         }
     else:
         # Full settlement
@@ -737,8 +737,8 @@ def settle_advance(advance_id: int, req: Optional[AdvanceSettleRequest] = None):
         log_activity(
             category="STAFF_KHATA",
             action_type="ADVANCE_SETTLED",
-            title=f"Staff Khata Settled: {adv['staff_name']}",
-            description=f"Rs. {adv['amount']:,.2f} settled via {settlement_type}",
+            title=f"Staff Khata Cleared: {adv['staff_name']}",
+            description=f"Rs. {adv['amount']:,.2f} cleared via {settlement_type}",
             staff_name=adv['staff_name'],
             amount=adv['amount'],
             date_str=settled_date
@@ -747,7 +747,7 @@ def settle_advance(advance_id: int, req: Optional[AdvanceSettleRequest] = None):
         return {
             "success": True,
             "partial": False,
-            "message": f"Advance #{advance_id} for {adv['staff_name']} (Rs. {adv['amount']:,.2f}) settled successfully via '{settlement_type}' on {settled_date}.",
+            "message": f"Advance #{advance_id} for {adv['staff_name']} (Rs. {adv['amount']:,.2f}) cleared successfully via '{settlement_type}' on {settled_date}.",
             "advance_id": advance_id,
             "settled_at": settled_date,
             "settlement_type": settlement_type,
@@ -763,12 +763,12 @@ def clear_settled_advances():
     count = cursor.fetchone()[0] or 0
     if count == 0:
         conn.close()
-        return {"success": True, "deleted_count": 0, "message": "Koi settled staff khata record mojood nahi hai."}
+        return {"success": True, "deleted_count": 0, "message": "No cleared staff advance records found."}
     
     cursor.execute("DELETE FROM advance_salaries WHERE is_settled = 1")
     conn.commit()
     conn.close()
-    return {"success": True, "deleted_count": count, "message": f"{count} settled staff khata records kamyabi se delete ho gaye."}
+    return {"success": True, "deleted_count": count, "message": f"{count} cleared staff advance records deleted successfully."}
 
 
 @app.post("/api/leaves")
@@ -844,7 +844,7 @@ def update_leave(leave_id: int, data: LeaveUpdate):
         cursor.execute("SELECT id FROM leaves WHERE staff_id = ? AND date = ? AND id != ?", (staff_id, new_date, leave_id))
         if cursor.fetchone():
             conn.close()
-            raise HTTPException(status_code=400, detail="Is staff ki is date par pehle se leave darj hai.")
+            raise HTTPException(status_code=400, detail="Leave is already recorded for this staff member on this date.")
 
     cursor.execute("UPDATE leaves SET date = ?, reason = ?, leave_type = ? WHERE id = ?", (new_date, new_reason, new_type, leave_id))
 
@@ -1031,7 +1031,7 @@ def disburse_salary(data: PayrollDisburseRequest):
 
     return {
         "success": True,
-        "message": f"Salary for {staff['name']} ({month_name} {data.year}) marked as PAID on {paid_date} via {payment_method}. {auto_settled_count} Khata advance(s) totalling Rs. {auto_settled_amount:,.2f} auto-settled.",
+        "message": f"Salary for {staff['name']} ({month_name} {data.year}) marked as PAID on {paid_date} via {payment_method}. {auto_settled_count} Khata advance(s) totalling Rs. {auto_settled_amount:,.2f} cleared.",
         "staff_id": data.staff_id,
         "staff_name": staff["name"],
         "month": data.month,
@@ -1059,7 +1059,7 @@ def format_whatsapp_number(phone: str) -> str:
 
 @app.get("/api/customers")
 def get_customers():
-    """Returns all customers with aggregated series khata metrics."""
+    """Returns all customers with aggregated series khata metrics, overdue flags, and credit limit alerts."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -1069,7 +1069,8 @@ def get_customers():
             COALESCE(SUM(CASE WHEN k.is_settled = 1 THEN k.amount ELSE 0 END), 0) as total_settled,
             COALESCE(SUM(CASE WHEN k.is_settled = 0 THEN k.amount ELSE 0 END), 0) as current_balance,
             COALESCE(SUM(CASE WHEN k.is_settled = 0 THEN 1 ELSE 0 END), 0) as pending_invoices_count,
-            COUNT(k.id) as total_invoices_count
+            COUNT(k.id) as total_invoices_count,
+            MIN(CASE WHEN k.is_settled = 0 THEN k.date ELSE NULL END) as oldest_unpaid_date
         FROM customers c
         LEFT JOIN customer_khata k ON c.id = k.customer_id
         GROUP BY c.id
@@ -1077,15 +1078,35 @@ def get_customers():
     """)
     rows = cursor.fetchall()
     customers = []
+    today = date.today()
     for r in rows:
         c_dict = dict(r)
         c_dict["credit_limit"] = float(c_dict["credit_limit"])
         c_dict["total_credit"] = float(c_dict["total_credit"])
         c_dict["total_settled"] = float(c_dict["total_settled"])
         c_dict["current_balance"] = float(c_dict["current_balance"])
-        limit_used_pct = round((c_dict["current_balance"] / c_dict["credit_limit"]) * 100, 1) if c_dict["credit_limit"] > 0 else 0
-        c_dict["limit_used_pct"] = min(100.0, limit_used_pct)
+        limit_used_pct = round((c_dict["current_balance"] / c_dict["credit_limit"]) * 100, 1) if c_dict["credit_limit"] > 0 else 0.0
+        c_dict["limit_used_pct"] = min(999.0, limit_used_pct)
+        c_dict["is_limit_warning"] = (limit_used_pct >= 80.0)
+        c_dict["is_limit_exceeded"] = (c_dict["current_balance"] >= c_dict["credit_limit"] and c_dict["credit_limit"] > 0)
         c_dict["wa_phone"] = format_whatsapp_number(c_dict["phone"])
+
+        # 30+ Days Overdue calculation
+        oldest_unpaid = c_dict.get("oldest_unpaid_date")
+        days_overdue = 0
+        is_overdue = False
+        if oldest_unpaid and c_dict["current_balance"] > 0:
+            try:
+                oldest_d = datetime.strptime(oldest_unpaid, "%Y-%m-%d").date()
+                days_overdue = max(0, (today - oldest_d).days)
+                is_overdue = (days_overdue >= 30)
+            except Exception:
+                days_overdue = 0
+                is_overdue = False
+
+        c_dict["oldest_unpaid_date"] = oldest_unpaid or ""
+        c_dict["days_overdue"] = days_overdue
+        c_dict["is_overdue"] = is_overdue
         customers.append(c_dict)
     conn.close()
     return customers
@@ -1132,7 +1153,7 @@ def update_customer(customer_id: int, data: CustomerUpdate):
 
 @app.get("/api/customers/{customer_id}/ledger")
 def get_customer_ledger(customer_id: int):
-    """Returns chronological series khata ledger for a customer."""
+    """Returns chronological series khata ledger for a customer with bill age and overdue indicators."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM customers WHERE id = ?", (customer_id,))
@@ -1150,12 +1171,33 @@ def get_customer_ledger(customer_id: int):
     entries = [dict(r) for r in cursor.fetchall()]
     conn.close()
 
+    today = date.today()
+    for e in entries:
+        is_settled = (e.get("is_settled") == 1)
+        entry_date_str = e.get("date")
+        age_days = 0
+        entry_overdue = False
+        if not is_settled and entry_date_str:
+            try:
+                ed = datetime.strptime(entry_date_str, "%Y-%m-%d").date()
+                age_days = max(0, (today - ed).days)
+                entry_overdue = (age_days >= 30)
+            except Exception:
+                age_days = 0
+                entry_overdue = False
+        e["age_days"] = age_days
+        e["is_overdue"] = entry_overdue
+
     total_credit = sum(e["amount"] for e in entries)
     total_settled = sum(e["amount"] for e in entries if e["is_settled"] == 1)
     current_balance = sum(e["amount"] for e in entries if e["is_settled"] == 0)
     pending_count = sum(1 for e in entries if e["is_settled"] == 0)
 
     customer["wa_phone"] = format_whatsapp_number(customer["phone"])
+    credit_limit = float(customer.get("credit_limit") or 15000.0)
+    limit_pct = round((current_balance / credit_limit) * 100, 1) if credit_limit > 0 else 0.0
+    has_overdue = any(e["is_overdue"] for e in entries if e.get("is_settled") == 0)
+    oldest_unpaid_days = max((e["age_days"] for e in entries if e.get("is_settled") == 0), default=0)
 
     return {
         "customer": customer,
@@ -1164,7 +1206,12 @@ def get_customer_ledger(customer_id: int):
             "total_settled": total_settled,
             "current_balance": current_balance,
             "pending_count": pending_count,
-            "total_entries": len(entries)
+            "total_entries": len(entries),
+            "limit_used_pct": limit_pct,
+            "is_limit_warning": (limit_pct >= 80.0),
+            "is_limit_exceeded": (current_balance >= credit_limit and credit_limit > 0),
+            "has_overdue": has_overdue,
+            "oldest_unpaid_days": oldest_unpaid_days
         },
         "ledger": entries
     }
@@ -1209,6 +1256,12 @@ def add_customer_khata(data: CustomerKhataCreate):
         date_str=entry_date
     )
 
+    # Check credit limit warnings
+    credit_limit = float(customer["credit_limit"] or 15000.0)
+    limit_pct = round((new_balance / credit_limit) * 100, 1) if credit_limit > 0 else 0.0
+    limit_warning = (limit_pct >= 80.0)
+    limit_exceeded = (new_balance >= credit_limit and credit_limit > 0)
+
     return {
         "success": True,
         "id": entry_id,
@@ -1216,6 +1269,10 @@ def add_customer_khata(data: CustomerKhataCreate):
         "amount": data.amount,
         "customer_name": customer["name"],
         "new_balance": new_balance,
+        "credit_limit": credit_limit,
+        "limit_used_pct": limit_pct,
+        "limit_warning": limit_warning,
+        "limit_exceeded": limit_exceeded,
         "message": f"Credit purchase of Rs. {data.amount:,.2f} recorded for {customer['name']} ({invoice_no})."
     }
 
@@ -1233,7 +1290,7 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
     entry = dict(entry_row)
     if entry["is_settled"] == 1:
         conn.close()
-        return {"success": True, "message": "Yeh invoice pehle se settled hai.", "already_settled": True}
+        return {"success": True, "message": "This bill is already fully paid.", "already_settled": True}
 
     settle_date = data.settled_at or date.today().isoformat()
     pay_method = data.payment_method or "Cash"
@@ -1266,7 +1323,7 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
         cursor.execute("""
             INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes)
             VALUES (?, ?, ?, ?, ?, 0, ?)
-        """, (entry["customer_id"], f"{entry['invoice_no']}-REM", entry["date"], f"{entry['item_description']} (Baqaya)", rem_amt, f"Remaining baqaya from {entry['invoice_no']} after partial payment of Rs. {paid_amt:,.2f}"))
+        """, (entry["customer_id"], f"{entry['invoice_no']}-REM", entry["date"], f"{entry['item_description']} (Remaining Balance)", rem_amt, f"Remaining balance from {entry['invoice_no']} after partial payment of Rs. {paid_amt:,.2f}"))
         conn.commit()
 
         cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (entry["customer_id"],))
@@ -1282,7 +1339,7 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
             "settled_at": settle_date,
             "payment_method": pay_method,
             "updated_balance": updated_balance,
-            "message": f"Partial payment of Rs. {paid_amt:,.2f} recorded for {entry['invoice_no']}. Baqaya remaining: Rs. {rem_amt:,.2f}."
+            "message": f"Partial payment of Rs. {paid_amt:,.2f} recorded for {entry['invoice_no']}. Remaining balance: Rs. {rem_amt:,.2f}."
         }
     else:
         # Full settlement
@@ -1312,8 +1369,8 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
         log_activity(
             category="CUSTOMER_KHATA",
             action_type="CUSTOMER_KHATA_SETTLED",
-            title=f"Customer Khata Settled: {cust_name}",
-            description=f"Invoice #{entry['invoice_no']} of Rs. {orig_amount:,.2f} settled in full via {pay_method}",
+            title=f"Customer Khata Cleared: {cust_name}",
+            description=f"Invoice #{entry['invoice_no']} of Rs. {orig_amount:,.2f} cleared in full via {pay_method}",
             staff_name=cust_name,
             amount=orig_amount,
             date_str=settle_date
@@ -1327,7 +1384,7 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
             "payment_method": pay_method,
             "amount": orig_amount,
             "updated_balance": updated_balance,
-            "message": f"Invoice {entry['invoice_no']} (Rs. {orig_amount:,.2f}) settled in full via {pay_method}."
+            "message": f"Invoice {entry['invoice_no']} (Rs. {orig_amount:,.2f}) cleared in full via {pay_method}."
         }
 
 
@@ -1346,7 +1403,7 @@ def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
     pending_items = [dict(r) for r in cursor.fetchall()]
     if not pending_items:
         conn.close()
-        return {"success": True, "message": "Koi pending balance mojood nahi.", "settled_count": 0, "settled_amount": 0}
+        return {"success": True, "message": "No pending balance found for this customer.", "settled_count": 0, "settled_amount": 0}
 
     settle_date = data.settled_at or date.today().isoformat()
     pay_method = data.payment_method or "Cash"
@@ -1402,7 +1459,7 @@ def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
             cursor.execute("""
                 INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes)
                 VALUES (?, ?, ?, ?, ?, 0, ?)
-            """, (customer_id, f"{item['invoice_no']}-REM", item['date'], f"{item['item_description']} (Baqaya)", rem_portion, f"Remaining baqaya from {item['invoice_no']} after partial payment of Rs. {paid_portion:,.2f}"))
+            """, (customer_id, f"{item['invoice_no']}-REM", item['date'], f"{item['item_description']} (Remaining Balance)", rem_portion, f"Remaining balance from {item['invoice_no']} after partial payment of Rs. {paid_portion:,.2f}"))
 
             remaining_to_pay = 0
             settled_count += 1
@@ -1425,7 +1482,7 @@ def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
             "remaining_balance": updated_balance,
             "settled_at": settle_date,
             "payment_method": pay_method,
-            "message": f"Juzwi Adaigi (Partial payment) of Rs. {pay_amount:,.2f} for {customer['name']} received via {pay_method}. Baqaya balance: Rs. {updated_balance:,.2f}."
+            "message": f"Partial payment of Rs. {pay_amount:,.2f} received for {customer['name']} via {pay_method}. Remaining balance: Rs. {updated_balance:,.2f}."
         }
     else:
         return {
@@ -1438,7 +1495,7 @@ def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
             "remaining_balance": updated_balance,
             "settled_at": settle_date,
             "payment_method": pay_method,
-            "message": f"Full balance of Rs. {pay_amount:,.2f} ({settled_count} invoices) for {customer['name']} settled via {pay_method}."
+            "message": f"Full balance of Rs. {pay_amount:,.2f} ({settled_count} bills) for {customer['name']} paid in full via {pay_method}."
         }
 
 @app.post("/api/customer-khata/clear-settled")
@@ -1450,12 +1507,12 @@ def clear_settled_customer_khata():
     count = cursor.fetchone()[0] or 0
     if count == 0:
         conn.close()
-        return {"success": True, "deleted_count": 0, "message": "Koi settled customer khata record mojood nahi hai."}
+        return {"success": True, "deleted_count": 0, "message": "No cleared customer records found."}
     
     cursor.execute("DELETE FROM customer_khata WHERE is_settled = 1")
     conn.commit()
     conn.close()
-    return {"success": True, "deleted_count": count, "message": f"{count} settled customer khata records kamyabi se delete ho gaye."}
+    return {"success": True, "deleted_count": count, "message": f"{count} cleared customer records deleted successfully."}
 
 @app.get("/api/customer-khata/kpis")
 def get_customer_khata_kpis():
@@ -1484,6 +1541,17 @@ def get_customer_khata_kpis():
     cursor.execute("SELECT COUNT(*) FROM customers WHERE is_active = 1")
     total_customers_count = int(cursor.fetchone()[0])
 
+    # 6. Overdue Debtors Count (> 30 days unpaid)
+    thirty_days_ago = (date.today() - timedelta(days=30)).isoformat()
+    cursor.execute("""
+        SELECT COUNT(DISTINCT customer_id), COALESCE(SUM(amount), 0)
+        FROM customer_khata 
+        WHERE is_settled = 0 AND date <= ?
+    """, (thirty_days_ago,))
+    overdue_row = cursor.fetchone()
+    overdue_debtors_count = int(overdue_row[0] or 0)
+    overdue_total_amount = float(overdue_row[1] or 0.0)
+
     conn.close()
 
     return {
@@ -1492,6 +1560,8 @@ def get_customer_khata_kpis():
         "this_week_recovered": this_week_recovered,
         "active_debtors_count": active_debtors_count,
         "total_customers_count": total_customers_count,
+        "overdue_debtors_count": overdue_debtors_count,
+        "overdue_total_amount": overdue_total_amount,
         "since_date": seven_days_ago
     }
 

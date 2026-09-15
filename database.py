@@ -213,6 +213,13 @@ def init_db():
     );
     """)
 
+    cursor.execute("PRAGMA table_info(customers)")
+    existing_cust_cols = {row[1] for row in cursor.fetchall()}
+    if "last_wa_reminder_date" not in existing_cust_cols:
+        cursor.execute("ALTER TABLE customers ADD COLUMN last_wa_reminder_date TEXT DEFAULT ''")
+    if "last_wa_reminder_time" not in existing_cust_cols:
+        cursor.execute("ALTER TABLE customers ADD COLUMN last_wa_reminder_time TEXT DEFAULT ''")
+
     # 8. Customer Khata Series Ledger Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS customer_khata (

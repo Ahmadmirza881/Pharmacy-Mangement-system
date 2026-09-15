@@ -9,9 +9,9 @@ echo.
 
 where python >nul 2>nul
 if %errorlevel% neq 0 (
-    echo [ERROR] Python install nahi hai ya PATH me shamil nahi hai!
-    echo Barah-e-karam https://www.python.org se Python install karein
-    echo aur setup me "Add python.exe to PATH" ko lazmi tick karein.
+    echo [ERROR] Python is not installed or not added to PATH!
+    echo Please install Python from https://www.python.org
+    echo and make sure to check "Add python.exe to PATH" during setup.
     echo.
     pause
     exit /b
@@ -23,9 +23,9 @@ python -m pip install -r requirements.txt --quiet --disable-pip-version-check
 echo [2/3] Opening browser at http://localhost:8000 ...
 start "" cmd /c "timeout /t 2 /nobreak >nul && start http://localhost:8000"
 
-echo [3/3] Server chal raha hai...
-echo NOTE: Is window (black screen) ko band mat kijiyega jab tak system use ho raha ho.
-echo Band karne k liye Ctrl + C press karein ya window close karein.
+echo [3/3] Server is running...
+echo NOTE: Please do not close this window while using the system.
+echo To stop the server, press Ctrl + C or close this window.
 echo.
 python main.py
 

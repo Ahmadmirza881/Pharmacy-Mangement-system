@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Mumtaz Pharmacy — Biometric Attendance &amp; Payroll System</title>
   <link rel="icon" href="data:,">
     <!-- Google Fonts: Plus Jakarta Sans, Inter, JetBrains Mono -->
@@ -1541,7 +1544,7 @@
               <i data-lucide="user-x" class="w-4 h-4"></i>
             </div>
             <div>
-              <h4 class="font-bold text-sm text-slate-900">Staff On Leave Today (Chutti Par Hain)</h4>
+              <h4 class="font-bold text-sm text-slate-900">Staff On Leave Today</h4>
               <p class="text-[11px] text-slate-500">Today approved leaves • Auto marked absent/leave in register</p>
             </div>
           </div>
@@ -1580,7 +1583,7 @@
               <i data-lucide="user-check" class="w-4 h-4"></i>
             </div>
             <div>
-              <h4 class="font-bold text-sm text-slate-900">Staff On Duty Today (Leave Par Nahi Hain)</h4>
+              <h4 class="font-bold text-sm text-slate-900">Staff On Duty Today</h4>
               <p class="text-[11px] text-slate-500">Active team members available for pharmacy duty today</p>
             </div>
           </div>
@@ -1721,9 +1724,9 @@
             <i data-lucide="printer" class="w-4 h-4 text-white"></i>
             <span>Weekly Report</span>
           </button>
-          <button onclick="clearAllSettledCustomerKhata()" title="Delete old settled/cleared records to keep ledger clean" class="bg-white hover:bg-rose-50 text-rose-700 hover:text-rose-800 border-2 border-rose-300 hover:border-rose-500 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer">
+          <button onclick="clearAllSettledCustomerKhata()" title="Delete old cleared records to keep ledger clean" class="bg-white hover:bg-rose-50 text-rose-700 hover:text-rose-800 border-2 border-rose-300 hover:border-rose-500 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer">
             <i data-lucide="trash-2" class="w-4 h-4 text-rose-600"></i>
-            <span>Clear Settled Records</span>
+            <span>Delete Cleared Records</span>
           </button>
         </div>
 
@@ -1746,7 +1749,7 @@
         <!-- KPI 1: TOTAL OUTSTANDING KHATA -->
         <div class="bg-white rounded-xl p-4 border border-rose-200 shadow-xs flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-slate-500">Outstanding Baqaya</p>
+            <p class="text-xs font-medium text-slate-500">Outstanding Balance</p>
             <h4 id="cust-kpi-outstanding" class="text-2xl font-black text-rose-600 tracking-tight mt-0.5">Rs. 0.00</h4>
             <p class="text-[11px] font-medium text-slate-400 mt-0.5">Regular Customers Balance</p>
           </div>
@@ -1772,7 +1775,7 @@
           <div>
             <p class="text-xs font-medium text-slate-500">7-Day Recoveries</p>
             <h4 id="cust-kpi-week-recovered" class="text-2xl font-black text-emerald-600 tracking-tight mt-0.5">Rs. 0.00</h4>
-            <p class="text-[11px] font-medium text-emerald-600 mt-0.5">Wasooli (Cash Received)</p>
+            <p class="text-[11px] font-medium text-emerald-600 mt-0.5">Recoveries (Cash Received)</p>
           </div>
           <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
             <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
@@ -1782,7 +1785,7 @@
         <!-- KPI 4: ACTIVE DEBTORS -->
         <div class="bg-white rounded-xl p-4 border border-indigo-200 shadow-xs flex items-center justify-between">
           <div>
-            <p class="text-xs font-medium text-slate-500">Active Debtors</p>
+            <p class="text-xs font-medium text-slate-500">Unpaid Customers</p>
             <h4 id="cust-kpi-debtors-count" class="text-2xl font-black text-slate-900 tracking-tight mt-0.5">0 Customers</h4>
             <p class="text-[11px] font-medium text-slate-400 mt-0.5">Pending Unpaid Khata</p>
           </div>
@@ -1791,6 +1794,58 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- DEDICATED SECTION: 30+ DAYS CHRONIC OVERDUE ACCOUNTS -->
+      <!-- ================================================================= -->
+      <div id="section-overdue-customers" class="bg-white rounded-xl border border-slate-200/90 shadow-xs overflow-hidden">
+        <!-- HEADER -->
+        <div class="p-4 bg-slate-50/70 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/80 flex items-center justify-center shadow-2xs shrink-0">
+              <i data-lucide="clock" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide">30+ Days Overdue Accounts</h3>
+                <span id="badge-overdue-count" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-900 border border-amber-200/80">0 Customers</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-0.5">
+                All regular customers with outstanding credit balance overdue by more than 30 days.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="text-right hidden sm:block">
+              <span class="text-[10px] font-semibold text-slate-400 uppercase block">Total Overdue Balance</span>
+              <strong id="header-overdue-total-amount" class="text-sm font-bold text-slate-800 font-mono">Rs. 0.00</strong>
+            </div>
+            <button onclick="sendBatchOverdueReminders()" title="Send WhatsApp Reminders to all overdue customers" class="px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer transition active:scale-95">
+              <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Send WhatsApp to All Overdue
+            </button>
+          </div>
+        </div>
+
+        <!-- OVERDUE CUSTOMERS TABLE -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-slate-50/80 text-slate-500 text-[11px] uppercase font-semibold tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="py-2.5 px-4 min-w-[200px]">Overdue Customer</th>
+                <th class="py-2.5 px-4 min-w-[130px]">Oldest Bill Date</th>
+                <th class="py-2.5 px-4 min-w-[130px]">Delay / Overdue Time</th>
+                <th class="py-2.5 px-4 min-w-[130px]">Total Due Balance</th>
+                <th class="py-2.5 px-4 min-w-[130px]">Credit Limit</th>
+                <th class="py-2.5 px-4 text-center min-w-[160px]">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="overdue-customers-tbody" class="divide-y divide-slate-100">
+              <!-- Rendered via renderOverdueSection() -->
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- MAIN CUSTOMERS MASTER CARD -->
@@ -1812,6 +1867,9 @@
             <button onclick="setCustomerFilter('pending')" id="btn-cust-filter-pending" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#232272] text-white shadow-xs cursor-pointer transition">
               Has Pending Balance (<span id="count-cust-pending">0</span>)
             </button>
+            <button onclick="setCustomerFilter('overdue')" id="btn-cust-filter-overdue" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer transition flex items-center gap-1.5">
+              <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-600"></i> 30+ Days Overdue (<span id="count-cust-overdue">0</span>)
+            </button>
             <button onclick="setCustomerFilter('cleared')" id="btn-cust-filter-cleared" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer transition">
               All Clear (<span id="count-cust-cleared">0</span>)
             </button>
@@ -1827,7 +1885,7 @@
                 <th class="py-3 px-4 min-w-[150px]">Credit Limit &amp; Usage</th>
                 <th class="py-3 px-4 min-w-[110px]">Total Credit</th>
                 <th class="py-3 px-4 min-w-[110px]">Total Paid</th>
-                <th class="py-3 px-4 min-w-[120px] text-rose-600">Baqaya (Due Balance)</th>
+                <th class="py-3 px-4 min-w-[120px] text-rose-600">Due Balance</th>
                 <th class="py-3 px-4 text-center min-w-[100px]">Status</th>
                 <th class="py-3 px-4 text-center min-w-[160px]">Actions</th>
               </tr>
@@ -1853,7 +1911,7 @@
           </div>
 
           <h2 class="text-2xl font-black text-[#232272]">Place Your Thumb on Scanner</h2>
-          <p class="text-sm text-slate-500 max-w-md mt-1">Subah aate waqt (Time-IN) aur shift khatam hone par (Time-OUT) apna angootha lagayein.</p>
+          <p class="text-sm text-slate-500 max-w-md mt-1">Scan your thumb when you arrive (Time-IN) and when your shift ends (Time-OUT).</p>
 
           <!-- SCANNER VISUAL BUTTON -->
           <div class="my-8 relative group cursor-pointer" onclick="simulatePunch()">
@@ -1943,7 +2001,7 @@
               <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
               <span>Export Excel</span>
             </button>
-            <button onclick="openSalaryWaTemplateModal()" class="bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 hover:border-emerald-500 active:scale-95 text-xs font-bold py-2 px-3.5 rounded-xl flex items-center gap-1.5 shadow-2xs transition cursor-pointer" title="Staff Salary WhatsApp payslip message template edit karein">
+            <button onclick="openSalaryWaTemplateModal()" class="bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 hover:border-emerald-500 active:scale-95 text-xs font-bold py-2 px-3.5 rounded-xl flex items-center gap-1.5 shadow-2xs transition cursor-pointer" title="Edit Staff Salary WhatsApp payslip template">
               <i data-lucide="message-square-text" class="w-3.5 h-3.5 text-emerald-600"></i>
               <span>Edit Slip Message</span>
             </button>
@@ -1956,7 +2014,7 @@
             <div>
               <span class="text-xs text-slate-500 font-semibold">Total Net Payable</span>
               <h4 id="summary-net" class="text-2xl font-black text-emerald-600 mt-0.5 tracking-tight">Rs. 0</h4>
-              <p class="text-[11px] text-slate-400 font-medium">Final net disbursement amount</p>
+              <p class="text-[11px] text-slate-400 font-medium">Final net salary amount</p>
             </div>
             <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-100">
               <i data-lucide="banknote" class="w-5 h-5"></i>
@@ -1976,7 +2034,7 @@
 
           <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-xs flex items-center justify-between">
             <div>
-              <span class="text-xs text-slate-500 font-semibold">Disbursement Status</span>
+              <span class="text-xs text-slate-500 font-semibold">Payment Status</span>
               <h4 id="summary-paid-count" class="text-2xl font-black text-slate-900 mt-0.5 tracking-tight">0 Paid</h4>
               <p id="summary-paid-pct" class="text-[11px] text-slate-400 font-medium">0 of 0 staff cleared</p>
             </div>
@@ -2021,7 +2079,7 @@
               <h3 class="font-bold text-xs uppercase tracking-wider text-slate-800">Pending / Unpaid Salaries</h3>
               <span id="payroll-pending-count-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">0 Staff</span>
             </div>
-            <span class="text-[11px] text-amber-700 font-medium hidden sm:inline-block">Salaries awaiting disbursement</span>
+            <span class="text-[11px] text-amber-700 font-medium hidden sm:inline-block">Salaries waiting for payment</span>
           </div>
 
           <div class="overflow-x-auto">
@@ -2040,24 +2098,24 @@
               </thead>
               <tbody id="payroll-pending-tbody" class="divide-y divide-slate-100">
                 <tr>
-                  <td colspan="8" class="p-8 text-center text-slate-400">Pehle month select kar ke "Calculate Payroll" dabayein.</td>
+                  <td colspan="8" class="p-8 text-center text-slate-400">Select month and click "Calculate Payroll" to view salaries.</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- 2. PAID / DISBURSED SALARIES SECTION -->
+        <!-- 2. PAID SALARIES SECTION -->
         <div id="payroll-paid-section" class="bg-white rounded-2xl border border-emerald-200/90 shadow-xs overflow-hidden">
           <div class="p-3.5 bg-gradient-to-r from-emerald-50/90 via-emerald-50/40 to-white border-b border-emerald-200/70 flex items-center justify-between">
             <div class="flex items-center gap-2.5">
               <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs shadow-2xs">
                 <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i>
               </div>
-              <h3 class="font-bold text-xs uppercase tracking-wider text-slate-800">Paid / Disbursed Salaries</h3>
+              <h3 class="font-bold text-xs uppercase tracking-wider text-slate-800">Paid Salaries</h3>
               <span id="payroll-paid-count-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">0 Staff</span>
             </div>
-            <span class="text-[11px] text-emerald-700 font-medium hidden sm:inline-block">Successfully Disbursed</span>
+            <span class="text-[11px] text-emerald-700 font-medium hidden sm:inline-block">Successfully Paid</span>
           </div>
 
           <div class="overflow-x-auto">
@@ -2076,7 +2134,7 @@
               </thead>
               <tbody id="payroll-paid-tbody" class="divide-y divide-slate-100">
                 <tr>
-                  <td colspan="8" class="p-8 text-center text-slate-400">Pehle month select kar ke "Calculate Payroll" dabayein.</td>
+                  <td colspan="8" class="p-8 text-center text-slate-400">Select month and click "Calculate Payroll" to view salaries.</td>
                 </tr>
               </tbody>
             </table>
@@ -2094,9 +2152,9 @@
               <i data-lucide="file-spreadsheet" class="w-4 h-4 text-white"></i>
               <span>Export Excel</span>
             </button>
-            <button onclick="clearAllSettledStaffKhata()" title="Delete old settled records to save space" class="bg-white hover:bg-rose-50 text-rose-700 hover:text-rose-800 border-2 border-rose-300 hover:border-rose-500 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer">
+            <button onclick="clearAllSettledStaffKhata()" title="Delete old cleared records to save space" class="bg-white hover:bg-rose-50 text-rose-700 hover:text-rose-800 border-2 border-rose-300 hover:border-rose-500 text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition active:scale-95 cursor-pointer">
               <i data-lucide="trash-2" class="w-4 h-4 text-rose-600"></i>
-              <span>Clear Settled Records</span>
+              <span>Delete Cleared Records</span>
             </button>
           </div>
 
@@ -2157,7 +2215,7 @@
                 <span id="adv-tab-pending-count" class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20">0</span>
               </button>
               <button onclick="setAdvanceStatusFilter('settled')" id="btn-adv-filter-settled" class="flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5 cursor-pointer">
-                <span>Settled</span>
+                <span>Cleared</span>
                 <span id="adv-tab-settled-count" class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-slate-300/80">0</span>
               </button>
               <button onclick="setAdvanceStatusFilter('all')" id="btn-adv-filter-all" class="flex-1 sm:flex-none px-4 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5 cursor-pointer">
@@ -2194,7 +2252,7 @@
                   <th class="py-2.5 px-3.5">Khata Type</th>
                   <th class="py-2.5 px-3.5">Amount</th>
                   <th class="py-2.5 px-3.5">Reason / Description</th>
-                  <th class="py-2.5 px-3.5">Settlement Status</th>
+                  <th class="py-2.5 px-3.5">Payment Status</th>
                   <th class="py-2.5 px-3.5 text-center">Action</th>
                 </tr>
               </thead>
@@ -2354,91 +2412,118 @@
   </div>
 
 
-<!-- MODAL: DIGITAL PAYSLIP PRINTABLE VIEW -->
   <!-- ================================================================= -->
-  <div id="slip-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-2 sm:p-4 overflow-y-auto hidden">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-5 shadow-2xl relative border border-slate-200 my-auto max-h-[96vh] flex flex-col">
-      <button onclick="closeSlipModal()" class="absolute top-3 right-3 text-slate-400 hover:text-slate-700 z-10 p-1 cursor-pointer">
+  <!-- MODAL: DIGITAL PAYSLIP PRINTABLE VIEW -->
+  <!-- ================================================================= -->
+  <div id="slip-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto hidden">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative border border-slate-200 my-auto max-h-[92vh] flex flex-col">
+      <button onclick="closeSlipModal()" title="Close Payslip (Esc)" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition cursor-pointer z-10">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
 
       <!-- PRINTABLE CONTENT -->
-      <div id="printable-slip" class="p-1 sm:p-2 overflow-y-auto flex-1">
-        <div class="flex items-center justify-between pb-2 border-b-2 border-[#232272]">
-          <div class="flex items-center space-x-2">
+      <div id="printable-slip" class="overflow-y-auto flex-1 p-1">
+        <!-- HEADER -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-3 pr-12">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-[#232272] border border-indigo-100 flex items-center justify-center font-bold shrink-0">
+              <i data-lucide="file-badge-2" class="w-5 h-5"></i>
+            </div>
             <div>
-              <h2 class="text-sm sm:text-base font-black text-[#232272] leading-tight">MUMTAZ PHARMACY</h2>
-              <p class="text-[9px] sm:text-[10px] text-slate-500 font-semibold">Official Biometric Salary Payslip</p>
+              <h2 class="text-base font-black text-[#232272] tracking-wide leading-tight">MUMTAZ PHARMACY</h2>
+              <p class="text-xs text-slate-500 font-medium mt-0.5">Official Biometric Salary Payslip</p>
             </div>
           </div>
-          <div class="text-right">
-            <span id="slip-payment-badge" class="text-[10px] sm:text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-300">PAID</span>
-            <div id="slip-month-label" class="text-xs font-bold text-slate-700 mt-0.5">September 2026</div>
-            <div id="slip-payment-date-label" class="text-[9px] text-slate-500 font-medium"></div>
+          <div class="text-left sm:text-right">
+            <span id="slip-payment-badge" class="inline-block text-[11px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200">PAID</span>
+            <div id="slip-month-label" class="text-xs font-bold text-slate-800 mt-1">September 2026</div>
+            <div id="slip-payment-date-label" class="text-[10px] text-slate-400 font-medium"></div>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 my-2 text-[11px] bg-slate-50 p-2 sm:p-2.5 rounded-lg border border-slate-100">
-          <div><span class="text-slate-400">Employee:</span> <strong id="slip-name" class="text-slate-800">Ali Raza</strong></div>
-          <div><span class="text-slate-400">Role:</span> <strong id="slip-role" class="text-slate-800">Pharmacist</strong></div>
-          <div><span class="text-slate-400">Month Days:</span> <strong id="slip-days" class="text-slate-800">30 Days</strong></div>
-          <div><span class="text-slate-400">Daily Duty:</span> <strong id="slip-duty" class="text-slate-800">8.0 hrs</strong></div>
-          <div><span class="text-slate-400">Daily Wage:</span> <strong id="slip-daily" class="text-slate-800">Rs. 1,500.00</strong></div>
-          <div><span class="text-slate-400">Hourly Wage:</span> <strong id="slip-hourly" class="text-slate-800">Rs. 187.50</strong></div>
-          <div class="col-span-2"><span class="text-slate-400">Allowed Free Leaves:</span> <strong id="slip-free-leaves" class="text-slate-800">2 / month</strong></div>
+        <!-- EMPLOYEE METADATA GRID -->
+        <div class="bg-slate-50/80 border border-slate-200 rounded-xl p-3.5 my-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Employee</span>
+            <strong id="slip-name" class="text-slate-900 text-sm block">Ali Raza</strong>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Role / Post</span>
+            <strong id="slip-role" class="text-slate-700 block">Pharmacist</strong>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Month Days</span>
+            <strong id="slip-days" class="text-slate-700 font-mono block">30 Days</strong>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Daily Duty</span>
+            <strong id="slip-duty" class="text-slate-700 font-mono block">8.0 hrs/day</strong>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Daily Wage</span>
+            <strong id="slip-daily" class="text-slate-700 font-mono block">Rs. 1,500.00</strong>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Hourly Wage</span>
+            <strong id="slip-hourly" class="text-slate-700 font-mono block">Rs. 187.50</strong>
+          </div>
+          <div class="col-span-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Allowed Free Leaves</span>
+            <strong id="slip-free-leaves" class="text-slate-700 block">2 / month</strong>
+          </div>
         </div>
 
         <!-- SALARY CALCULATION SUMMARY TABLE -->
-        <div class="my-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xs">
-          <div class="bg-slate-100/90 px-2.5 py-1.5 border-b border-slate-200 flex items-center justify-between">
-            <span class="text-[10px] sm:text-[11px] font-black text-[#232272] uppercase tracking-wider flex items-center gap-1.5">
+        <div class="my-3 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xs">
+          <div class="bg-slate-50 px-3.5 py-2 border-b border-slate-200 flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
               <i data-lucide="calculator" class="w-3.5 h-3.5 text-[#156D38]"></i>
               Salary Calculation Summary
             </span>
-            <span class="text-[9px] sm:text-[10px] text-slate-500 font-semibold">Gross − Leaves − Khata = Net Payable</span>
+            <span class="text-[10px] text-slate-400 font-medium hidden sm:inline">Gross − Leaves − Khata = Net Payable</span>
           </div>
 
           <table class="w-full text-xs border-collapse">
             <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
               <!-- 1. Gross Salary -->
-              <tr class="bg-slate-50/50">
-                <td class="py-1.5 px-2.5">
+              <tr class="bg-slate-50/40">
+                <td class="py-2.5 px-3.5">
                   <div class="font-bold text-slate-800 text-xs">Gross Salary</div>
-                  <div id="slip-gross-desc" class="text-[10px] text-slate-400 font-normal leading-tight">Basic Monthly Pay</div>
+                  <div id="slip-gross-desc" class="text-[11px] text-slate-400 font-normal leading-tight">Basic Monthly Pay</div>
                 </td>
-                <td id="slip-basic" class="py-1.5 px-2.5 text-right font-black text-slate-900 text-xs sm:text-sm font-mono">Rs. 0.00</td>
+                <td id="slip-basic" class="py-2.5 px-3.5 text-right font-bold text-slate-900 text-sm font-mono whitespace-nowrap">Rs. 0.00</td>
               </tr>
 
               <!-- 2. Leaves Deduction -->
-              <tr class="text-rose-600 bg-white">
-                <td class="py-1.5 px-2.5">
-                  <div class="font-bold text-rose-600 text-xs">Leaves Deduction</div>
-                  <div id="slip-leave-desc" class="text-[10px] text-rose-500 font-normal leading-tight">0 Absents • 0 Extra Leaves</div>
+              <tr class="bg-white">
+                <td class="py-2.5 px-3.5">
+                  <div class="font-bold text-slate-800 text-xs">Leaves Deduction</div>
+                  <div id="slip-leave-desc" class="text-[11px] text-slate-400 font-normal leading-tight">0 Absents • 0 Extra Leaves</div>
                 </td>
-                <td id="slip-leave" class="py-1.5 px-2.5 text-right font-bold text-rose-600 text-xs font-mono">- Rs. 0.00</td>
+                <td id="slip-leave" class="py-2.5 px-3.5 text-right font-bold text-slate-700 text-xs font-mono whitespace-nowrap">- Rs. 0.00</td>
               </tr>
 
               <!-- 3. Short Hours Cut (Only if short hours deficit exists) -->
-              <tr class="text-amber-700 bg-amber-50/40 hidden" id="slip-shorthour-row">
-                <td class="py-1.5 px-2.5">
-                  <div class="font-bold text-amber-800 text-xs">Short Hours Cut</div>
-                  <div id="slip-shorthour-desc" class="text-[10px] text-amber-600 font-normal leading-tight">Deficit Duty Hours</div>
+              <tr class="bg-amber-50/40 hidden" id="slip-shorthour-row">
+                <td class="py-2.5 px-3.5">
+                  <div class="font-bold text-amber-900 text-xs">Short Hours Cut</div>
+                  <div id="slip-shorthour-desc" class="text-[11px] text-amber-700 font-normal leading-tight">Short Duty Hours</div>
                 </td>
-                <td id="slip-shorthour" class="py-1.5 px-2.5 text-right font-bold text-amber-700 text-xs font-mono">- Rs. 0.00</td>
+                <td id="slip-shorthour" class="py-2.5 px-3.5 text-right font-bold text-amber-800 text-xs font-mono whitespace-nowrap">- Rs. 0.00</td>
               </tr>
 
               <!-- 4. Khata Deduction -->
-              <tr class="text-rose-600 bg-white">
-                <td class="py-1.5 px-2.5">
-                  <div class="font-bold text-rose-600 text-xs">Khata Deduction</div>
-                  <div id="slip-khata-desc" class="text-[10px] text-slate-500 font-normal leading-tight">Cash Advances &amp; Medicine Credit</div>
+              <tr class="bg-white">
+                <td class="py-2.5 px-3.5">
+                  <div class="font-bold text-slate-800 text-xs">Khata Deduction</div>
+                  <div id="slip-khata-desc" class="text-[11px] text-slate-400 font-normal leading-tight">Cash Advances &amp; Medicine Credit</div>
                 </td>
-                <td id="slip-advance" class="py-1.5 px-2.5 text-right font-bold text-rose-600 text-xs font-mono">- Rs. 0.00</td>
+                <td id="slip-advance" class="py-2.5 px-3.5 text-right font-bold text-slate-700 text-xs font-mono whitespace-nowrap">- Rs. 0.00</td>
               </tr>
 
               <!-- Itemized Khata Advances if present -->
               <tr id="slip-advances-details-row" class="hidden text-xs text-slate-600 bg-slate-50">
-                <td colspan="2" class="py-1.5 px-2.5 border-t border-slate-200">
+                <td colspan="2" class="py-2 px-3.5 border-t border-slate-200">
                   <div class="font-bold text-[10px] text-[#232272] mb-1 flex items-center justify-between">
                     <span>Itemized Khata Deductions:</span>
                     <span class="text-[9px] text-slate-400 font-normal">Auto-deducted from salary</span>
@@ -2450,45 +2535,42 @@
               </tr>
 
               <!-- 5. Net Payable Salary -->
-              <tr class="bg-emerald-50/90 border-t-2 border-[#156D38]">
-                <td class="py-2 px-2.5">
+              <tr class="bg-emerald-50/80 border-t-2 border-[#156D38]">
+                <td class="py-3 px-3.5">
                   <div class="text-xs font-black text-[#156D38] uppercase tracking-wider">NET PAYABLE</div>
-                  <div class="text-[10px] text-emerald-700 font-medium leading-tight">Final Take-Home Cash / Salary</div>
+                  <div class="text-[11px] text-emerald-800 font-medium leading-tight">Final Take-Home Cash / Salary</div>
                 </td>
-                <td id="slip-net" class="py-2 px-2.5 text-right text-[#156D38] text-sm sm:text-base font-black font-mono">Rs. 0.00</td>
+                <td id="slip-net" class="py-3 px-3.5 text-right text-[#156D38] text-base sm:text-lg font-black font-mono whitespace-nowrap">Rs. 0.00</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <div class="flex justify-between items-end pt-2 mt-2 border-t border-dashed border-slate-300 text-[9px] sm:text-[10px] text-slate-400">
-          <div>System Generated via Mumtaz Core Engine</div>
-          <div class="text-center">
-            <div class="h-3 sm:h-4"></div>
-            <div class="border-t border-slate-400 px-3">Owner Signature &amp; Stamp</div>
+        <div class="flex justify-between items-end pt-3 mt-3 border-t border-dashed border-slate-200 text-[10px] text-slate-400">
+          <div>
+            <span class="text-slate-500 font-medium">Mumtaz HR &amp; Payroll Management</span>
+            <div class="text-[9px] text-slate-400 font-mono">System Generated via Mumtaz Core Engine</div>
+          </div>
+          <div class="text-center shrink-0">
+            <div class="w-36 border-b border-slate-300 mb-1"></div>
+            <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Owner Signature &amp; Stamp</span>
           </div>
         </div>
       </div>
 
       <!-- ACTION BUTTONS -->
-      <div class="mt-2.5 pt-2 border-t border-slate-100 shrink-0">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <button id="slip-pay-btn" onclick="openDisburseModalFromSlip()" class="bg-[#156D38] hover:bg-emerald-800 text-white py-1.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer">
-            <i data-lucide="banknote" class="w-3.5 h-3.5"></i>
-            <span>Mark Paid</span>
-          </button>
-          <button onclick="sendPayslipWhatsApp()" class="bg-[#25D366] hover:bg-[#1ebe57] text-white py-1.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer" title="Staff ko WhatsApp par digital slip bhejein">
-            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
-            <span>WhatsApp</span>
-          </button>
-          <button onclick="downloadPayslipPDF()" class="bg-indigo-600 hover:bg-indigo-700 text-white py-1.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs transition cursor-pointer" title="Slip ko PDF file mein download karein">
-            <i data-lucide="download" class="w-3.5 h-3.5"></i>
-            <span>Download PDF</span>
-          </button>
-
-        </div>
-        <button onclick="closeSlipModal()" class="w-full mt-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer">
+      <div class="flex flex-wrap sm:flex-nowrap items-center justify-end gap-2.5 mt-4 pt-3 border-t border-slate-100 shrink-0">
+        <button onclick="closeSlipModal()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer transition">
           Close
+        </button>
+        <button onclick="downloadPayslipPDF()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="Download slip as PDF file">
+          <i data-lucide="download" class="w-3.5 h-3.5 text-indigo-600"></i> Download PDF
+        </button>
+        <button onclick="sendPayslipWhatsApp()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition" title="Send digital slip to staff via WhatsApp">
+          <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> WhatsApp
+        </button>
+        <button id="slip-pay-btn" onclick="openDisburseModalFromSlip()" class="px-4 py-2 rounded-lg bg-[#156D38] hover:bg-[#12582d] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition">
+          <i data-lucide="banknote" class="w-3.5 h-3.5"></i> Mark Paid
         </button>
       </div>
     </div>
@@ -2858,7 +2940,7 @@
           <i data-lucide="check-circle-2" class="w-5 h-5"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-800">Settle Khata / Advance Record</h3>
+          <h3 class="text-base font-bold text-slate-800">Clear Khata / Advance Record</h3>
           <p class="text-xs text-slate-500">Record direct counter cash return or salary deduction audit</p>
         </div>
       </div>
@@ -2879,25 +2961,25 @@
 
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-bold text-slate-600 uppercase">Amount to Settle / Katoti Raqam *</label>
-            <span id="settle-advance-balance-preview" class="text-[11px] font-bold text-emerald-700">Full Settlement</span>
+            <label class="block text-xs font-bold text-slate-600 uppercase">Amount to Clear *</label>
+            <span id="settle-advance-balance-preview" class="text-[11px] font-bold text-emerald-700">Full Clear</span>
           </div>
           <div class="relative">
             <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-500">Rs.</span>
             <input type="number" id="settle-advance-amount" step="1" min="1" required class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#156D38]" oninput="updateAdvanceSettlePreview()">
           </div>
           <p id="settle-advance-partial-help" class="text-[11px] text-emerald-700 mt-1 font-medium hidden">
-            ⚡ Juzwi Adaigi: Adaigi record ho jayegi aur bacha hua baqaya naye advance record mein save rahega.
+            ⚡ Partial Payment: Payment will be recorded and remaining balance will be carried forward.
           </p>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Settlement Date *</label>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Payment Date *</label>
           <input type="date" id="settle-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#156D38]">
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Settlement Method / Reason *</label>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Payment Method / Reason *</label>
           <select id="settle-type" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#156D38]">
             <option value="Deducted from August 2026 Salary">Deducted from August 2026 Salary</option>
             <option value="Deducted from September 2026 Salary" selected>Deducted from September 2026 Salary</option>
@@ -2914,7 +2996,7 @@
 
         <div class="flex gap-3 pt-3">
           <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow">
-            <i data-lucide="check" class="w-4 h-4"></i> Confirm Settlement
+            <i data-lucide="check" class="w-4 h-4"></i> Confirm &amp; Clear
           </button>
           <button type="button" onclick="closeSettleAdvanceModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs">
             Cancel
@@ -2938,8 +3020,8 @@
           <i data-lucide="banknote" class="w-5 h-5"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-800">Disburse Salary &amp; Settle Khata</h3>
-          <p class="text-xs text-slate-500">Official disbursement receipt &amp; advance reconciliation</p>
+          <h3 class="text-base font-bold text-slate-800">Pay Salary &amp; Clear Advances</h3>
+          <p class="text-xs text-slate-500">Official salary payment receipt &amp; advance clearance</p>
         </div>
       </div>
 
@@ -2977,7 +3059,7 @@
           <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
           <div>
             <strong>Automatic Khata Deduction:</strong>
-            <span id="disburse-khata-notice-text">Pending advances for this month will automatically be settled as deducted from salary.</span>
+            <span id="disburse-khata-notice-text">Pending advances for this month will automatically be cleared and deducted from salary.</span>
           </div>
         </div>
 
@@ -2987,7 +3069,7 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Disbursement Method *</label>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Payment Method *</label>
           <select id="disburse-method" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-[#156D38]">
             <option value="Cash at Counter Till" selected>Cash at Counter Till</option>
             <option value="Direct Bank Transfer">Direct Bank Transfer</option>
@@ -3069,7 +3151,7 @@
   </div>
 
   <!-- ================================================================= -->
-  <!-- MODAL: ADD CREDIT PURCHASE (NEW UDHAR INVOICE & 1-STEP REGISTER) -->
+  <!-- MODAL: ADD CREDIT PURCHASE (CREDIT INVOICE & 1-STEP REGISTER) -->
   <!-- ================================================================= -->
   <div id="add-customer-khata-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200 max-h-[95vh] overflow-y-auto">
@@ -3114,7 +3196,7 @@
             <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5"></i>
             <input type="text" id="khata-customer-search" oninput="filterKhataCustomerSelect()" placeholder="Type name or phone to filter list..." class="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#232272]">
           </div>
-          <select id="khata-customer-select" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <select id="khata-customer-select" onchange="checkCreditLimitWarning()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#232272]">
             <!-- Populated via JS -->
           </select>
         </div>
@@ -3141,7 +3223,7 @@
             </div>
             <div>
               <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Credit Limit (PKR)</label>
-              <input type="number" id="khata-new-limit" value="15000" min="1000" step="500" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800">
+              <input type="number" id="khata-new-limit" oninput="checkCreditLimitWarning()" value="15000" min="1000" step="500" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-xs font-semibold text-slate-800">
             </div>
           </div>
         </div>
@@ -3164,8 +3246,11 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Bill Amount (PKR) *</label>
-          <input type="number" id="khata-amount" required min="1" step="0.5" placeholder="e.g. 2450" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-bold text-rose-600 focus:outline-none focus:ring-2 focus:ring-[#232272]">
+          <input type="number" id="khata-amount" oninput="checkCreditLimitWarning()" required min="1" step="0.5" placeholder="e.g. 2450" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-bold text-rose-600 focus:outline-none focus:ring-2 focus:ring-[#232272]">
         </div>
+
+        <!-- REAL-TIME CREDIT LIMIT WARNING BANNER -->
+        <div id="khata-limit-warning-box" class="hidden"></div>
 
         <div class="flex gap-3 pt-3">
           <button type="submit" id="khata-submit-btn" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
@@ -3185,9 +3270,6 @@
   <!-- ================================================================= -->
   <div id="customer-ledger-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-4xl w-full p-6 shadow-2xl relative border border-slate-200 max-h-[92vh] flex flex-col">
-      <button onclick="closeCustomerLedgerModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
-        <i data-lucide="x" class="w-6 h-6"></i>
-      </button>
 
       <!-- CUSTOMER HEADER & SUMMARY -->
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200">
@@ -3205,26 +3287,34 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-4">
           <!-- BIG BALANCE BADGE -->
-          <div class="bg-rose-50 border border-rose-200 px-4 py-2 rounded-xl text-right">
-            <div class="text-[10px] font-bold text-rose-700 uppercase tracking-wider">Total Due Balance (Baqaya)</div>
-            <div id="ledger-modal-balance" class="text-2xl font-black text-rose-600">Rs. 0.00</div>
+          <div class="bg-rose-50/80 border border-rose-200 px-4 py-2 rounded-xl text-right">
+            <div class="text-[10px] font-bold text-rose-700 uppercase tracking-wider">Total Due Balance</div>
+            <div id="ledger-modal-balance" class="text-2xl font-black text-rose-600 font-mono">Rs. 0.00</div>
           </div>
+
+          <!-- CLOSE BUTTON WITH GENEROUS BREATHING ROOM -->
+          <button onclick="closeCustomerLedgerModal()" title="Close Ledger (Esc)" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition cursor-pointer shrink-0">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
         </div>
       </div>
+
+      <!-- DYNAMIC LEDGER ALERTS CONTAINER (OVERDUE & CREDIT LIMIT WARNINGS) -->
+      <div id="ledger-alerts-container" class="mt-3 space-y-2 hidden"></div>
 
       <!-- SUMMARY PILLS & QUICK ACTION BAR -->
       <div class="flex flex-wrap items-center justify-between gap-2 py-3 bg-slate-50 px-3 rounded-xl mt-3 border border-slate-200">
         <div class="flex items-center gap-4 text-xs font-medium text-slate-600">
           <span>Total Credit Taken: <strong id="ledger-modal-total-credit" class="text-slate-800">Rs. 0.00</strong></span>
-          <span>Total Settled: <strong id="ledger-modal-total-settled" class="text-emerald-700">Rs. 0.00</strong></span>
+          <span>Total Paid: <strong id="ledger-modal-total-settled" class="text-emerald-700">Rs. 0.00</strong></span>
           <span>Credit Limit: <strong id="ledger-modal-limit" class="text-indigo-800">Rs. 0.00</strong></span>
         </div>
 
         <div class="flex items-center gap-2">
           <button id="btn-ledger-settle-all" onclick="settleAllBalanceForCurrentCustomer()" class="bg-[#232272] hover:bg-indigo-950 text-white font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 shadow cursor-pointer">
-            <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Settle Full Balance
+            <i data-lucide="check-check" class="w-3.5 h-3.5"></i> Clear Full Balance
           </button>
           <button id="btn-ledger-print-parchi" onclick="printParchiForCurrentCustomer()" class="bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 rounded-lg text-xs flex items-center gap-1 border border-slate-300 shadow-xs cursor-pointer">
             <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print Receipt
@@ -3239,9 +3329,9 @@
       <div class="bg-indigo-50/70 border border-indigo-100 p-3.5 rounded-xl mt-3">
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-bold text-[#232272] flex items-center gap-1.5">
-            <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500"></i> Quick Add Bill to Khata Book
+            <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-500"></i> Quick Add Credit Purchase
           </span>
-          <span class="text-[11px] text-slate-500 font-medium">Bina window tabdeel kiye foran khata mein bill darj karein</span>
+          <span class="text-[11px] text-slate-500 font-medium">Record a credit invoice directly to ledger</span>
         </div>
         <form onsubmit="submitInlineLedgerBill(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
           <div class="sm:col-span-2">
@@ -3303,7 +3393,7 @@
         </div>
         <div>
           <h3 class="text-base font-bold text-slate-800">Clear Khata Invoice</h3>
-          <p class="text-xs text-slate-500">Record 100% full invoice settlement</p>
+          <p class="text-xs text-slate-500">Record payment to clear bill</p>
         </div>
       </div>
 
@@ -3319,20 +3409,20 @@
 
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-bold text-slate-600 uppercase">Amount to Pay / Wasool Shuda *</label>
-            <span id="settle-entry-balance-preview" class="text-[11px] font-bold text-emerald-700">Full Settlement</span>
+            <label class="block text-xs font-bold text-slate-600 uppercase">Amount to Pay *</label>
+            <span id="settle-entry-balance-preview" class="text-[11px] font-bold text-emerald-700">Full Payment (Clear Bill)</span>
           </div>
           <div class="relative">
             <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-500">Rs.</span>
             <input type="number" id="settle-entry-amount-to-pay" step="0.5" min="1" required class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#156D38]" oninput="updateSingleInvoiceSettlePreview()">
           </div>
           <p id="settle-entry-partial-help" class="text-[11px] text-emerald-700 mt-1 font-medium hidden">
-            ⚡ Juzwi Adaigi: Adaigi record ho jayegi aur bacha hua baqaya naye bill mein save rahega.
+            ⚡ Partial Payment: Payment will be recorded and remaining balance will be carried forward.
           </p>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Settlement Date *</label>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Payment Date *</label>
           <input type="date" id="settle-entry-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
         </div>
 
@@ -3355,7 +3445,7 @@
         <div class="flex gap-3 pt-3">
           <button type="submit" class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
             <i data-lucide="check" class="w-4 h-4"></i>
-            <span id="settle-entry-btn-text">Confirm Settlement</span>
+            <span id="settle-entry-btn-text">Confirm &amp; Clear</span>
           </button>
           <button type="button" onclick="closeSettleCustomerKhataModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer">
             Cancel
@@ -3366,7 +3456,7 @@
   </div>
 
   <!-- ================================================================= -->
-  <!-- MODAL: QUICK FULL SETTLEMENT (CLEAR BAQAYA) -->
+  <!-- MODAL: QUICK FULL SETTLEMENT (CLEAR BALANCE) -->
   <!-- ================================================================= -->
   <div id="quick-settle-all-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200">
@@ -3379,8 +3469,8 @@
           <i data-lucide="check-check" class="w-5 h-5"></i>
         </div>
         <div>
-          <h3 class="text-base font-bold text-slate-800">Wasooli / Settle Baqaya (Full or Partial)</h3>
-          <p class="text-xs text-slate-500">Mukammal ya juzwi payment (partial) asani se darj karein</p>
+          <h3 class="text-base font-bold text-slate-800">Receive Payment / Clear Balance</h3>
+          <p class="text-xs text-slate-500">Record full or partial payment easily</p>
         </div>
       </div>
 
@@ -3397,7 +3487,7 @@
               <div id="quick-settle-customer-phone" class="text-xs font-mono text-slate-500 mt-0.5">0300-1234567</div>
             </div>
             <div class="text-right">
-              <div class="text-[10px] uppercase font-bold text-rose-600 tracking-wider">Due Baqaya</div>
+              <div class="text-[10px] uppercase font-bold text-rose-600 tracking-wider">Due Balance</div>
               <div id="quick-settle-balance-amount" class="text-xl font-black text-rose-600 mt-0.5">Rs. 0.00</div>
               <div id="quick-settle-invoices-count" class="text-[10px] text-slate-400 mt-0.5">1 pending invoice</div>
             </div>
@@ -3407,8 +3497,8 @@
         <!-- PAYMENT AMOUNT INPUT (PARTIAL OR FULL) -->
         <div>
           <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-bold text-slate-600 uppercase">Wasool Shuda Raqam (Payment Amount) *</label>
-            <span id="quick-settle-balance-preview" class="text-[11px] font-bold text-emerald-700">Mukammal Settle (All Clear)</span>
+            <label class="block text-xs font-bold text-slate-600 uppercase">Payment Amount *</label>
+            <span id="quick-settle-balance-preview" class="text-[11px] font-bold text-emerald-700">Full Payment (All Clear)</span>
           </div>
           <div class="relative">
             <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-500">Rs.</span>
@@ -3427,7 +3517,7 @@
           </div>
 
           <p id="quick-settle-partial-help" class="text-[11px] text-emerald-700 mt-1.5 font-medium hidden">
-            ⚡ Juzwi Adaigi: Jitne paise mile hain utne adjust ho jayenge aur baqi baqaya customer khata mein due rahega.
+            ⚡ Partial Payment: Payment will be deducted and remaining balance will remain due in ledger.
           </p>
         </div>
 
@@ -3457,7 +3547,7 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Settlement Date *</label>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Payment Date *</label>
             <input type="date" id="quick-settle-date" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
           </div>
           <div>
@@ -3495,8 +3585,8 @@
             <i data-lucide="send" class="w-5 h-5"></i>
           </div>
           <div>
-            <h3 class="text-base font-extrabold text-slate-900 tracking-tight">⚡ WhatsApp Reminders to Debtors</h3>
-            <p class="text-xs text-slate-500">Select all kar ke aik sath reminder bhejein ya apni marzi ke customers pick karein</p>
+            <h3 class="text-base font-extrabold text-slate-900 tracking-tight">⚡ WhatsApp Reminders for Unpaid Customers</h3>
+            <p class="text-xs text-slate-500">Select all to send batch reminders or pick individual customers</p>
           </div>
         </div>
         <button type="button" onclick="openCustomerWaTemplateModal()" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-2xs">
@@ -3554,7 +3644,7 @@
               <span id="batch-runner-progress-label" class="text-xs font-mono font-black text-emerald-700">1 of 5</span>
               <span id="batch-runner-percent-label" class="text-[11px] font-mono text-slate-400 font-bold">(20%)</span>
             </div>
-            <button type="button" onclick="stopBatchWaRunner()" class="bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-700 border border-slate-200 hover:border-rose-200 text-xs font-bold px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 cursor-pointer shadow-2xs" title="Queue band karein">
+            <button type="button" onclick="stopBatchWaRunner()" class="bg-white hover:bg-rose-50 text-slate-500 hover:text-rose-700 border border-slate-200 hover:border-rose-200 text-xs font-bold px-2.5 py-1.5 rounded-xl transition flex items-center gap-1 cursor-pointer shadow-2xs" title="Stop queue">
               <i data-lucide="x" class="w-3.5 h-3.5"></i>
               <span>Stop</span>
             </button>
@@ -3600,11 +3690,11 @@
         <!-- 3-Step Guidance Bar -->
         <div class="bg-emerald-50/60 border border-emerald-200/70 px-3 py-2 rounded-xl flex flex-wrap items-center justify-between text-[11px] text-slate-600 gap-2">
           <div class="flex items-center gap-3.5 flex-wrap font-medium">
-            <span class="flex items-center gap-1 font-bold text-emerald-800"><span class="w-4 h-4 rounded-full bg-emerald-200 text-emerald-900 inline-flex items-center justify-center text-[10px]">1</span> WhatsApp Web khula</span>
+            <span class="flex items-center gap-1 font-bold text-emerald-800"><span class="w-4 h-4 rounded-full bg-emerald-200 text-emerald-900 inline-flex items-center justify-center text-[10px]">1</span> WhatsApp Web Opens</span>
             <span class="text-slate-300">➔</span>
-            <span class="flex items-center gap-1 font-bold text-slate-800"><span class="w-4 h-4 rounded-full bg-slate-200 text-slate-700 inline-flex items-center justify-center text-[10px]">2</span> Chat mein Send dabayein</span>
+            <span class="flex items-center gap-1 font-bold text-slate-800"><span class="w-4 h-4 rounded-full bg-slate-200 text-slate-700 inline-flex items-center justify-center text-[10px]">2</span> Click Send in Chat</span>
             <span class="text-slate-300">➔</span>
-            <span class="flex items-center gap-1 font-bold text-indigo-800"><span class="w-4 h-4 rounded-full bg-indigo-200 text-indigo-900 inline-flex items-center justify-center text-[10px]">3</span> Yahan "Next Customer" dabayein</span>
+            <span class="flex items-center gap-1 font-bold text-indigo-800"><span class="w-4 h-4 rounded-full bg-indigo-200 text-indigo-900 inline-flex items-center justify-center text-[10px]">3</span> Click "Next Customer" Here</span>
           </div>
           <span class="text-[10px] text-slate-400 font-semibold">Fast & Safe Workflow</span>
         </div>
@@ -3639,13 +3729,13 @@
         </div>
         <div>
           <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Customer Khata — WhatsApp Reminder Template</h3>
-          <p class="text-xs text-slate-500">Admin yahan se reminder message set kare ga, to tamam udhardar customers ko unki details ke sath yahi message jayega.</p>
+          <p class="text-xs text-slate-500">Template configured here will be used when sending automated WhatsApp reminders to customers with outstanding balance.</p>
         </div>
       </div>
 
       <div class="space-y-3 flex-1 overflow-y-auto">
         <div class="flex items-center justify-between">
-          <label class="text-xs font-bold text-slate-700 uppercase">Customer Udhar Reminder Template:</label>
+          <label class="text-xs font-bold text-slate-700 uppercase">Customer Credit Reminder Template:</label>
           <span class="text-[11px] text-slate-400 font-medium">Auto substitution of customer balance</span>
         </div>
         <textarea id="wa-template-customer-text" rows="7" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none leading-relaxed shadow-inner"></textarea>
@@ -3694,7 +3784,7 @@
         </div>
         <div>
           <h3 class="text-base font-extrabold text-slate-900 tracking-tight">Staff Salary — WhatsApp Payslip Template</h3>
-          <p class="text-xs text-slate-500">Admin yahan se payslip message set kare ga, to tamam staff ko unki monthly salary details ke sath yahi message jayega.</p>
+          <p class="text-xs text-slate-500">Template configured here will be used when sending monthly salary payslips to staff via WhatsApp.</p>
         </div>
       </div>
 
@@ -3754,7 +3844,7 @@
         </div>
         <div>
           <h3 id="wa-preview-modal-title" class="text-base font-extrabold text-slate-900 tracking-tight">Preview &amp; Send WhatsApp Message</h3>
-          <p class="text-xs text-slate-500">Bhejne se pehle message check ya edit karein</p>
+          <p class="text-xs text-slate-500">Review or edit message before sending</p>
         </div>
       </div>
 
@@ -3795,95 +3885,112 @@
 
   <!-- MODAL: PRINTABLE CUSTOMER KHATA PARCHI / STATEMENT -->
   <!-- ================================================================= -->
+  <!-- ================================================================= -->
+  <!-- MODAL: PRINTABLE CUSTOMER KHATA PARCHI / STATEMENT -->
+  <!-- ================================================================= -->
   <div id="customer-parchi-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-200 max-h-[90vh] flex flex-col">
-      <button onclick="closeCustomerParchiModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
-        <i data-lucide="x" class="w-6 h-6"></i>
+    <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl relative border border-slate-200 max-h-[92vh] flex flex-col">
+      <button onclick="closeCustomerParchiModal()" title="Close Receipt (Esc)" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition cursor-pointer z-10">
+        <i data-lucide="x" class="w-5 h-5"></i>
       </button>
 
       <!-- PRINTABLE PARCHI CARD -->
-      <div id="printable-parchi" class="bg-white p-4 border border-slate-300 rounded-xl font-sans text-slate-800 overflow-y-auto">
+      <div id="printable-parchi" class="bg-white p-5 border border-slate-200 rounded-xl font-sans text-slate-800 overflow-y-auto shadow-2xs">
         <!-- PHARMACY LOGO & HEADER -->
-        <div class="text-center pb-3 border-b border-slate-300">
-          <div class="text-xs font-bold uppercase tracking-widest text-[#156D38]">Official Customer Khata Statement (Hisab Receipt)</div>
-          <h2 class="text-xl font-black text-[#232272] tracking-wide mt-0.5">MUMTAZ PHARMACY &amp; WELLNESS</h2>
-          <div class="text-[11px] text-slate-500 mt-0.5">Model Town, Lahore • Phone: 0300-0000000</div>
-          <div class="inline-block mt-1 px-2.5 py-0.5 bg-slate-100 border border-slate-200 rounded text-[11px] font-bold text-slate-700">
-            Customer Udhar Khata Receipt (Series Khata Statement)
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-200 gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-emerald-50 text-[#156D38] border border-emerald-200/80 flex items-center justify-center shrink-0">
+              <i data-lucide="receipt" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-black text-[#232272] tracking-wide">MUMTAZ PHARMACY &amp; WELLNESS</h2>
+              <p class="text-xs text-slate-500 mt-0.5">Model Town, Lahore • Phone: 0300-0000000</p>
+            </div>
+          </div>
+          <div class="text-left sm:text-right">
+            <span class="inline-block px-3 py-1 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+              Customer Khata Statement
+            </span>
+            <div id="parchi-date-label" class="text-[11px] text-slate-400 font-mono mt-1">Date: 2026-09-15</div>
           </div>
         </div>
 
         <!-- CUSTOMER METADATA -->
-        <div class="grid grid-cols-2 gap-2 text-xs py-3 border-b border-slate-200">
+        <div class="bg-slate-50/70 border border-slate-200/80 rounded-xl p-3.5 my-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <div>
-            <div class="text-slate-400 text-[10px]">CUSTOMER NAME:</div>
-            <div id="parchi-cust-name" class="font-bold text-slate-800">Haji Abdul Rehman</div>
-            <div id="parchi-cust-address" class="text-slate-500 text-[10px]">House 22, Model Town, Lahore</div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Customer Information</span>
+            <div id="parchi-cust-name" class="font-bold text-slate-900 text-sm">Haji Abdul Rehman</div>
+            <div id="parchi-cust-address" class="text-slate-500 text-[11px] mt-0.5">House 22, Model Town, Lahore</div>
           </div>
-          <div class="text-right">
-            <div class="text-slate-400 text-[10px]">PHONE / WHATSAPP:</div>
-            <div id="parchi-cust-phone" class="font-bold font-mono text-slate-800">0300-1234567</div>
-            <div id="parchi-date-label" class="text-slate-500 text-[10px]">Date: 2026-09-12</div>
+          <div class="sm:text-right">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Phone &amp; Account</span>
+            <div id="parchi-cust-phone" class="font-bold font-mono text-slate-800 text-sm">0300-1234567</div>
+            <div class="text-slate-500 text-[11px] mt-0.5">Customer Credit Ledger</div>
           </div>
         </div>
 
         <!-- INVOICES TABLE -->
-        <div class="py-2">
+        <div class="my-3 overflow-x-auto rounded-lg border border-slate-200">
           <table class="w-full text-left text-xs border-collapse">
-            <thead class="bg-slate-100 text-slate-700 uppercase font-bold text-[10px]">
+            <thead class="bg-slate-50 text-slate-500 uppercase font-semibold text-[10px] tracking-wider border-b border-slate-200">
               <tr>
-                <th class="py-1.5 px-2">Date</th>
-                <th class="py-1.5 px-2">Invoice #</th>
-                <th class="py-1.5 px-2">Items</th>
-                <th class="py-1.5 px-2 text-right">Amount</th>
-                <th class="py-1.5 px-2 text-center">Status</th>
+                <th class="py-2.5 px-3 whitespace-nowrap">Date</th>
+                <th class="py-2.5 px-3 whitespace-nowrap">Invoice #</th>
+                <th class="py-2.5 px-3 min-w-[200px]">Medicines / Description</th>
+                <th class="py-2.5 px-3 text-right whitespace-nowrap">Bill Amount</th>
+                <th class="py-2.5 px-3 text-center whitespace-nowrap">Status</th>
               </tr>
             </thead>
-            <tbody id="parchi-tbody" class="divide-y divide-slate-100 text-[11px]">
+            <tbody id="parchi-tbody" class="divide-y divide-slate-100 text-xs">
               <!-- Rendered dynamically -->
             </tbody>
           </table>
         </div>
 
         <!-- TOTALS & BALANCE BOX -->
-        <div class="border-t-2 border-[#232272] pt-2 mt-2">
-          <div class="flex justify-between text-xs py-1">
-            <span class="text-slate-600">Total Credit Purchases:</span>
-            <span id="parchi-total-credit" class="font-bold">Rs. 0.00</span>
+        <div class="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div class="text-xs text-slate-500 space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="text-slate-400 text-[11px]">Total Credit Taken:</span>
+              <strong id="parchi-total-credit" class="font-mono text-slate-800 font-bold">Rs. 0.00</strong>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-slate-400 text-[11px]">Total Payments Cleared:</span>
+              <strong id="parchi-total-paid" class="font-mono text-emerald-700 font-bold">Rs. 0.00</strong>
+            </div>
           </div>
-          <div class="flex justify-between text-xs py-1">
-            <span class="text-slate-600">Total Payments Cleared:</span>
-            <span id="parchi-total-paid" class="font-bold text-emerald-700">- Rs. 0.00</span>
-          </div>
-          <div class="flex justify-between items-center text-sm font-black p-2 bg-rose-50 border border-rose-200 rounded-lg mt-1">
-            <span class="text-rose-800">NET DUE BALANCE (Kul Baqaya Raqam):</span>
-            <span id="parchi-net-balance" class="text-base text-rose-600">Rs. 0.00</span>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 flex items-center justify-between sm:justify-end gap-5 shadow-2xs">
+            <div class="text-right">
+              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Net Due Balance</span>
+              <span id="parchi-net-balance" class="text-xl font-black text-slate-900 font-mono">Rs. 0.00</span>
+            </div>
           </div>
         </div>
 
         <!-- FOOTER & SIGNATURE -->
-        <div class="mt-4 pt-3 border-t border-dashed border-slate-300 text-[10px] text-slate-400 flex justify-between items-end">
-          <div>
-            <div>Mohtaram Customer! Baraye meherbani apna baqaya khata jald ada farmaiye. Shukriya!</div>
-            <div class="text-[9px] text-slate-400 mt-0.5">Computerized Statement via Mumtaz Core Engine</div>
+        <div class="mt-4 pt-3 border-t border-dashed border-slate-200 text-[10px] text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-3">
+          <div class="text-center sm:text-left">
+            <p class="text-slate-500">Dear Customer: Please pay your pending balance soon. Thank you for your business!</p>
+            <p class="text-[9px] text-slate-400 mt-0.5 font-mono">Computerized Statement • Mumtaz Core Engine</p>
           </div>
-          <div class="text-center">
-            <div class="h-6"></div>
-            <div class="border-t border-slate-400 px-3">Owner Signature &amp; Stamp</div>
+          <div class="text-center shrink-0">
+            <div class="w-36 border-b border-slate-300 mb-1"></div>
+            <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Authorized Signature &amp; Stamp</span>
           </div>
         </div>
       </div>
 
       <!-- ACTION BUTTONS -->
-      <div class="flex gap-3 mt-4">
-        <button onclick="executePrintCustomerParchi()" class="flex-1 bg-[#232272] hover:bg-indigo-900 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
-          <i data-lucide="printer" class="w-4 h-4"></i> Print Statement Receipt
-        </button>
-        <button onclick="exportCustomerParchiExcel()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-2 shadow cursor-pointer" title="Export receipt to Excel">
-          <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Export Excel
-        </button>
-        <button onclick="closeCustomerParchiModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg font-bold text-xs cursor-pointer">
+      <div class="flex items-center justify-end gap-2.5 mt-4 pt-3 border-t border-slate-100">
+        <button onclick="closeCustomerParchiModal()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold cursor-pointer transition">
           Close
+        </button>
+        <button onclick="exportCustomerParchiExcel()" class="px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition" title="Export receipt to Excel">
+          <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-600"></i> Export Excel
+        </button>
+        <button onclick="executePrintCustomerParchi()" class="px-4 py-2 rounded-lg bg-[#232272] hover:bg-indigo-950 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition">
+          <i data-lucide="printer" class="w-3.5 h-3.5"></i> Print Statement Receipt
         </button>
       </div>
     </div>
@@ -3920,7 +4027,7 @@
           </div>
         </div>
 
-        <h4 class="font-bold text-xs text-slate-700 uppercase mt-4 mb-2">Active Debtors Summary:</h4>
+        <h4 class="font-bold text-xs text-slate-700 uppercase mt-4 mb-2">Unpaid Customers Summary:</h4>
         <div class="border border-slate-200 rounded-xl overflow-hidden">
           <table class="w-full text-left text-xs border-collapse">
             <thead class="bg-slate-100 font-bold text-slate-700">
@@ -4037,7 +4144,7 @@
           subtitleEl.innerText = 'Staff advances, medicine credits and automatic salary deductions';
         } else if (tabId === 'customer-khata') {
           titleEl.innerText = 'Customer Credit Khata';
-          subtitleEl.innerText = 'Customer ledger, baqaya recovery, thermal receipt and WhatsApp alerts';
+          subtitleEl.innerText = 'Customer credit ledger, balance recovery, thermal receipts, and WhatsApp alerts';
         } else if (tabId === 'reports') {
           titleEl.innerText = 'Monthly Attendance Register';
           subtitleEl.innerText = 'Full 31-day biometric register with PDF & landscape print view';
@@ -4351,7 +4458,7 @@
 
       const tbody = document.getElementById('live-roster-tbody');
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">Is filter category mein koi staff member mojood nahi.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400">No staff members found in this category.</td></tr>`;
         return;
       }
 
@@ -4441,7 +4548,7 @@
           container.innerHTML = `
             <div class="text-center py-6 text-slate-400 text-xs">
               <i data-lucide="alert-circle" class="w-5 h-5 mx-auto text-amber-400 mb-1"></i>
-              Activities load nahi ho sakeen. Baraye meherbani refresh karein.
+              Failed to load activities. Please refresh the page.
             </div>
           `;
           if (window.lucide) lucide.createIcons();
@@ -4552,7 +4659,7 @@
           if (act.action_type === 'ADVANCE_SETTLED') {
             iconName = 'check-circle-2';
             iconBg = 'bg-amber-600 text-white';
-            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Khata Settled</span>';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Khata Cleared</span>';
           } else {
             iconName = 'wallet';
             iconBg = 'bg-amber-500 text-white';
@@ -4563,7 +4670,7 @@
           if (act.action_type === 'CUSTOMER_SETTLED' || act.action_type === 'CUSTOMER_KHATA_SETTLED') {
             iconName = 'receipt';
             iconBg = 'bg-sky-600 text-white';
-            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Baqaya Cleared</span>';
+            actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">Balance Cleared</span>';
           } else {
             iconName = 'shopping-bag';
             iconBg = 'bg-sky-500 text-white';
@@ -4573,7 +4680,7 @@
           cardStyle = 'border-l-4 border-l-teal-500 bg-teal-50/20 hover:bg-teal-50/50 border border-teal-200/70 shadow-2xs hover:shadow-xs';
           iconName = 'banknote';
           iconBg = 'bg-teal-600 text-white';
-          actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-100 text-teal-800 border border-teal-300">Salary Disbursed</span>';
+          actionBadge = '<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-teal-100 text-teal-800 border border-teal-300">Salary Paid</span>';
         } else if (act.category === 'STAFF') {
           cardStyle = 'border-l-4 border-l-purple-500 bg-purple-50/20 hover:bg-purple-50/50 border border-purple-200/70 shadow-2xs hover:shadow-xs';
           iconName = 'user-plus';
@@ -4897,7 +5004,7 @@
           <td class="py-3 px-4 text-right">
             <div class="flex items-center justify-end gap-1.5">
               ${!isPaid ? `
-                <button onclick="openDisburseModal(${p.staff_id})" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs transition cursor-pointer" title="Disburse salary">
+                <button onclick="openDisburseModal(${p.staff_id})" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs transition cursor-pointer" title="Pay salary">
                   <i data-lucide="banknote" class="w-3.5 h-3.5"></i>
                   <span>Pay</span>
                 </button>
@@ -4956,7 +5063,7 @@
       // Render Pending Section
       if (pendingTbody) {
         if (totalStaff === 0) {
-          pendingTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">Pehle month select kar ke "Calculate Payroll" dabayein.</td></tr>`;
+          pendingTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">Select month and click "Calculate Payroll" to view salaries.</td></tr>`;
         } else if (pendingList.length > 0) {
           pendingTbody.innerHTML = pendingList.map(renderPayrollRow).join('');
         } else if (rawPendingCount === 0) {
@@ -4967,21 +5074,21 @@
                   <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
                     <i data-lucide="check" class="w-5 h-5 text-emerald-600"></i>
                   </div>
-                  <span class="font-bold text-sm text-slate-800">Sabhi Staff Ki Salary Ada Ho Chuki Hai!</span>
-                  <span class="text-xs text-slate-400">Is mahine ke sabhi records clear aur paid hain.</span>
+                  <span class="font-bold text-sm text-slate-800">All Staff Salaries Paid!</span>
+                  <span class="text-xs text-slate-400">All records for this month are clear and paid.</span>
                 </div>
               </td>
             </tr>
           `;
         } else {
-          pendingTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">Koi matching pending record nahi mila.</td></tr>`;
+          pendingTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">No matching pending records found.</td></tr>`;
         }
       }
 
       // Render Paid Section
       if (paidTbody) {
         if (totalStaff === 0) {
-          paidTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">Pehle month select kar ke "Calculate Payroll" dabayein.</td></tr>`;
+          paidTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">Select month and click "Calculate Payroll" to view salaries.</td></tr>`;
         } else if (paidList.length > 0) {
           paidTbody.innerHTML = paidList.map(renderPayrollRow).join('');
         } else if (rawPaidCount === 0) {
@@ -4990,19 +5097,19 @@
               <td colspan="8" class="p-8 text-center text-slate-400 text-xs">
                 <div class="flex flex-col items-center justify-center gap-1 text-slate-400">
                   <i data-lucide="info" class="w-5 h-5"></i>
-                  <span>Abhi tak is mahine kisi staff ki salary pay nahi hui.</span>
+                  <span>No staff salary has been paid yet for this month.</span>
                 </div>
               </td>
             </tr>
           `;
         } else {
-          paidTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">Koi matching paid record nahi mila.</td></tr>`;
+          paidTbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-slate-400 text-xs">No matching paid records found.</td></tr>`;
         }
       }
 
       // Legacy fallback
       if (legacyTbody) {
-        legacyTbody.innerHTML = filtered.length > 0 ? filtered.map(renderPayrollRow).join('') : `<tr><td colspan="8" class="p-8 text-center text-slate-400">Koi record nahi mila.</td></tr>`;
+        legacyTbody.innerHTML = filtered.length > 0 ? filtered.map(renderPayrollRow).join('') : `<tr><td colspan="8" class="p-8 text-center text-slate-400">No records found.</td></tr>`;
       }
 
       // Apply current section visibility
@@ -5049,7 +5156,7 @@
 
         if (badgeEl) {
           if (p.status === 'PAID') {
-            badgeEl.className = 'text-xs bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded border border-emerald-300';
+            badgeEl.className = 'inline-block text-[11px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200';
             badgeEl.innerText = 'PAID';
             if (dateEl) {
               dateEl.innerText = `Paid on ${p.paid_at || ''} (${p.payment_method || 'Cash'})`;
@@ -5057,10 +5164,10 @@
             }
             if (payBtn) payBtn.classList.add('hidden');
           } else {
-            badgeEl.className = 'text-xs bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded border border-amber-300';
+            badgeEl.className = 'inline-block text-[11px] bg-amber-50 text-amber-800 font-bold px-2.5 py-0.5 rounded-full border border-amber-200';
             badgeEl.innerText = 'PENDING PAYMENT';
             if (dateEl) {
-              dateEl.innerText = 'Not yet disbursed';
+              dateEl.innerText = 'Not yet paid';
               dateEl.classList.add('hidden');
             }
             if (payBtn) payBtn.classList.remove('hidden');
@@ -5114,7 +5221,7 @@
         if (shRow) {
           if (p.short_hours_cut && p.short_hours_cut > 0) {
             shRow.classList.remove('hidden');
-            setTxt('slip-shorthour-desc', `Short Hours Cut (${shHours}h ${shRemMins}m deficit @ Rs. ${p.hourly_wage || 0}/hr)`);
+            setTxt('slip-shorthour-desc', `Short Hours Cut (${shHours}h ${shRemMins}m short @ Rs. ${p.hourly_wage || 0}/hr)`);
             setTxt('slip-shorthour', `- Rs. ${parseFloat(p.short_hours_cut).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
           } else {
             shRow.classList.add('hidden');
@@ -5192,7 +5299,7 @@
       const noticeText = document.getElementById('disburse-khata-notice-text');
       if (p.advances_deducted > 0) {
         noticeEl.classList.remove('hidden');
-        noticeText.innerText = `Rs. ${p.advances_deducted.toLocaleString()} pending in advances/medicine credits will automatically be settled with audit notes.`;
+        noticeText.innerText = `Rs. ${p.advances_deducted.toLocaleString()} in pending advances/credits will automatically be cleared and deducted from salary.`;
       } else {
         noticeEl.classList.add('hidden');
       }
@@ -5246,7 +5353,7 @@
           await generatePayroll();
           await loadAdvances();
           if (typeof loadTodayActivities === 'function') loadTodayActivities();
-          alert(data.message || "Salary marked as PAID and advances auto-settled!");
+          alert(data.message || "Salary marked as PAID and advances cleared!");
         } else {
           alert(data.detail || "Failed to mark salary as paid.");
         }
@@ -5490,8 +5597,8 @@
           <tr>
             <td colspan="7" class="py-8 text-center text-slate-400">
               <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
-              <p class="font-medium text-xs">Koi khata record mojood nahi is filter mein.</p>
-              ${advFilterStatus === 'pending' ? '<p class="text-[11px] text-emerald-600 mt-1 font-semibold">SubhanAllah! Koi pending advance ya credit baqi nahi hai.</p>' : ''}
+              <p class="font-medium text-xs">No ledger records found in this category.</p>
+              ${advFilterStatus === 'pending' ? '<p class="text-[11px] text-emerald-600 mt-1 font-semibold">Great! No pending advances or credit remaining.</p>' : ''}
             </td>
           </tr>
         `;
@@ -5509,7 +5616,7 @@
             statusCell = `
               <div>
                 <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  <i data-lucide="check-circle-2" class="w-3 h-3"></i> Settled
+                  <i data-lucide="check-circle-2" class="w-3 h-3"></i> Cleared
                 </span>
                 <div class="text-[10px] text-slate-500 font-medium mt-0.5">
                   ${a.settled_at ? `<span class="font-semibold text-slate-700">${a.settled_at}</span>` : ''}
@@ -5518,7 +5625,7 @@
               </div>
             `;
             actionCell = `
-              <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-400" title="Settled">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-400" title="Cleared">
                 <i data-lucide="check" class="w-3.5 h-3.5 text-slate-400"></i>
               </span>
             `;
@@ -5534,8 +5641,8 @@
             actionCell = `
               <button onclick="openSettleAdvanceModal(${a.id})"
                       class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg shadow-xs transition flex items-center gap-1 mx-auto cursor-pointer"
-                      title="Direct Counter Cash Settlement">
-                <i data-lucide="check" class="w-3.5 h-3.5"></i> Settle
+                      title="Clear Advance / Record Payment">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i> Clear
               </button>
             `;
           }
@@ -5643,11 +5750,11 @@
         if (helpEl) helpEl.classList.add('hidden');
       } else if (paying < total) {
         const remaining = total - paying;
-        previewEl.innerText = `Partial (Baqaya: Rs. ${remaining.toLocaleString()})`;
+        previewEl.innerText = `Partial (Remaining: Rs. ${remaining.toLocaleString()})`;
         previewEl.className = "text-[11px] font-bold text-amber-600";
         if (helpEl) helpEl.classList.remove('hidden');
       } else if (paying === total) {
-        previewEl.innerText = "Full Settlement (100% Cleared)";
+        previewEl.innerText = "100% Fully Cleared";
         previewEl.className = "text-[11px] font-bold text-emerald-700";
         if (helpEl) helpEl.classList.add('hidden');
       } else {
@@ -5672,11 +5779,11 @@
       const amountVal = parseFloat(document.getElementById('settle-advance-amount')?.value) || currentSettleAdvanceTotal;
 
       if (amountVal <= 0) {
-        alert("Baraye meherbani durust raqam darj karein.");
+        alert("Please enter a valid amount.");
         return;
       }
       if (amountVal > currentSettleAdvanceTotal) {
-        alert(`Adaigi kul raqam (Rs. ${currentSettleAdvanceTotal.toLocaleString()}) se barh nahi sakti.`);
+        alert(`Payment amount cannot exceed total balance (Rs. ${currentSettleAdvanceTotal.toLocaleString()}).`);
         return;
       }
 
@@ -5698,9 +5805,9 @@
           await generatePayroll();
           if (typeof loadStaff === 'function') loadStaff();
           if (typeof loadTodayActivities === 'function') loadTodayActivities();
-          alert(data.message || "Advance settled successfully!");
+          alert(data.message || "Advance cleared successfully!");
         } else {
-          alert(data.detail || "Failed to settle advance");
+          alert(data.detail || "Failed to clear advance");
         }
       } catch (err) {
         console.error("Settlement error", err);
@@ -5747,16 +5854,16 @@
     async function clearAllSettledStaffKhata() {
       const settledCount = (allAdvances || []).filter(a => a.is_settled).length;
       if (settledCount === 0) {
-        alert("ℹ️ Koi settled staff khata record mojood nahi hai.");
+        alert("ℹ️ No cleared staff advance records found to delete.");
         return;
       }
 
       const confirmed = confirm(
         "⚠️ ADMIN CONFIRMATION:\n\n" +
-        `Kya aap waqai tamam ${settledCount} PURANE SETTLED staff khata records delete karna chahte hain?\n\n` +
-        "• Sirf settled (clear shuda) records delete honge.\n" +
-        "• Active / Pending khata aur salary balance bilkul mehfooz rahega.\n\n" +
-        "Delete karne ke liye OK dabaiye."
+        `Are you sure you want to permanently delete all ${settledCount} OLD CLEARED staff advance records?\n\n` +
+        "• Only cleared advance records will be deleted.\n" +
+        "• Active pending balances and salary records will remain unaffected.\n\n" +
+        "Click OK to proceed with deletion."
       );
       if (!confirmed) return;
 
@@ -5767,11 +5874,11 @@
           alert(`✅ ${result.message}`);
           await loadAdvances();
         } else {
-          alert(`❌ Error: ${result.message || 'Records clear nahi ho sake.'}`);
+          alert(`❌ Error: ${result.message || 'Could not clear records.'}`);
         }
       } catch (err) {
         console.error("Failed to clear settled advances", err);
-        alert("Server error a gaya hai.");
+        alert("Server error occurred. Please try again.");
       }
     }
     
@@ -6263,7 +6370,7 @@
         // Render Attendance Logs
         const attTbody = document.getElementById('dossier-att-tbody');
         if (data.attendance.length === 0) {
-          attTbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400">Koi attendance record nahi mila.</td></tr>';
+          attTbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400">No attendance records found.</td></tr>';
         } else {
           attTbody.innerHTML = data.attendance.map(a => `
             <tr>
@@ -6286,7 +6393,7 @@
         // Render Leaves
         const leavesTbody = document.getElementById('dossier-leaves-tbody');
         if (data.leaves.length === 0) {
-          leavesTbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-400">Koi leave record nahi mila.</td></tr>';
+          leavesTbody.innerHTML = '<tr><td colspan="3" class="py-4 text-center text-slate-400">No leave records found.</td></tr>';
         } else {
           leavesTbody.innerHTML = data.leaves.map(l => `
             <tr>
@@ -6300,7 +6407,7 @@
         // Render Advances
         const advTbody = document.getElementById('dossier-adv-tbody');
         if (data.advances.length === 0) {
-          advTbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400">Koi advance khata record nahi mila.</td></tr>';
+          advTbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-400">No advance records found.</td></tr>';
         } else {
           advTbody.innerHTML = data.advances.map(ad => `
             <tr>
@@ -6314,7 +6421,7 @@
               <td class="py-2 px-3 text-slate-600">${ad.reason || '—'}</td>
               <td class="py-2 px-3">
                 <span class="px-2 py-0.5 rounded text-[10px] font-bold ${ad.is_settled ? 'bg-slate-100 text-slate-600' : 'bg-rose-100 text-rose-800'}">
-                  ${ad.is_settled ? 'Settled' : 'Pending'}
+                  ${ad.is_settled ? 'Cleared' : 'Pending'}
                 </span>
               </td>
             </tr>
@@ -6379,7 +6486,7 @@
 
       const p = (currentPayrollData || []).find(x => Number(x.staff_id) === Number(staffId));
       if (!p) {
-        alert("Payroll record nahi mila.");
+        alert("Payroll record not found.");
         return;
       }
       const staff = (staffList || []).find(s => Number(s.id) === Number(staffId));
@@ -6528,7 +6635,7 @@
     }
 
     // =================================================================
-    // 9. CUSTOMER UDHAR & SERIES KHATA LEDGER MODULE
+    // 9. CUSTOMER KHATA & CREDIT LEDGER MODULE
     // =================================================================
     let allCustomers = [];
     let currentCustomerFilter = 'pending';
@@ -6546,6 +6653,7 @@
           allCustomers = await res.json();
         }
         renderCustomerTable();
+        renderOverdueSection();
         updateCustomerCounts();
         populateCustomerDropdowns();
       } catch (err) {
@@ -6575,21 +6683,27 @@
       const allCount = (allCustomers || []).length;
       const pendingCount = (allCustomers || []).filter(c => c.current_balance > 0).length;
       const clearedCount = (allCustomers || []).filter(c => c.current_balance <= 0).length;
+      const overdueCount = (allCustomers || []).filter(c => Boolean(c.is_overdue || (c.days_overdue && c.days_overdue >= 30))).length;
 
-      document.getElementById('count-cust-all').innerText = allCount;
-      document.getElementById('count-cust-pending').innerText = pendingCount;
-      document.getElementById('count-cust-cleared').innerText = clearedCount;
+      const elAll = document.getElementById('count-cust-all');
+      if (elAll) elAll.innerText = allCount;
+      const elPending = document.getElementById('count-cust-pending');
+      if (elPending) elPending.innerText = pendingCount;
+      const elCleared = document.getElementById('count-cust-cleared');
+      if (elCleared) elCleared.innerText = clearedCount;
+      const elOverdue = document.getElementById('count-cust-overdue');
+      if (elOverdue) elOverdue.innerText = overdueCount;
     }
 
     function setCustomerFilter(filterType) {
       currentCustomerFilter = filterType;
-      ['all', 'pending', 'cleared'].forEach(f => {
+      ['all', 'pending', 'overdue', 'cleared'].forEach(f => {
         const btn = document.getElementById(`btn-cust-filter-${f}`);
         if (btn) {
           if (f === filterType) {
-            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-[#232272] text-white shadow-xs cursor-pointer';
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-[#232272] text-white shadow-xs cursor-pointer flex items-center gap-1.5';
           } else {
-            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer';
+            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 cursor-pointer transition flex items-center gap-1.5';
           }
         }
       });
@@ -6600,7 +6714,7 @@
       renderCustomerTable();
     }
 
-        function renderCustomerTable() {
+    function renderCustomerTable() {
       const q = (document.getElementById('customer-search-input')?.value || '').toLowerCase().trim();
       let list = allCustomers || [];
 
@@ -6608,6 +6722,8 @@
         list = list.filter(c => c.current_balance > 0);
       } else if (currentCustomerFilter === 'cleared') {
         list = list.filter(c => c.current_balance <= 0);
+      } else if (currentCustomerFilter === 'overdue') {
+        list = list.filter(c => Boolean(c.is_overdue || (c.days_overdue && c.days_overdue >= 30)));
       }
 
       if (q) {
@@ -6622,7 +6738,7 @@
       if (!tbody) return;
 
       if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 text-xs">Koi matching customer record mojood nahi hai.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 text-xs">No matching customer records found.</td></tr>`;
         return;
       }
 
@@ -6634,19 +6750,47 @@
         const hasBalance = currentBalance > 0;
         const pendingCount = c.pending_invoices_count || 0;
         const percentUsed = creditLimit > 0 ? Math.round((currentBalance / creditLimit) * 100) : 0;
+        const isLimitExceeded = creditLimit > 0 && currentBalance >= creditLimit;
+        const isLimitWarning = creditLimit > 0 && !isLimitExceeded && percentUsed >= 80;
+        const barColor = isLimitExceeded ? 'bg-rose-500' : (isLimitWarning ? 'bg-amber-500' : 'bg-emerald-500');
 
-        const statusBadge = hasBalance 
-          ? `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> ${pendingCount} Pending</span>`
-          : `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check" class="w-3 h-3"></i> All Clear</span>`;
+        let limitTag = '';
+        if (isLimitExceeded) {
+          limitTag = `<span class="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 border border-rose-200">Limit Full</span>`;
+        } else if (isLimitWarning) {
+          limitTag = `<span class="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">80%+</span>`;
+        }
+
+        const isOverdue = Boolean(c.is_overdue || (c.days_overdue && c.days_overdue >= 30));
+        const overdueDays = c.days_overdue || 0;
+
+        let statusBadge = '';
+        if (hasBalance) {
+          statusBadge = `
+            <div class="flex flex-col items-center gap-1">
+              <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 border border-slate-200">
+                <span class="w-1.5 h-1.5 rounded-full ${isOverdue ? 'bg-amber-500' : 'bg-slate-400'}"></span> ${pendingCount} Pending
+              </span>
+              ${isOverdue ? `
+                <span class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200" title="Oldest unpaid bill is ${overdueDays} days old">
+                  <i data-lucide="clock" class="w-2.5 h-2.5 text-amber-600"></i> ${overdueDays}d overdue
+                </span>
+              ` : ''}
+            </div>
+          `;
+        } else {
+          statusBadge = `<span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200"><i data-lucide="check" class="w-3 h-3"></i> All Clear</span>`;
+        }
 
         const waPhone = c.wa_phone || (c.phone || '').replace(/[^0-9]/g, '');
-        const waMessage = encodeURIComponent(`Assalam-o-Alaikum ${c.name} Sahab!
-Mumtaz Pharmacy ki janib se reminder hai ke aap ke Series Khata mein Kul Baqaya Raqam Rs. ${currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} due hai.
-Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
+        const overdueNote = isOverdue ? ` (Your oldest unpaid bill is ${overdueDays} days overdue).` : '';
+        const waMessage = encodeURIComponent(`Dear ${c.name},
+This is a reminder from Mumtaz Pharmacy that your outstanding credit balance is Rs. ${currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}${overdueNote}.
+Please visit the pharmacy at your earliest convenience to clear your balance. Thank you!
 — Mumtaz Pharmacy, Model Town, Lahore`);
 
         return `
-          <tr onclick="openCustomerLedgerModal(${c.id})" class="hover:bg-indigo-50/50 transition-colors cursor-pointer group">
+          <tr onclick="openCustomerLedgerModal(${c.id})" class="hover:bg-slate-50/70 transition-colors cursor-pointer group border-b border-slate-100">
             <!-- 1. Customer Details -->
             <td class="py-3 px-4">
               <div class="flex items-center gap-2.5">
@@ -6668,9 +6812,12 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
             <!-- 2. Credit Limit & Usage -->
             <td class="py-3 px-4">
-              <div class="text-xs font-mono font-bold text-slate-700">Rs. ${creditLimit.toLocaleString('en-US', {minimumFractionDigits: 0})}</div>
+              <div class="flex items-center justify-between gap-1">
+                <div class="text-xs font-mono font-bold text-slate-700">Rs. ${creditLimit.toLocaleString('en-US', {minimumFractionDigits: 0})}</div>
+                ${limitTag}
+              </div>
               <div class="w-24 bg-slate-100 rounded-full h-1.5 mt-1 overflow-hidden">
-                <div class="h-1.5 rounded-full ${currentBalance > creditLimit ? 'bg-rose-500' : 'bg-emerald-500'}" style="width: ${Math.min(100, percentUsed)}%"></div>
+                <div class="h-1.5 rounded-full ${barColor}" style="width: ${Math.min(100, percentUsed)}%"></div>
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5 font-mono">${percentUsed}% Used</div>
             </td>
@@ -6685,8 +6832,8 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
               Rs. ${totalSettled.toLocaleString('en-US', {minimumFractionDigits: 0})}
             </td>
 
-            <!-- 5. Current Baqaya -->
-            <td class="py-3 px-4 font-mono font-bold text-xs ${hasBalance ? 'text-rose-600' : 'text-slate-400'}">
+            <!-- 5. Current Balance -->
+            <td class="py-3 px-4 font-mono font-bold text-xs ${hasBalance ? 'text-slate-900' : 'text-slate-400'}">
               Rs. ${currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
             </td>
 
@@ -6698,16 +6845,16 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
             <!-- 7. Actions -->
             <td class="py-3 px-4 text-center" onclick="event.stopPropagation()">
               <div class="flex items-center justify-center gap-1.5">
-                <button onclick="event.stopPropagation(); openCustomerModal(${c.id})" title="Edit Customer Details (Naam / Phone / Address / Limit)" class="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 transition-colors cursor-pointer">
+                <button onclick="event.stopPropagation(); openCustomerModal(${c.id})" title="Edit Customer Details (Name / Phone / Address / Limit)" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer">
                   <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
                 </button>
-                <button onclick="event.stopPropagation(); openCustomerParchiModal(${c.id})" title="Print Receipt" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer">
+                <button onclick="event.stopPropagation(); openCustomerParchiModal(${c.id})" title="Print Receipt" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer">
                   <i data-lucide="printer" class="w-3.5 h-3.5"></i>
                 </button>
-                <button type="button" onclick="event.stopPropagation(); sendCustomerDirectWhatsApp(${c.id})" title="Send WhatsApp Reminder" class="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors cursor-pointer shadow-2xs">
+                <button type="button" onclick="event.stopPropagation(); sendCustomerDirectWhatsApp(${c.id})" title="${isOverdue ? 'Send Overdue WhatsApp Reminder' : 'Send WhatsApp Reminder'}" class="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition-colors cursor-pointer shadow-2xs">
                   <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
                 </button>
-                <button onclick="event.stopPropagation(); ${hasBalance ? `quickSettleCustomerMaster(${c.id})` : `openCustomerLedgerModal(${c.id})`}" title="${hasBalance ? 'Wasooli / Settle Baqaya (Full or Partial)' : 'View Khata Book'}" class="p-1.5 rounded-lg ${hasBalance ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'} transition-colors cursor-pointer">
+                <button onclick="event.stopPropagation(); ${hasBalance ? `quickSettleCustomerMaster(${c.id})` : `openCustomerLedgerModal(${c.id})`}" title="${hasBalance ? 'Receive Payment / Settle Balance' : 'View Credit Ledger'}" class="p-1.5 rounded-lg ${hasBalance ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'} transition-colors cursor-pointer">
                   <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
@@ -6716,6 +6863,123 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         `;
       }).join('');
       lucide.createIcons();
+      renderOverdueSection();
+    }
+
+    // Dedicated Section: Renders 30+ Days Chronic Overdue Accounts
+    function renderOverdueSection() {
+      const tbody = document.getElementById('overdue-customers-tbody');
+      const countBadge = document.getElementById('badge-overdue-count');
+      const totalAmountEl = document.getElementById('header-overdue-total-amount');
+      if (!tbody) return;
+
+      const overdueList = (allCustomers || []).filter(c => Boolean(c.is_overdue || (c.days_overdue && c.days_overdue >= 30)));
+      const totalOverdueBalance = overdueList.reduce((sum, c) => sum + Number(c.current_balance || 0), 0);
+
+      if (countBadge) countBadge.innerText = `${overdueList.length} Customer${overdueList.length === 1 ? '' : 's'}`;
+      if (totalAmountEl) totalAmountEl.innerText = `Rs. ${totalOverdueBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+      if (overdueList.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="py-6 px-4 text-center bg-emerald-50/40">
+              <div class="flex flex-col items-center justify-center gap-1 text-emerald-800">
+                <i data-lucide="check-circle" class="w-6 h-6 text-emerald-600"></i>
+                <span class="font-bold text-xs">All Clear! No accounts overdue beyond 30 days.</span>
+                <span class="text-[11px] text-emerald-600">All customer credit recoveries are up to date.</span>
+              </div>
+            </td>
+          </tr>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      tbody.innerHTML = overdueList.map(c => {
+        const creditLimit = Number(c.credit_limit || 0);
+        const currentBalance = Number(c.current_balance || 0);
+        const overdueDays = c.days_overdue || 30;
+        const oldestDate = c.oldest_unpaid_date || '—';
+        const percentUsed = creditLimit > 0 ? Math.round((currentBalance / creditLimit) * 100) : 0;
+        const isLimitExceeded = creditLimit > 0 && currentBalance >= creditLimit;
+
+        return `
+          <tr onclick="openCustomerLedgerModal(${c.id})" class="hover:bg-slate-50/80 bg-white transition-colors cursor-pointer group border-b border-slate-100">
+            <!-- 1. Overdue Customer -->
+            <td class="py-3 px-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center font-bold text-xs flex-shrink-0 group-hover:bg-[#232272] group-hover:text-white transition-colors">
+                  ${(c.name || 'C').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-bold text-slate-800 text-xs group-hover:text-[#232272] transition-colors">${c.name}</span>
+                    <button onclick="event.stopPropagation(); openCustomerModal(${c.id})" title="Edit Profile" class="text-slate-400 hover:text-blue-600 p-0.5 rounded cursor-pointer">
+                      <i data-lucide="pencil" class="w-3 h-3"></i>
+                    </button>
+                  </div>
+                  <div class="text-[11px] text-slate-500 font-mono">${c.phone}</div>
+                  <div class="text-[10px] text-slate-400 truncate max-w-[140px]">${c.address || '—'}</div>
+                </div>
+              </div>
+            </td>
+
+            <!-- 2. Oldest Bill Date -->
+            <td class="py-3 px-4 font-mono text-xs text-slate-700">
+              <div class="font-bold text-slate-800">${oldestDate}</div>
+              <div class="text-[10px] text-slate-400">Oldest unpaid invoice</div>
+            </td>
+
+            <!-- 3. Delay / Overdue Time -->
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200/80">
+                <i data-lucide="clock" class="w-3 h-3 text-amber-600"></i> ${overdueDays} Days Overdue
+              </span>
+              <div class="text-[10px] text-slate-400 mt-0.5">Over ${Math.floor(overdueDays / 30)} Month(s)</div>
+            </td>
+
+            <!-- 4. Total Due Balance -->
+            <td class="py-3 px-4">
+              <div class="font-mono font-bold text-xs text-slate-900">
+                Rs. ${currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div class="text-[10px] font-normal text-slate-400">${c.pending_invoices_count || 1} Unpaid Invoices</div>
+            </td>
+
+            <!-- 5. Credit Limit -->
+            <td class="py-3 px-4">
+              <div class="text-xs font-mono font-bold text-slate-700">Rs. ${creditLimit.toLocaleString('en-US', { minimumFractionDigits: 0 })}</div>
+              <div class="text-[10px] ${isLimitExceeded ? 'text-amber-700 font-semibold' : 'text-slate-400'} font-mono">${percentUsed}% Limit Used</div>
+            </td>
+
+            <!-- 6. Urgent Action -->
+            <td class="py-3 px-4 text-center" onclick="event.stopPropagation()">
+              <div class="flex items-center justify-center gap-1.5">
+                <button type="button" onclick="event.stopPropagation(); sendCustomerDirectWhatsApp(${c.id})" title="Send Urgent Overdue Reminder" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-semibold flex items-center gap-1 shadow-2xs cursor-pointer active:scale-95 transition">
+                  <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Reminder
+                </button>
+                <button onclick="event.stopPropagation(); quickSettleCustomerMaster(${c.id})" title="Receive Payment / Clear Balance" class="px-2.5 py-1.5 rounded-lg bg-[#156D38] hover:bg-[#12582d] text-white text-xs font-semibold flex items-center gap-1 shadow-xs cursor-pointer active:scale-95 transition">
+                  <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Clear
+                </button>
+                <button onclick="event.stopPropagation(); openCustomerLedgerModal(${c.id})" title="View Complete Credit Ledger" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition cursor-pointer">
+                  <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function sendBatchOverdueReminders() {
+      const overdueList = (allCustomers || []).filter(c => Boolean(c.is_overdue || (c.days_overdue && c.days_overdue >= 30)));
+      if (overdueList.length === 0) {
+        alert("There are currently no customers overdue beyond 30 days.");
+        return;
+      }
+      openBatchWhatsAppModal();
     }
 
     function populateCustomerDropdowns(filterQuery = '') {
@@ -6727,10 +6991,10 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       );
 
       if (filtered.length === 0) {
-        select.innerHTML = `<option value="" disabled selected>Koi matching customer nahi mila</option>`;
+        select.innerHTML = `<option value="" disabled selected>No matching customer found</option>`;
       } else {
         select.innerHTML = filtered.map(c => `
-          <option value="${c.id}">${c.name} (${c.phone}) — Baqaya: Rs. ${c.current_balance.toLocaleString()}</option>
+          <option value="${c.id}">${c.name} (${c.phone}) — Balance: Rs. ${c.current_balance.toLocaleString()}</option>
         `).join('');
       }
     }
@@ -6807,7 +7071,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           }
           alert(data.message || "Customer record saved successfully!");
         } else {
-          alert(data.detail || "Customer save karne mein masla aaya.");
+          alert(data.detail || "Error saving customer record.");
         }
       } catch (err) {
         console.error("Error submitting customer", err);
@@ -6846,7 +7110,72 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         if (nameEl) nameEl.removeAttribute('required');
         if (phoneEl) phoneEl.removeAttribute('required');
       }
+      checkCreditLimitWarning();
       lucide.createIcons();
+    }
+
+    // Real-time live check for Credit Limit Warnings in Add Khata Modal
+    function checkCreditLimitWarning() {
+      const warningBox = document.getElementById('khata-limit-warning-box');
+      if (!warningBox) return;
+
+      let currentBal = 0;
+      let limit = 15000;
+      let custName = 'Customer';
+
+      if (currentAddKhataMode === 'new') {
+        limit = parseFloat(document.getElementById('khata-new-limit')?.value) || 15000;
+        custName = (document.getElementById('khata-new-name')?.value || '').trim() || 'New Customer';
+        currentBal = 0;
+      } else {
+        const select = document.getElementById('khata-customer-select');
+        const custId = parseInt(select?.value);
+        const cust = (allCustomers || []).find(c => c.id === custId);
+        if (cust) {
+          currentBal = Number(cust.current_balance || 0);
+          limit = Number(cust.credit_limit || 15000);
+          custName = cust.name;
+        }
+      }
+
+      const billAmt = parseFloat(document.getElementById('khata-amount')?.value) || 0;
+      const projected = currentBal + billAmt;
+      const pct = limit > 0 ? (projected / limit) * 100 : 0;
+
+      if (projected > 0 && limit > 0) {
+        if (pct >= 100) {
+          const exceededBy = projected - limit;
+          warningBox.className = 'p-3 rounded-xl border bg-rose-50/70 border-rose-200 text-slate-800 text-xs flex items-start gap-2.5 transition-all';
+          warningBox.innerHTML = `
+            <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-500 shrink-0 mt-0.5"></i>
+            <div class="flex-1">
+              <strong class="font-bold text-rose-800 block text-xs">Credit Limit Exceeded!</strong>
+              <p class="text-[11px] text-slate-700 mt-0.5 leading-relaxed">
+                <strong>${custName}</strong>\'s current balance is <strong>Rs. ${currentBal.toLocaleString()}</strong>. With this invoice (Rs. ${billAmt.toLocaleString()}), the new balance will be <strong>Rs. ${projected.toLocaleString()}</strong>, exceeding the credit limit (Rs. ${limit.toLocaleString()}) by <strong>Rs. ${exceededBy.toLocaleString()}</strong>.
+              </p>
+            </div>
+          `;
+          warningBox.classList.remove('hidden');
+          lucide.createIcons();
+          return;
+        } else if (pct >= 80) {
+          warningBox.className = 'p-3 rounded-xl border bg-amber-50 border-amber-300 text-amber-900 text-xs flex items-start gap-2.5 transition-all';
+          warningBox.innerHTML = `
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+            <div class="flex-1">
+              <strong class="font-bold text-amber-800 block text-xs">⚠️ 80%+ Credit Limit Warning!</strong>
+              <p class="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
+                <strong>${custName}</strong>\'s balance will reach <strong>${pct.toFixed(0)}%</strong> of their credit limit (Projected Balance: Rs. ${projected.toLocaleString()} / Limit: Rs. ${limit.toLocaleString()}).
+              </p>
+            </div>
+          `;
+          warningBox.classList.remove('hidden');
+          lucide.createIcons();
+          return;
+        }
+      }
+
+      warningBox.classList.add('hidden');
     }
 
     // Add Credit Purchase Modal (Supports both Existing & 1-Step New Customer)
@@ -6898,6 +7227,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       const newLimit = document.getElementById('khata-new-limit');
       if (newLimit) newLimit.value = '15000';
 
+      checkCreditLimitWarning();
       modal.classList.remove('hidden');
       lucide.createIcons();
     }
@@ -6931,7 +7261,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           const newLimit = parseFloat(document.getElementById('khata-new-limit')?.value) || 15000;
 
           if (!newName || !newPhone) {
-            alert("Baraye meherbani customer ka naam aur phone number darj karein.");
+            alert("Please enter customer name and phone number.");
             if (submitBtn) submitBtn.disabled = false;
             return;
           }
@@ -6948,7 +7278,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           });
           const custData = await custRes.json();
           if (!custData.success) {
-            alert(custData.detail || "New customer register karne mein masla aaya.");
+            alert(custData.detail || "Error registering new customer.");
             if (submitBtn) submitBtn.disabled = false;
             return;
           }
@@ -6957,7 +7287,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           const select = document.getElementById('khata-customer-select');
           customerId = parseInt(select.value);
           if (!customerId) {
-            alert("Baraye meherbani customer muntakhab karein.");
+            alert("Please select a customer.");
             if (submitBtn) submitBtn.disabled = false;
             return;
           }
@@ -7079,6 +7409,70 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         document.getElementById('ledger-modal-total-settled').innerText = `Rs. ${summary.total_settled.toLocaleString()}`;
         document.getElementById('ledger-modal-limit').innerText = `Rs. ${(c.credit_limit || 0).toLocaleString()}`;
 
+        // Render Dynamic Alerts (Overdue Account & Limit Exceeded)
+        const alertsContainer = document.getElementById('ledger-alerts-container');
+        if (alertsContainer) {
+          let alertHtml = '';
+          const hasOverdue = Boolean(summary.has_overdue || c.is_overdue || (summary.oldest_unpaid_days >= 30));
+          const isLimitExceeded = Boolean(summary.is_limit_exceeded || (c.credit_limit > 0 && summary.current_balance >= c.credit_limit));
+          const isLimitWarning = Boolean(!isLimitExceeded && (summary.is_limit_warning || summary.limit_used_pct >= 80));
+
+          if (hasOverdue) {
+            const overdueDaysVal = summary.oldest_unpaid_days || c.days_overdue || 30;
+            alertHtml += `
+              <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-amber-950 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 shadow-2xs">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0">
+                    <i data-lucide="clock" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <strong class="font-bold text-amber-900 text-xs block">30+ Days Overdue Account</strong>
+                    <span class="text-[11px] text-amber-800">The oldest unpaid invoice for this customer is <strong>${overdueDaysVal} days overdue</strong>. Please collect the outstanding balance.</span>
+                  </div>
+                </div>
+                <button type="button" onclick="sendCustomerDirectWhatsApp(${c.id})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer self-end sm:self-auto">
+                  <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Send Overdue Reminder
+                </button>
+              </div>
+            `;
+          }
+
+          if (isLimitExceeded) {
+            const exceededAmt = summary.current_balance - c.credit_limit;
+            alertHtml += `
+              <div class="p-3 rounded-xl bg-rose-50/70 border border-rose-200 text-slate-800 text-xs flex items-center gap-2.5 shadow-2xs">
+                <div class="w-7 h-7 rounded-lg bg-rose-500 text-white flex items-center justify-center shrink-0">
+                  <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <strong class="font-bold text-rose-800 text-xs block">Credit Limit Exceeded (${summary.limit_used_pct}% Utilized)</strong>
+                  <span class="text-[11px] text-slate-600">Balance exceeds credit limit (Rs. ${(c.credit_limit||0).toLocaleString()}) by <strong>Rs. ${exceededAmt.toLocaleString()}</strong>. Avoid issuing further credit.</span>
+                </div>
+              </div>
+            `;
+          } else if (isLimitWarning) {
+            alertHtml += `
+              <div class="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-slate-800 text-xs flex items-center gap-2.5 shadow-2xs">
+                <div class="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0">
+                  <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <strong class="font-bold text-amber-900 text-xs block">High Credit Alert (${summary.limit_used_pct}% Utilized)</strong>
+                  <span class="text-[11px] text-slate-600">Customer balance is nearing their credit limit (Rs. ${(c.credit_limit||0).toLocaleString()}).</span>
+                </div>
+              </div>
+            `;
+          }
+
+          if (alertHtml) {
+            alertsContainer.innerHTML = alertHtml;
+            alertsContainer.classList.remove('hidden');
+          } else {
+            alertsContainer.innerHTML = '';
+            alertsContainer.classList.add('hidden');
+          }
+        }
+
         // Initialize inline quick add bill bar
         const todayStr = new Date().toISOString().split('T')[0];
         const inlineDate = document.getElementById('inline-ledger-date');
@@ -7099,25 +7493,45 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
         const tbody = document.getElementById('ledger-modal-tbody');
         if (!entries || entries.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">Iss customer ka koi credit bill mojood nahi.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">No credit invoices found for this customer.</td></tr>`;
         } else {
           tbody.innerHTML = entries.map(e => {
             const isSettled = e.is_settled === 1;
-            const statusBadge = isSettled 
-              ? `<div><span class="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-[10px]">PAID (${e.payment_method || 'Cash'})</span><div class="text-[10px] text-slate-400 mt-0.5">${e.settled_at || ''}</div></div>`
-              : `<span class="font-bold text-rose-700 bg-rose-100 px-2 py-0.5 rounded text-[10px]">PENDING</span>`;
+            const isOverdue = !isSettled && (e.is_overdue || (e.age_days && e.age_days >= 30));
+            const ageDays = e.age_days || 0;
+
+            let statusBadge = '';
+            if (isSettled) {
+              statusBadge = `<div><span class="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-[10px]">PAID (${e.payment_method || 'Cash'})</span><div class="text-[10px] text-slate-400 mt-0.5">${e.settled_at || ''}</div></div>`;
+            } else if (isOverdue) {
+              statusBadge = `
+                <div class="flex flex-col items-start gap-0.5">
+                  <span class="font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded text-[10px] flex items-center gap-1">
+                    <i data-lucide="clock" class="w-2.5 h-2.5 text-amber-600"></i> ${ageDays}d Overdue
+                  </span>
+                  <span class="font-medium text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-[9px]">PENDING</span>
+                </div>
+              `;
+            } else {
+              statusBadge = `<span class="font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded text-[10px]">PENDING</span>`;
+            }
 
             const actionCell = isSettled
-              ? `<span class="text-xs text-slate-400 italic">${e.notes || 'Settled'}</span>`
+              ? `<span class="text-xs text-slate-400 italic">${e.notes || 'Paid'}</span>`
               : `
                 <button onclick="openSettleCustomerKhataModal(${e.id}, '${e.invoice_no}', ${e.amount}, ${c.id}, '${c.name.replace(/'/g, "\\'")}')" class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold px-2.5 py-1 rounded text-[10px] flex items-center gap-1 shadow-xs cursor-pointer">
-                  <i data-lucide="check" class="w-3 h-3"></i> Settle
+                  <i data-lucide="check" class="w-3 h-3"></i> Clear
                 </button>
               `;
 
+            const rowClass = "hover:bg-slate-50/80 transition-colors border-b border-slate-100";
+
             return `
-              <tr class="hover:bg-slate-50 transition-colors">
-                <td class="py-2.5 px-3 font-mono text-slate-600">${e.date}</td>
+              <tr class="${rowClass}">
+                <td class="py-2.5 px-3 font-mono text-slate-600">
+                  ${e.date}
+                  ${isOverdue ? `<div class="text-[10px] text-slate-400 font-sans">${ageDays} days ago</div>` : ''}
+                </td>
                 <td class="py-2.5 px-3 font-bold font-mono text-[#232272]">${e.invoice_no}</td>
                 <td class="py-2.5 px-3">
                   <div class="font-medium text-slate-800">${e.item_description}</div>
@@ -7163,7 +7577,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       const amount = parseFloat(document.getElementById('inline-ledger-amount').value);
 
       if (!items || isNaN(amount) || amount <= 0) {
-        alert("Baraye meherbani items aur durust amount darj karein.");
+        alert("Please enter item description and a valid amount.");
         return;
       }
 
@@ -7192,7 +7606,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           loadCustomerKpis();
           if (typeof loadTodayActivities === 'function') loadTodayActivities();
         } else {
-          alert(data.detail || "Bill save karne mein masla aaya.");
+          alert(data.detail || "Error saving bill.");
         }
       } catch (err) {
         console.error("Error submitting inline ledger bill", err);
@@ -7247,16 +7661,16 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
       let val = parseFloat(input.value) || 0;
       if (val >= maxAmt) {
-        preview.innerHTML = '<span class="text-emerald-700 font-bold">Mukammal Adaigi (Full Settlement)</span>';
+        preview.innerHTML = '<span class="text-emerald-700 font-bold">Full Payment (Balance Cleared)</span>';
         if (help) help.classList.add('hidden');
-        if (btnText) btnText.innerText = `Confirm Full Settlement (Rs. ${maxAmt.toLocaleString()})`;
+        if (btnText) btnText.innerText = `Confirm & Clear (Rs. ${maxAmt.toLocaleString()})`;
       } else if (val > 0) {
         const rem = Math.round((maxAmt - val) * 100) / 100;
-        preview.innerHTML = `<span class="text-amber-600 font-bold">Juzwi Adaigi (Baqaya: Rs. ${rem.toLocaleString()})</span>`;
+        preview.innerHTML = `<span class="text-amber-600 font-bold">Partial Payment (Remaining: Rs. ${rem.toLocaleString()})</span>`;
         if (help) help.classList.remove('hidden');
-        if (btnText) btnText.innerText = `Confirm Partial Rs. ${val.toLocaleString()} (Baqaya: Rs. ${rem.toLocaleString()})`;
+        if (btnText) btnText.innerText = `Confirm Partial Rs. ${val.toLocaleString()} (Remaining: Rs. ${rem.toLocaleString()})`;
       } else {
-        preview.innerHTML = '<span class="text-rose-600 font-bold">Baraye meherbani raqam darj karein</span>';
+        preview.innerHTML = '<span class="text-rose-600 font-bold">Please enter a payment amount</span>';
         if (help) help.classList.add('hidden');
       }
     }
@@ -7307,7 +7721,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           }
           alert(data.message || "Payment recorded successfully!");
         } else {
-          alert(data.detail || "Settlement failed.");
+          alert(data.detail || "Payment failed.");
         }
       } catch (err) {
         console.error("Error settling invoice", err);
@@ -7337,7 +7751,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     function openQuickSettleModal(customerId, fromLedger = false) {
       const c = (allCustomers || []).find(x => x.id === customerId);
       if (!c || c.current_balance <= 0) {
-        alert("Iss customer ka koi pending balance nahi hai.");
+        alert("This customer has no pending balance.");
         return;
       }
 
@@ -7386,16 +7800,16 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
       let val = parseFloat(input.value) || 0;
       if (val >= totalBal) {
-        preview.innerHTML = '<span class="text-emerald-700 font-bold">Mukammal Settle (All Clear)</span>';
+        preview.innerHTML = '<span class="text-emerald-700 font-bold">Full Payment (All Clear)</span>';
         if (help) help.classList.add('hidden');
         if (btnText) btnText.innerText = `Confirm & Clear Rs. ${totalBal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
       } else if (val > 0) {
         const rem = Math.round((totalBal - val) * 100) / 100;
-        preview.innerHTML = `<span class="text-amber-600 font-bold">Juzwi Adaigi (Baqaya: Rs. ${rem.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</span>`;
+        preview.innerHTML = `<span class="text-amber-600 font-bold">Partial Payment (Remaining: Rs. ${rem.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})</span>`;
         if (help) help.classList.remove('hidden');
-        if (btnText) btnText.innerText = `Record Rs. ${val.toLocaleString()} (Remaining Baqaya: Rs. ${rem.toLocaleString()})`;
+        if (btnText) btnText.innerText = `Record Rs. ${val.toLocaleString()} (Remaining: Rs. ${rem.toLocaleString()})`;
       } else {
-        preview.innerHTML = '<span class="text-rose-600 font-bold">Baraye meherbani raqam darj karein</span>';
+        preview.innerHTML = '<span class="text-rose-600 font-bold">Please enter a payment amount</span>';
         if (help) help.classList.add('hidden');
       }
     }
@@ -7462,7 +7876,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           }
           alert(data.message || "Payment successfully recorded!");
         } else {
-          alert(data.detail || "Settlement failed.");
+          alert(data.detail || "Payment failed.");
         }
       } catch (err) {
         console.error("Error settling customer balance", err);
@@ -7478,7 +7892,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       openQuickSettleModal(currentOpenLedgerCustomerId, true);
     }
 
-    // Quick 1-Click Clear Baqaya directly from Customer Master Table
+    // Quick 1-Click Clear Balance directly from Customer Master Table
     function quickSettleCustomerMaster(customerId) {
       openQuickSettleModal(customerId, false);
     }
@@ -7504,7 +7918,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     }
 
     function getWaCustomerTemplate() {
-      return localStorage.getItem('wa_template_customer_khata') || `Assalam-o-Alaikum {customer_name} Sahab!\nMumtaz Pharmacy ki janib se reminder hai ke aap ke Series Khata mein Kul Baqaya Raqam Rs. {balance} due hai ({pending_invoices} bills).\nBaraye meherbani pharmacy par balance clear farma dein. Shukriya!\n— {pharmacy_name}, Model Town, Lahore`;
+      return localStorage.getItem('wa_template_customer_khata') || `Dear {customer_name},\nThis is a reminder from Mumtaz Pharmacy that your outstanding credit balance is Rs. {balance} ({pending_invoices} bills).\nPlease visit the pharmacy at your earliest convenience to clear your balance. Thank you!\n— {pharmacy_name}, Model Town, Lahore`;
     }
 
     // Helper: Substitute dynamic customer data into template
@@ -7512,7 +7926,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       if (!c) return '';
       const tpl = (typeof getWaCustomerTemplate === 'function')
         ? getWaCustomerTemplate()
-        : 'Assalam-o-Alaikum {customer_name} Sahab! Baqaya: Rs. {balance}.';
+        : 'Dear {customer_name}, Outstanding Balance: Rs. {balance}.';
       const currentBal = Number(c.current_balance || 0);
       const balFormatted = currentBal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const pendingCount = c.pending_invoices_count || c.pending_count || 0;
@@ -7530,7 +7944,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     function sendCustomerDirectWhatsApp(customerId) {
       const c = (allCustomers || []).find(x => Number(x.id) === Number(customerId));
       if (!c) {
-        alert("Customer record nahi mila.");
+        alert("Customer record not found.");
         return;
       }
       const rawPhone = (c.wa_phone || c.phone || '').replace(/[^0-9]/g, '');
@@ -7557,7 +7971,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       const debtors = (allCustomers || []).filter(c => parseFloat(c.current_balance || 0) > 0);
 
       if (!debtors || debtors.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-sm font-semibold">Alhamdulillah! Kisi customer ka udhar baqaya nahi hai.</div>`;
+        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-sm font-semibold">All Clear! No customers have an outstanding credit balance.</div>`;
         const countLabel = document.getElementById('batch-wa-selected-count-label');
         if (countLabel) countLabel.innerText = "0 Selected";
         const btn = document.getElementById('batch-wa-auto-send-btn');
@@ -7679,7 +8093,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     function startBatchWaAutoDispatch() {
       const debtors = (allCustomers || []).filter(c => parseFloat(c.current_balance || 0) > 0 && batchSelectedCustomerIds.has(Number(c.id)));
       if (!debtors || debtors.length === 0) {
-        alert("Baraye meherbani kam az kam aik customer select karein.");
+        alert("Please select at least one customer.");
         return;
       }
 
@@ -7698,7 +8112,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
     function displayCurrentRunnerStep() {
       if (batchDispatchIndex >= batchDispatchQueue.length) {
-        alert("🎉 Zabardast! Tamam selected customers ko reminders process ho chuke hain.");
+        alert("🎉 Success! Reminders processed for all selected customers.");
         stopBatchWaRunner();
         return;
       }
@@ -7766,7 +8180,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       if (waLink !== '#') {
         window.open(waLink, '_blank');
       } else {
-        alert(`Customer "${c.name}" ka WhatsApp number dastiyab nahi hai.`);
+        alert(`WhatsApp number is not available for "${c.name}".`);
       }
     }
 
@@ -7793,10 +8207,10 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     async function clearAllSettledCustomerKhata() {
       const confirmed = confirm(
         "⚠️ ADMIN CONFIRMATION:\n\n" +
-        "Kya aap waqai tamam PURANE SETTLED customer khata / parchi records delete karna chahte hain?\n\n" +
-        "• Sirf fully settled (adaa shuda) parchiyan delete hongi.\n" +
-        "• Kisi bhi customer ka Baqaya / Pending balance delete NAHI hoga.\n\n" +
-        "Delete karne ke liye OK dabaiye."
+        "Are you sure you want to permanently delete all OLD CLEARED customer credit records?\n\n" +
+        "• Only fully paid (cleared) invoices will be deleted.\n" +
+        "• No customer with an active pending balance will be affected.\n\n" +
+        "Click OK to proceed with deletion."
       );
       if (!confirmed) return;
 
@@ -7808,9 +8222,9 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         const result = await res.json();
         if (result.success) {
           if (result.deleted_count > 0) {
-            alert(`✅ Kamyabi: ${result.message}`);
+            alert(`✅ Success: ${result.message}`);
           } else {
-            alert("ℹ️ Customer Khata mein koi settled / adaa shuda parchi mojood nahi hai.\n\n(Tamam mojooda records active baqaya hain jo mehfooz rahenge).");
+            alert("ℹ️ No cleared customer credit records found to delete.\n\n(All existing records have active balances and are preserved).");
           }
           await loadCustomers();
           await loadCustomerKpis();
@@ -7818,7 +8232,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
             await openCustomerLedgerModal(currentOpenLedgerCustomerId);
           }
         } else {
-          alert(`❌ Error: ${result.message || 'Records clear nahi ho sake.'}`);
+          alert(`❌ Error: ${result.message || 'Could not clear records.'}`);
         }
       } catch (err) {
         console.error("Failed to clear settled customer khata", err);
@@ -7846,15 +8260,32 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         document.getElementById('parchi-net-balance').innerText = `Rs. ${summary.current_balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
         const tbody = document.getElementById('parchi-tbody');
-        tbody.innerHTML = entries.map(e => `
-          <tr class="${e.is_settled ? 'text-slate-400 line-through bg-slate-50/50' : 'text-slate-700'}">
-            <td class="py-1 px-2 font-mono">${e.date}</td>
-            <td class="py-1 px-2 font-mono font-bold">${e.invoice_no}</td>
-            <td class="py-1 px-2">${e.item_description}</td>
-            <td class="py-1 px-2 text-right font-mono font-bold">Rs. ${parseFloat(e.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td class="py-1 px-2 text-center text-[10px] font-bold ${e.is_settled ? 'text-emerald-700' : 'text-rose-600'}">${e.is_settled ? 'PAID' : 'DUE'}</td>
-          </tr>
-        `).join('');
+        if (!entries || entries.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400 text-xs">No ledger records found for this customer.</td></tr>`;
+        } else {
+          tbody.innerHTML = entries.map(e => {
+            const isSettled = e.is_settled === 1 || Boolean(e.is_settled);
+            return `
+              <tr class="${isSettled ? 'text-slate-400 bg-slate-50/40' : 'text-slate-700 hover:bg-slate-50/60'}">
+                <td class="py-2.5 px-3 font-mono whitespace-nowrap">${e.date}</td>
+                <td class="py-2.5 px-3 font-mono font-bold text-slate-800 whitespace-nowrap">${e.invoice_no}</td>
+                <td class="py-2.5 px-3 font-medium">
+                  <div class="text-slate-800">${e.item_description || 'Medicines'}</div>
+                  ${e.notes ? `<div class="text-[10px] text-slate-400 italic mt-0.5">${e.notes}</div>` : ''}
+                </td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold whitespace-nowrap ${isSettled ? 'text-slate-400' : 'text-slate-900'}">
+                  Rs. ${parseFloat(e.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                </td>
+                <td class="py-2.5 px-3 text-center whitespace-nowrap">
+                  ${isSettled
+                    ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">PAID</span>'
+                    : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">DUE</span>'
+                  }
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
 
         document.getElementById('customer-parchi-modal').classList.remove('hidden');
         lucide.createIcons();
@@ -7893,7 +8324,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
         const debtorsTbody = document.getElementById('weekly-debtors-tbody');
         if (!data.debtors || data.debtors.length === 0) {
-          debtorsTbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Koi active debtor mojood nahi.</td></tr>`;
+          debtorsTbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">No unpaid customers found.</td></tr>`;
         } else {
           debtorsTbody.innerHTML = data.debtors.map(d => `
             <tr>
@@ -8143,8 +8574,8 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
                   <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-1">
                     <i data-lucide="check-check" class="w-6 h-6 text-emerald-600"></i>
                   </div>
-                  <span class="font-bold text-sm text-slate-800">Koi Staff Aaj Chutti Par Nahi Hai!</span>
-                  <span class="text-xs text-slate-400">Poori pharmacy team aaj duty par available aur mojood hai.</span>
+                  <span class="font-bold text-sm text-slate-800">No Staff On Leave Today!</span>
+                  <span class="text-xs text-slate-400">Full pharmacy team is on duty today.</span>
                 </div>
               </td>
             </tr>
@@ -8196,7 +8627,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       // 2. Render Dedicated Section: Staff working today table
       if (dutyTable) {
         if (workingStaff.length === 0) {
-          dutyTable.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">Koi active staff nahi mila.</td></tr>`;
+          dutyTable.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">No active staff found.</td></tr>`;
         } else {
           dutyTable.innerHTML = workingStaff.map((s, idx) => `
             <tr class="hover:bg-emerald-50/30 transition-colors">
@@ -8241,7 +8672,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
       const activeStaff = (staffList || []).filter(s => s.is_active !== 0);
       if (activeStaff.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">Koi active staff record nahi mila.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-slate-400">No active staff records found.</td></tr>';
         return;
       }
 
@@ -8357,7 +8788,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       if (!tbody) return;
       const data = list !== null ? list : allLeaves;
       if (!data || data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">Koi approved leave record nahi mila.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-slate-400">No approved leave records found.</td></tr>';
         return;
       }
 
@@ -8444,7 +8875,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         }
       } catch (err) {
         console.error("Leave approval error", err);
-        alert("Leave approve nahi ho saki: " + err.message);
+        alert("Could not approve leave: " + err.message);
       }
     }
 
@@ -8620,8 +9051,8 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
               <td colspan="7" class="py-8 text-center text-slate-400">
                 <div class="flex flex-col items-center justify-center gap-1.5">
                   <i data-lucide="calendar-check" class="w-8 h-8 text-slate-300"></i>
-                  <span class="text-xs font-bold text-slate-600">Is mahine koi leave record nahi hai</span>
-                  <span class="text-[11px] text-slate-400">Employee ne is mahine koi chhutti nahi li.</span>
+                  <span class="text-xs font-bold text-slate-600">No leave records for this month</span>
+                  <span class="text-[11px] text-slate-400">Employee did not take any leaves this month.</span>
                 </div>
               </td>
             </tr>
@@ -8643,7 +9074,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
             } catch (e) {}
 
             const safeStaffName = (staff.name || '').replace(/'/g, "\\'");
-            const safeReason = (l.reason || 'Koi reason darj nahi hai').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const safeReason = (l.reason || 'No reason specified').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             const isHalf = l.leave_type === 'HALF_DAY';
 
             return `
@@ -8749,7 +9180,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
             <textarea id="leave-reason-input" rows="2" placeholder="e.g. Severe viral flu, Family wedding, Urgent personal work..." required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
           </div>
           <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-[11px] leading-relaxed">
-            <span class="font-bold">Policy Notice:</span> Staff ko har mahine <strong>2 leaves free</strong> milti hain. 2 se zyada chhuttiyon par payroll engine automatically 1 din ki tankhwah cut karega.
+            <span class="font-bold">Policy Notice:</span> Staff receive <strong>2 allowed free leaves</strong> per month. Absences beyond the free quota automatically deduct 1 day of wage.
           </div>
           <div class="flex items-center justify-end gap-2.5 pt-2">
             <button type="button" onclick="closeApplyLeaveModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer">Cancel</button>
@@ -8771,7 +9202,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           </div>
           <div>
             <h3 class="font-extrabold text-slate-900 text-base">Edit Staff Leave</h3>
-            <p class="text-xs text-slate-500">Chhutti ki date ya reason ko update karein</p>
+            <p class="text-xs text-slate-500">Update leave date or reason</p>
           </div>
         </div>
         <form onsubmit="submitEditLeave(event)" class="space-y-4">
@@ -8795,7 +9226,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-700 mb-1">Reason for Leave</label>
-            <textarea id="edit-leave-reason-input" rows="2" placeholder="Leave ki reason darj karein..." required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+            <textarea id="edit-leave-reason-input" rows="2" placeholder="Enter reason for leave..." required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-800 focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
           </div>
           <div class="flex items-center justify-end gap-2.5 pt-2">
             <button type="button" onclick="closeEditLeaveModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer">Cancel</button>
@@ -8869,11 +9300,11 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     // Universal helper to convert data rows to .xlsx and trigger download
     function downloadExcelWorkbook(rows, sheetName, filename) {
       if (typeof XLSX === 'undefined') {
-        alert("Spreadsheet library load nahi ho saki. Internet connection check karein ya page reload karein.");
+        alert("Spreadsheet library failed to load. Please check internet connection or refresh page.");
         return;
       }
       if (!rows || rows.length === 0) {
-        alert("Export karne ke liye koi data mojood nahi hai.");
+        alert("No data available to export.");
         return;
       }
 
@@ -8910,7 +9341,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         const matrix = data.matrix || [];
 
         if (matrix.length === 0) {
-          alert("Is mahine ka koi attendance record mojood nahi hai.");
+          alert("No attendance records found for this month.");
           return;
         }
 
@@ -8966,7 +9397,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         }
 
         if (!sheet || sheet.length === 0) {
-          alert("Payroll records calculate nahi ho sake.");
+          alert("Could not calculate payroll records.");
           return;
         }
 
@@ -9007,7 +9438,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         }
 
         if (!data || data.length === 0) {
-          alert("Staff records mojood nahi hain.");
+          alert("No staff records found.");
           return;
         }
 
@@ -9040,7 +9471,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         const data = await res.json();
         const debtors = data.debtors || [];
         if (debtors.length === 0) {
-          alert("Koi active debtor mojood nahi hai.");
+          alert("No unpaid customers found.");
           return;
         }
         const rows = debtors.map(d => ({
@@ -9051,17 +9482,17 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           "Total Outstanding Balance (Rs)": d.current_balance,
           "Audit Period": data.period || '7 Days Audit'
         }));
-        downloadExcelWorkbook(rows, "Weekly Debtors", `Mumtaz_Pharmacy_Customer_Khata_Weekly_${new Date().toISOString().split('T')[0]}`);
+        downloadExcelWorkbook(rows, "Weekly Unpaid Customers", `Mumtaz_Pharmacy_Customer_Khata_Weekly_${new Date().toISOString().split('T')[0]}`);
       } catch (err) {
         console.error("Weekly report export error:", err);
-        alert("Weekly report export nahi ho saki: " + err.message);
+        alert("Could not export weekly report: " + err.message);
       }
     }
 
     // 5. Export Customer Ledger to Excel
     async function exportCustomerLedgerExcel() {
       if (!currentOpenLedgerCustomerId) {
-        alert("Baraye meherbani pehle kisi customer ka ledger open karein.");
+        alert("Please open a customer ledger first.");
         return;
       }
       try {
@@ -9070,7 +9501,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         const c = data.customer || {};
         const entries = data.ledger || [];
         if (entries.length === 0) {
-          alert("Is customer ka koi ledger record nahi mila.");
+          alert("No ledger records found for this customer.");
           return;
         }
         const rows = entries.map(e => ({
@@ -9080,7 +9511,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           "Invoice #": e.invoice_no || '—',
           "Item Description": e.item_description,
           "Amount (Rs)": parseFloat(e.amount),
-          "Payment Status": e.is_settled ? 'Paid / Settled' : 'Unpaid / Due',
+          "Payment Status": e.is_settled ? 'Paid / Cleared' : 'Unpaid / Due',
           "Settled Date": e.settled_at || '—'
         }));
         downloadExcelWorkbook(rows, "Ledger", `Ledger_${(c.name || 'Customer').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}`);
@@ -9093,7 +9524,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     // 6. Export Customer Parchi Statement to Excel
     async function exportCustomerParchiExcel() {
       if (!currentOpenParchiCustomerId) {
-        alert("Baraye meherbani pehle customer parchi statement open karein.");
+        alert("Please open a customer statement receipt first.");
         return;
       }
       try {
@@ -9110,10 +9541,10 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           "Amount (Rs)": parseFloat(e.amount),
           "Status": e.is_settled ? 'PAID' : 'DUE'
         }));
-        downloadExcelWorkbook(rows, "Receipt", `Parchi_${(c.name || 'Customer').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}`);
+        downloadExcelWorkbook(rows, "Receipt", `Statement_${(c.name || 'Customer').replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}`);
       } catch (err) {
-        console.error("Parchi export error:", err);
-        alert("Parchi export error: " + err.message);
+        console.error("Statement export error:", err);
+        alert("Statement export error: " + err.message);
       }
     }
 
@@ -9126,7 +9557,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           if (res.ok) list = await res.json();
         }
         if (!list || list.length === 0) {
-          alert("Koi leave record mojood nahi hai.");
+          alert("No leave records found.");
           return;
         }
         const rows = list.map((l, idx) => ({
@@ -9153,7 +9584,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
         const data = await res.json();
         const list = Array.isArray(data) ? data : (data.advances || []);
         if (list.length === 0) {
-          alert("Koi staff khata record nahi mila.");
+          alert("No staff advance records found.");
           return;
         }
         const rows = list.map(a => ({
@@ -9164,7 +9595,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
           "Remaining Balance (Rs)": parseFloat(a.remaining_amount !== undefined ? a.remaining_amount : a.amount),
           "Date": a.date || a.created_at,
           "Reason": a.reason || '—',
-          "Status": a.is_settled ? 'Settled' : 'Pending',
+          "Status": a.is_settled ? 'Cleared' : 'Pending',
           "Settled Date": a.settled_at || '—',
           "Settlement Type": a.settlement_type || '—'
         }));
@@ -9179,9 +9610,9 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
     // UNIVERSAL WHATSAPP MESSAGE TEMPLATES & DYNAMIC PLACEHOLDERS ENGINE
     // =========================================================================
 
-    const DEFAULT_WA_CUSTOMER_TEMPLATE = `Assalam-o-Alaikum {customer_name} Sahab!\nMumtaz Pharmacy ki janib se reminder hai ke aap ke Series Khata mein Kul Baqaya Raqam Rs. {balance} due hai ({pending_invoices} bills).\nBaraye meherbani pharmacy par balance clear farma dein. Shukriya!\n— {pharmacy_name}, Model Town, Lahore`;
+    const DEFAULT_WA_CUSTOMER_TEMPLATE = `Dear {customer_name},\nThis is a reminder from Mumtaz Pharmacy that your outstanding credit balance is Rs. {balance} ({pending_invoices} bills).\nPlease visit the pharmacy at your earliest convenience to clear your balance. Thank you!\n— {pharmacy_name}, Model Town, Lahore`;
 
-    const DEFAULT_WA_SALARY_TEMPLATE = `*🏥 {pharmacy_name} — SALARY PAYSLIP*\n━━━━━━━━━━━━━━━━━━━━━━━━━\n👤 *Staff:* {staff_name}\n💼 *Role:* {designation}\n📅 *Month:* {month}\n⏱ *Duty:* {days} Days ({daily_hours} hrs/day)\n━━━━━━━━━━━━━━━━━━━━━━━━━\n*📊 SALARY CALCULATION BREAKDOWN:*\n• Gross Base Salary = Rs. {basic_salary}\n• Chuti / Leave Cuts = -Rs. {leave_cut}\n• Advance Khata Cuts = -Rs. {advance_cut}\n• Kul Deductions = -Rs. {total_deductions}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n*💰 NET PAYABLE SALARY:*\n*👉 Rs. {net_salary}*\n━━━━━━━━━━━━━━━━━━━━━━━━━\n{pharmacy_name} • Official Computerized Payslip`;
+    const DEFAULT_WA_SALARY_TEMPLATE = `*🏥 {pharmacy_name} — SALARY PAYSLIP*\n━━━━━━━━━━━━━━━━━━━━━━━━━\n👤 *Staff:* {staff_name}\n💼 *Role:* {designation}\n📅 *Month:* {month}\n⏱ *Duty:* {days} Days ({daily_hours} hrs/day)\n━━━━━━━━━━━━━━━━━━━━━━━━━\n*📊 SALARY CALCULATION BREAKDOWN:*\n• Gross Base Salary = Rs. {basic_salary}\n• Leave Deductions = -Rs. {leave_cut}\n• Advance / Khata Deductions = -Rs. {advance_cut}\n• Total Deductions = -Rs. {total_deductions}\n━━━━━━━━━━━━━━━━━━━━━━━━━\n*💰 NET PAYABLE SALARY:*\n*👉 Rs. {net_salary}*\n━━━━━━━━━━━━━━━━━━━━━━━━━\n{pharmacy_name} • Official Computerized Payslip`;
 
     let currentWaActiveTab = 'customer';
     let currentPreviewWaData = { phone: '', message: '' };
@@ -9280,20 +9711,20 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       const txt = document.getElementById('wa-template-customer-text');
       if (!txt) return;
       const val = txt.value.trim();
-      if (!val) { alert("Customer template khali nahi ho sakta."); return; }
+      if (!val) { alert("Customer template cannot be empty."); return; }
       localStorage.setItem('wa_template_customer_khata', val);
-      alert("✅ Customer Khata WhatsApp Template save ho gaya! Tamam customers ko yahi message deliver hoga.");
+      alert("✅ Customer WhatsApp Template saved successfully!");
       closeCustomerWaTemplateModal();
       if (typeof renderCustomerTable === 'function') renderCustomerTable();
       if (typeof renderBatchDebtorsList === 'function') renderBatchDebtorsList();
     }
 
     function resetCustomerWaTemplate() {
-      if (!confirm("Default Customer message template par wapis jana chahte hain?")) return;
+      if (!confirm("Do you want to reset to the default Customer message template?")) return;
       localStorage.removeItem('wa_template_customer_khata');
       const txt = document.getElementById('wa-template-customer-text');
       if (txt) txt.value = DEFAULT_WA_CUSTOMER_TEMPLATE;
-      alert("Customer default message template restore ho gaya.");
+      alert("Default Customer message template restored.");
       if (typeof renderCustomerTable === 'function') renderCustomerTable();
       if (typeof renderBatchDebtorsList === 'function') renderBatchDebtorsList();
     }
@@ -9323,19 +9754,19 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       const txt = document.getElementById('wa-template-salary-text');
       if (!txt) return;
       const val = txt.value.trim();
-      if (!val) { alert("Salary slip template khali nahi ho sakta."); return; }
+      if (!val) { alert("Salary payslip template cannot be empty."); return; }
       localStorage.setItem('wa_template_staff_salary', val);
-      alert("✅ Staff Salary WhatsApp Template save ho gaya! Tamam staff ko yahi payslip message deliver hoga.");
+      alert("✅ Staff Salary WhatsApp Template saved successfully!");
       closeSalaryWaTemplateModal();
       if (typeof renderBatchSalaryList === 'function') renderBatchSalaryList();
     }
 
     function resetSalaryWaTemplate() {
-      if (!confirm("Default Salary slip message par wapis jana chahte hain?")) return;
+      if (!confirm("Do you want to reset to the default Salary payslip template?")) return;
       localStorage.removeItem('wa_template_staff_salary');
       const txt = document.getElementById('wa-template-salary-text');
       if (txt) txt.value = DEFAULT_WA_SALARY_TEMPLATE;
-      alert("Salary slip default message template restore ho gaya.");
+      alert("Default Salary payslip template restored.");
       if (typeof renderBatchSalaryList === 'function') renderBatchSalaryList();
     }
 
@@ -9353,7 +9784,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
       const phoneInput = document.getElementById('wa-preview-phone-input').value.trim();
       const msgText = document.getElementById('wa-preview-message-text').value.trim();
 
-      if (!msgText) { alert("Message khali nahi ho sakta."); return; }
+      if (!msgText) { alert("Message cannot be empty."); return; }
 
       let digits = phoneInput.replace(/[^0-9]/g, '');
       if (digits.startsWith('03') && digits.length === 11) digits = '92' + digits.substring(1);
@@ -9380,7 +9811,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
       const c = (allCustomers || []).find(x => Number(x.id) === Number(customerId));
       if (!c) {
-        alert("Customer record nahi mila.");
+        alert("Customer record not found.");
         return;
       }
 
@@ -9409,7 +9840,7 @@ Baraye meherbani pharmacy par balance clear farma dein. Shukriya!
 
       const p = (currentPayrollData || []).find(x => Number(x.staff_id) === Number(staffId));
       if (!p) {
-        alert("Payroll record nahi mila.");
+        alert("Payroll record not found.");
         return;
       }
       const staff = (staffList || []).find(s => Number(s.id) === Number(staffId));
