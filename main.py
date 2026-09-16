@@ -19,7 +19,8 @@ import random
 from database import (
     init_db, get_db_connection, log_activity, get_today_activities,
     get_setting, set_setting, get_all_settings, create_otp_record,
-    verify_and_consume_otp, get_active_otps, get_pin_otp_audit_logs
+    verify_and_consume_otp, get_active_otps, get_pin_otp_audit_logs,
+    mark_otp_notified
 )
 from payroll_engine import process_punch, calculate_monthly_payroll
 from biometric_service import biometric_service
@@ -64,6 +65,7 @@ class CheckoutPinRequest(BaseModel):
 
 class ConfirmCheckoutRequest(BaseModel):
     staff_id: int
+    otp_id: Optional[int] = None  # OTP record ID from verify-checkout-pin (for notify time tracking)
     custom_time: Optional[str] = None  # Optional override for exact punch time
 
 class SettingsUpdate(BaseModel):
@@ -385,7 +387,8 @@ def verify_checkout_pin(req: CheckoutPinRequest):
     """
     STEP 1 of 2-step checkout:
     Verifies staff PIN for Check-OUT. Does NOT record any punch yet.
-    Returns a WhatsApp notification link — staff must click it to notify Admin.
+    Records PIN entry time in audit log (otp_verifications.created_at).
+    Returns otp_id + WhatsApp notification link — staff must click to notify Admin.
     Actual punch is only recorded when /confirm-checkout is called.
     """
     conn = get_db_connection()
@@ -408,19 +411,27 @@ def verify_checkout_pin(req: CheckoutPinRequest):
     if not saved_pin or saved_pin != entered_pin:
         raise HTTPException(status_code=400, detail="Ghalat PIN! Barah-e-karam apni 4-digit secret PIN sahi darj karein.")
 
+    # ✅ Record PIN entry time in audit log (created_at = now, verified_at = empty until notify)
+    admin_phone = get_setting("admin_whatsapp_number", "0300-1234567")
+    otp_id = create_otp_record(
+        req.staff_id, "OUT_PIN", "OUT",
+        staff["phone"] or admin_phone,
+        expiry_minutes=30  # 30 min window to send notification
+    )
+
     # Build admin WhatsApp notification link
     time_str = datetime.now().strftime("%I:%M %p")
-    admin_phone = get_setting("admin_whatsapp_number", "0300-1234567")
     admin_phone_digits = ''.join(c for c in admin_phone if c.isdigit())
     staff_name = staff["name"]
     wa_msg = (f"MUMTAZ PHARMACY%0A"
               f"%E2%9C%85 {staff_name} ne {time_str} par Check-OUT kiya hai.%0A"
-              f"PIN verified — attendance update ho rahi hai.")
+              f"PIN verified — Checkout confirm kiya ja raha hai.")
     wa_link = f"https://wa.me/{admin_phone_digits}?text={wa_msg}"
 
     return {
         "success": True,
         "pin_verified": True,
+        "otp_id": otp_id,  # Pass this to confirm-checkout to record notify time
         "staff_id": staff["id"],
         "staff_name": staff_name,
         "time": time_str,
@@ -435,7 +446,8 @@ def confirm_checkout(req: ConfirmCheckoutRequest):
     """
     STEP 2 of 2-step checkout:
     Called AFTER staff clicks the WhatsApp Admin-notify button.
-    Records the actual OUT punch in attendance.
+    1. Records verified_at (notify time) in otp_verifications for audit diff tracking.
+    2. Records the actual OUT punch in attendance.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -448,6 +460,10 @@ def confirm_checkout(req: ConfirmCheckoutRequest):
 
     if not staff:
         raise HTTPException(status_code=404, detail="Staff member not found or inactive.")
+
+    # ✅ Record notify time in audit log (verified_at = now → diff = PIN time vs Notify time)
+    if req.otp_id:
+        mark_otp_notified(req.otp_id)
 
     # Record the OUT punch now
     punch_dt = datetime.now()
@@ -464,9 +480,6 @@ def confirm_checkout(req: ConfirmCheckoutRequest):
     staff_name = result.get("staff_name", staff["name"])
     time_str = result.get("time", punch_dt.strftime("%I:%M %p"))
     date_str = punch_dt.strftime("%Y-%m-%d")
-
-    # Record in otp_verifications audit log
-    create_otp_record(req.staff_id, "PIN_NOTIFY", "OUT", staff["phone"] or "0300-0000000", expiry_minutes=0)
 
     # Log activity
     log_activity(

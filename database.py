@@ -579,7 +579,7 @@ def get_all_settings() -> dict:
     return {r["key"]: r["value"] for r in rows}
 
 def create_otp_record(staff_id: int, otp_code: str, action: str, target_phone: str, expiry_minutes: int = 5) -> int:
-    """Invalidates old pending OTPs and creates a new OTP record."""
+    """Invalidates old pending OTPs and creates a new OTP record. Returns new record ID."""
     conn = get_db_connection()
     cursor = conn.cursor()
     now = datetime.now()
@@ -597,6 +597,25 @@ def create_otp_record(staff_id: int, otp_code: str, action: str, target_phone: s
     conn.commit()
     conn.close()
     return otp_id
+
+
+def mark_otp_notified(otp_id: int) -> bool:
+    """
+    For OUT checkout: marks the OTP record as 'notified' by setting verified_at
+    and is_used=1 when staff clicks the WhatsApp notify-admin button.
+    This records the exact notify time for the Admin audit log.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute(
+        "UPDATE otp_verifications SET is_used = 1, verified_at = ? WHERE id = ?",
+        (now_str, otp_id)
+    )
+    updated = cursor.rowcount > 0
+    conn.commit()
+    conn.close()
+    return updated
 
 def verify_and_consume_otp(staff_id: int, otp_code: str):
     """
@@ -710,21 +729,25 @@ def get_pin_otp_audit_logs(date_str: str = None, limit: int = 100):
             if c_dt and v_dt:
                 diff_seconds = max(0, int((v_dt - c_dt).total_seconds()))
                 if diff_seconds < 60:
-                    diff_str = f"{diff_seconds}s (Same-Time)"
+                    diff_str = f"⚡ {diff_seconds}s (Same-Time)"
+                elif diff_seconds < 120:
+                    m = diff_seconds // 60
+                    s = diff_seconds % 60
+                    diff_str = f"✅ {m}m {s}s"
                 else:
                     m = diff_seconds // 60
                     s = diff_seconds % 60
-                    diff_str = f"{m}m {s}s"
+                    diff_str = f"⏱️ {m}m {s}s (Delayed)"
             else:
-                diff_str = "Instant (<1m)"
+                diff_str = "⚡ Instant (<1m)"
         else:
             exp_str = item.get("expires_at") or ""
             if exp_str and exp_str < now_dt.strftime("%Y-%m-%d %H:%M:%S"):
                 status_label = "EXPIRED"
-                diff_str = "Expired (Not Verified)"
+                diff_str = "⏳ Expired"
             else:
                 status_label = "PENDING"
-                diff_str = "Pending OTP"
+                diff_str = "⏳ Pending"
 
         item["diff_seconds"] = diff_seconds
         item["diff_str"] = diff_str

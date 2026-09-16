@@ -2572,27 +2572,27 @@
         </div>
       </div>
 
-      <!-- 4 SUMMARY STAT CARDS -->
+      <!-- 4 SUMMARY STAT CARDS — clickable to filter table -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+        <div id="audit-card-total" onclick="filterAuditTable('all')" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs cursor-pointer hover:shadow-md hover:border-slate-300 transition select-none">
           <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total PIN Requests</div>
           <div id="audit-stat-total" class="text-2xl font-black text-slate-900 mt-1">0</div>
-          <div class="text-[11px] text-slate-400 mt-0.5">Attempted today</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Click to show all</div>
         </div>
-        <div class="bg-white p-4 rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-xs">
-          <div class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">⚡ Same-Time Verified (&lt;1 min)</div>
+        <div id="audit-card-instant" onclick="filterAuditTable('instant')" class="bg-white p-4 rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-xs cursor-pointer hover:shadow-md hover:border-emerald-300 transition select-none">
+          <div class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">⚡ Same-Time Verified (&lt;2 min)</div>
           <div id="audit-stat-instant" class="text-2xl font-black text-emerald-700 mt-1">0</div>
-          <div class="text-[11px] text-emerald-600 mt-0.5">PIN &amp; OTP matched instantly</div>
+          <div class="text-[11px] text-emerald-600 mt-0.5">Click to filter</div>
         </div>
-        <div class="bg-white p-4 rounded-2xl border border-amber-200 bg-amber-50/20 shadow-xs">
+        <div id="audit-card-delayed" onclick="filterAuditTable('delayed')" class="bg-white p-4 rounded-2xl border border-amber-200 bg-amber-50/20 shadow-xs cursor-pointer hover:shadow-md hover:border-amber-300 transition select-none">
           <div class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">⏱️ Delayed Punches (&gt;2 min)</div>
           <div id="audit-stat-delayed" class="text-2xl font-black text-amber-700 mt-1">0</div>
-          <div class="text-[11px] text-amber-600 mt-0.5">Noticeable time gap</div>
+          <div class="text-[11px] text-amber-600 mt-0.5">Click to filter</div>
         </div>
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+        <div id="audit-card-pending" onclick="filterAuditTable('pending')" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs cursor-pointer hover:shadow-md hover:border-slate-300 transition select-none">
           <div class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">⏳ Pending / Expired</div>
           <div id="audit-stat-pending" class="text-2xl font-black text-slate-600 mt-1">0</div>
-          <div class="text-[11px] text-slate-400 mt-0.5">Not verified</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Click to filter</div>
         </div>
       </div>
 
@@ -4713,6 +4713,10 @@
       }
     }
 
+    // Store all loaded audit logs for client-side filtering
+    let _auditLogs = [];
+    let _auditFilter = 'all'; // 'all' | 'instant' | 'delayed' | 'pending'
+
     async function loadAuditLog() {
       const tbody = document.getElementById('audit-table-tbody');
       const countBadge = document.getElementById('audit-table-count');
@@ -4739,7 +4743,7 @@
           console.warn("Backend audit-log fallback:", e);
         }
 
-        if (countBadge) countBadge.innerText = `${logs.length} Records`;
+        _auditLogs = logs; // Store for filtering
 
         let total = logs.length;
         let instant = 0;
@@ -4763,27 +4767,70 @@
         if (statDelayed) statDelayed.innerText = delayed;
         if (statPending) statPending.innerText = pending;
 
-        if (!tbody) return;
-        if (logs.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 font-medium">No PIN or OTP requests recorded for ${selectedDate}.</td></tr>`;
-          return;
-        }
+        // Apply the current filter
+        renderAuditTable(logs, _auditFilter, countBadge, tbody);
 
-        tbody.innerHTML = logs.map(l => {
+        if (window.lucide) lucide.createIcons();
+      } catch (err) {
+        console.error("Failed to load audit log:", err);
+      }
+    }
+
+    // Click a stat card to filter the audit table
+    function filterAuditTable(type) {
+      _auditFilter = type;
+      const tbody = document.getElementById('audit-table-tbody');
+      const countBadge = document.getElementById('audit-table-count');
+
+      // Highlight active card
+      ['audit-card-total','audit-card-instant','audit-card-delayed','audit-card-pending'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('ring-2','ring-indigo-400','ring-amber-400','ring-emerald-400','ring-slate-400');
+      });
+      const ringMap = { all: ['audit-card-total','ring-2','ring-slate-400'], instant: ['audit-card-instant','ring-2','ring-emerald-400'], delayed: ['audit-card-delayed','ring-2','ring-amber-400'], pending: ['audit-card-pending','ring-2','ring-slate-400'] };
+      const ring = ringMap[type];
+      if (ring) { const el = document.getElementById(ring[0]); if (el) el.classList.add(ring[1], ring[2]); }
+
+      renderAuditTable(_auditLogs, type, countBadge, tbody);
+    }
+
+    function renderAuditTable(logs, filter, countBadge, tbody) {
+      // Apply filter
+      let filtered = logs;
+      if (filter === 'instant') {
+        filtered = logs.filter(l => l.audit_status === 'VERIFIED' && (l.diff_seconds === null || l.diff_seconds <= 120));
+      } else if (filter === 'delayed') {
+        filtered = logs.filter(l => l.audit_status === 'VERIFIED' && l.diff_seconds !== null && l.diff_seconds > 120);
+      } else if (filter === 'pending') {
+        filtered = logs.filter(l => l.audit_status !== 'VERIFIED');
+      }
+
+      const filterLabel = filter === 'all' ? '' : ` (${filter.charAt(0).toUpperCase() + filter.slice(1)} only)`;
+      if (countBadge) countBadge.innerText = `${filtered.length} Records${filterLabel}`;
+
+      if (!tbody) return;
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 font-medium">No records match this filter.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(l => {
           const pinTime = l.created_at ? formatTimeAMPM(l.created_at.split(' ')[1] || l.created_at) : '—';
+          // For OUT: verified_at = time admin was notified; For IN: = time OTP was verified
+          const verifyLabel = l.action === 'OUT' ? 'Notify Time' : 'OTP Time';
           const otpTime = l.verified_at ? formatTimeAMPM(l.verified_at.split(' ')[1] || l.verified_at) : (l.audit_status === 'VERIFIED' ? 'Verified' : '—');
-          
+
           let diffBadge = '';
           if (l.audit_status === 'VERIFIED') {
             if (l.diff_seconds !== null && l.diff_seconds > 120) {
-              diffBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">⏱️ ${l.diff_str}</span>`;
+              diffBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">${l.diff_str}</span>`;
             } else {
-              diffBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">⚡ ${l.diff_str}</span>`;
+              diffBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">${l.diff_str}</span>`;
             }
           } else if (l.audit_status === 'EXPIRED') {
             diffBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">❌ Expired</span>`;
           } else {
-            diffBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">⏳ Pending OTP</span>`;
+            diffBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">⏳ Pending</span>`;
           }
 
           let statusBadge = '';
@@ -4795,7 +4842,7 @@
             statusBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">PENDING</span>`;
           }
 
-          const actionBadge = l.action === 'IN' 
+          const actionBadge = l.action === 'IN'
             ? `<span class="px-2 py-0.5 rounded text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Check-IN</span>`
             : `<span class="px-2 py-0.5 rounded text-[11px] font-black bg-blue-100 text-blue-800 border border-blue-300">Check-OUT</span>`;
 
@@ -4815,19 +4862,20 @@
                 </div>
               </td>
               <td class="py-3 px-4">${actionBadge}</td>
-              <td class="py-3 px-4 font-mono font-bold text-slate-700">${pinTime}</td>
-              <td class="py-3 px-4 font-mono font-bold ${l.verified_at ? 'text-emerald-700' : 'text-slate-400'}">${otpTime}</td>
+              <td class="py-3 px-4">
+                <div class="font-mono font-bold text-slate-700">${pinTime}</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">PIN Time</div>
+              </td>
+              <td class="py-3 px-4">
+                <div class="font-mono font-bold ${l.verified_at ? 'text-emerald-700' : 'text-slate-400'}">${otpTime}</div>
+                <div class="text-[10px] text-slate-400 mt-0.5">${verifyLabel}</div>
+              </td>
               <td class="py-3 px-4 text-center">${diffBadge}</td>
               <td class="py-3 px-4 text-center">${statusBadge}</td>
               <td class="py-3 px-4 text-right text-slate-500 font-mono text-[11px]">${l.target_phone || 'WhatsApp'}</td>
             </tr>
           `;
         }).join('');
-
-        if (window.lucide) lucide.createIcons();
-      } catch (err) {
-        console.error("Failed to load audit log:", err);
-      }
     }
 
     // 1. Live Clock
@@ -5652,7 +5700,7 @@
         const res = await fetch('/api/attendance/confirm-checkout', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ staff_id: currentKioskStaff.id })
+          body: JSON.stringify({ staff_id: currentKioskStaff.id, otp_id: data.otp_id || null })
         });
         const result = await res.json();
         const timeStr = (res.ok && result.time) ? result.time : data.time;
