@@ -303,6 +303,12 @@ def init_db():
     );
     """)
 
+    cursor.execute("PRAGMA table_info(otp_verifications)")
+    existing_otp_cols = {row[1] for row in cursor.fetchall()}
+    if "verified_at" not in existing_otp_cols:
+        cursor.execute("ALTER TABLE otp_verifications ADD COLUMN verified_at TEXT DEFAULT ''")
+
+
     # Populate Default Shifts if empty
     cursor.execute("SELECT COUNT(*) FROM shifts")
     if cursor.fetchone()[0] == 0:
@@ -630,8 +636,9 @@ def verify_and_consume_otp(staff_id: int, otp_code: str):
         conn.close()
         return False, None, "Ghalat confirmation code! Barah-e-karam check kar ke dobara enter karein."
 
-    # Mark as successfully used
-    cursor.execute("UPDATE otp_verifications SET is_used = 1 WHERE id = ?", (record["id"],))
+    # Mark as successfully used with exact verification timestamp
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("UPDATE otp_verifications SET is_used = 1, verified_at = ? WHERE id = ?", (now_str, record["id"]))
     conn.commit()
     action = record["action"]
     conn.close()
@@ -652,6 +659,78 @@ def get_active_otps(limit: int = 10):
     rows = cursor.fetchall()
     conn.close()
     return [dict(r) for r in rows]
+
+def get_pin_otp_audit_logs(date_str: str = None, limit: int = 100):
+    """
+    Returns complete PIN vs OTP timing audit log for Admin inspection.
+    Enables Admin to verify at the end of the day if PIN and OTP times match.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if not date_str:
+        date_str = datetime.now().strftime("%Y-%m-%d")
+    
+    cursor.execute("""
+        SELECT o.*, s.name as staff_name, s.role, coalesce(nullif(s.designation, ''), s.role) as designation,
+               s.phone as staff_phone
+        FROM otp_verifications o
+        JOIN staff s ON o.staff_id = s.id
+        WHERE date(o.created_at) = ? OR o.created_at LIKE ?
+        ORDER BY o.id DESC LIMIT ?
+    """, (date_str, f"{date_str}%", limit))
+    rows = cursor.fetchall()
+    conn.close()
+
+    result = []
+    now_dt = datetime.now()
+    for r in rows:
+        item = dict(r)
+        created_raw = item.get("created_at") or ""
+        verified_raw = item.get("verified_at") or ""
+        diff_seconds = None
+        diff_str = "Pending OTP"
+        status_label = "PENDING"
+        
+        c_dt = None
+        v_dt = None
+        if created_raw:
+            try:
+                c_dt = datetime.strptime(created_raw.split(".")[0], "%Y-%m-%d %H:%M:%S")
+            except Exception:
+                pass
+
+        if verified_raw:
+            try:
+                v_dt = datetime.strptime(verified_raw.split(".")[0], "%Y-%m-%d %H:%M:%S")
+            except Exception:
+                pass
+
+        if item.get("is_used") == 1:
+            status_label = "VERIFIED"
+            if c_dt and v_dt:
+                diff_seconds = max(0, int((v_dt - c_dt).total_seconds()))
+                if diff_seconds < 60:
+                    diff_str = f"{diff_seconds}s (Same-Time)"
+                else:
+                    m = diff_seconds // 60
+                    s = diff_seconds % 60
+                    diff_str = f"{m}m {s}s"
+            else:
+                diff_str = "Instant (<1m)"
+        else:
+            exp_str = item.get("expires_at") or ""
+            if exp_str and exp_str < now_dt.strftime("%Y-%m-%d %H:%M:%S"):
+                status_label = "EXPIRED"
+                diff_str = "Expired (Not Verified)"
+            else:
+                status_label = "PENDING"
+                diff_str = "Pending OTP"
+
+        item["diff_seconds"] = diff_seconds
+        item["diff_str"] = diff_str
+        item["audit_status"] = status_label
+        result.append(item)
+    return result
 
 if __name__ == "__main__":
     init_db()

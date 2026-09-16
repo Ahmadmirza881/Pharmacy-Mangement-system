@@ -19,7 +19,7 @@ import random
 from database import (
     init_db, get_db_connection, log_activity, get_today_activities,
     get_setting, set_setting, get_all_settings, create_otp_record,
-    verify_and_consume_otp, get_active_otps
+    verify_and_consume_otp, get_active_otps, get_pin_otp_audit_logs
 )
 from payroll_engine import process_punch, calculate_monthly_payroll
 from biometric_service import biometric_service
@@ -55,6 +55,11 @@ class PinOtpRequest(BaseModel):
 class PinOtpVerify(BaseModel):
     staff_id: int
     otp_code: str
+    custom_time: Optional[str] = None
+
+class CheckoutPinRequest(BaseModel):
+    staff_id: int
+    pin: str
     custom_time: Optional[str] = None
 
 class SettingsUpdate(BaseModel):
@@ -361,6 +366,84 @@ def verify_pin_otp(req: PinOtpVerify):
 def get_live_otps():
     """Returns active pending OTP requests for live Admin monitoring."""
     return get_active_otps()
+
+@app.get("/api/attendance/audit-log")
+def get_audit_log(date: Optional[str] = Query(None, description="Date in YYYY-MM-DD format")):
+    """
+    Returns complete PIN vs OTP verification audit trail.
+    Enables Admin to compare PIN keyed-in time against OTP verified time at the end of the day.
+    """
+    return get_pin_otp_audit_logs(date_str=date)
+
+
+@app.post("/api/attendance/checkout-by-pin")
+def checkout_by_pin(req: CheckoutPinRequest):
+    """
+    Check-OUT using PIN only — no OTP required for OUT.
+    Verifies staff PIN, records OUT punch immediately, and returns a WhatsApp
+    notification link so staff can optionally notify Admin via WhatsApp.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT s.*, coalesce(nullif(s.designation, ''), s.role) as designation, sh.name as shift_name
+        FROM staff s
+        JOIN shifts sh ON s.shift_id = sh.id
+        WHERE s.id = ? AND s.is_active = 1
+    """, (req.staff_id,))
+    staff = cursor.fetchone()
+    conn.close()
+
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff member not found or inactive.")
+
+    # Verify PIN
+    saved_pin = str(staff["pin"] or "").strip()
+    entered_pin = str(req.pin or "").strip()
+    if not saved_pin or saved_pin != entered_pin:
+        raise HTTPException(status_code=400, detail="Ghalat PIN! Barah-e-karam apni 4-digit secret PIN sahi darj karein.")
+
+    # Process OUT punch directly
+    punch_dt = datetime.now()
+    if req.custom_time:
+        try:
+            punch_dt = datetime.strptime(req.custom_time, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            pass
+
+    result = process_punch(req.staff_id, punch_dt=punch_dt, method="PIN_ONLY", force_action="OUT")
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("message"))
+
+    staff_name = result.get("staff_name", staff["name"])
+    time_str = result.get("time", punch_dt.strftime("%I:%M %p"))
+    date_str = punch_dt.strftime("%Y-%m-%d")
+
+    # Record PIN in otp_verifications with action=OUT (no OTP — mark as DIRECT_PIN)
+    create_otp_record(req.staff_id, "PIN_ONLY", "OUT", staff["phone"] or "0300-0000000", expiry_minutes=0)
+
+    # Log activity
+    log_activity(
+        category="ATTENDANCE",
+        action_type="PUNCH_OUT",
+        title=f"PIN Checkout: {staff_name}",
+        description=f"Checked OUT via PIN at {time_str} — no OTP required",
+        staff_name=staff_name,
+        date_str=date_str,
+        time_str=time_str
+    )
+
+    # Build admin WhatsApp notification link
+    admin_phone = get_setting("admin_whatsapp_number", "0300-1234567")
+    admin_phone_digits = ''.join(c for c in admin_phone if c.isdigit())
+    wa_msg = f"MUMTAZ PHARMACY%0A%E2%9C%85 {staff_name} ne {time_str} par Check-OUT kar liya hai (PIN verified)."
+    wa_link = f"https://wa.me/{admin_phone_digits}?text={wa_msg}"
+
+    result["checkout_method"] = "PIN_ONLY"
+    result["admin_wa_link"] = wa_link
+    result["admin_phone_masked"] = whatsapp_service.mask_phone(admin_phone)
+    return result
+
 
 # =====================================================================
 # SYSTEM SETTINGS & WHATSAPP CONFIGURATION ENDPOINTS
