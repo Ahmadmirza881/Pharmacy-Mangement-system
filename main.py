@@ -49,6 +49,7 @@ class PunchRequest(BaseModel):
 class PinOtpRequest(BaseModel):
     staff_id: int
     pin: str
+    action: Optional[str] = None # Optional: user can explicitly choose 'IN' or 'OUT'
     custom_time: Optional[str] = None
 
 class PinOtpVerify(BaseModel):
@@ -244,24 +245,28 @@ def request_pin_otp(req: PinOtpRequest):
         conn.close()
         raise HTTPException(status_code=400, detail="Ghalat PIN! Barah-e-karam apni 4-digit secret PIN sahi darj karein.")
 
-    # 2. Determine Action (IN or OUT) based on today's logs
-    today_str = date.today().strftime("%Y-%m-%d")
-    if req.custom_time:
-        try:
-            today_str = datetime.strptime(req.custom_time, "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d")
-        except ValueError:
-            pass
-
-    cursor.execute("SELECT time_in, time_out FROM attendance_logs WHERE staff_id = ? AND date = ?", (req.staff_id, today_str))
-    log = cursor.fetchone()
-    conn.close()
-
-    if not log or not log["time_in"]:
-        action = "IN"
-    elif log["time_in"] and not log["time_out"]:
-        action = "OUT"
+    # 2. Determine Action (IN or OUT): explicit user choice or auto-detection
+    if req.action and req.action.upper() in ["IN", "OUT"]:
+        action = req.action.upper()
+        conn.close()
     else:
-        action = "OUT" # Update/overwrite checkout if punched again
+        today_str = date.today().strftime("%Y-%m-%d")
+        if req.custom_time:
+            try:
+                today_str = datetime.strptime(req.custom_time, "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d")
+            except ValueError:
+                pass
+
+        cursor.execute("SELECT time_in, time_out FROM attendance_logs WHERE staff_id = ? AND date = ?", (req.staff_id, today_str))
+        log = cursor.fetchone()
+        conn.close()
+
+        if not log or not log["time_in"]:
+            action = "IN"
+        elif log["time_in"] and not log["time_out"]:
+            action = "OUT"
+        else:
+            action = "OUT" # Update/overwrite checkout if punched again
 
     # 3. Determine Target Destination Phone
     if action == "IN":
@@ -327,8 +332,8 @@ def verify_pin_otp(req: PinOtpVerify):
         except ValueError:
             pass
 
-    # Process punch via authoritative payroll engine
-    result = process_punch(req.staff_id, punch_dt=punch_dt, method="PIN_OTP")
+    # Process punch via authoritative payroll engine with force_action
+    result = process_punch(req.staff_id, punch_dt=punch_dt, method="PIN_OTP", force_action=action)
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("message"))
 

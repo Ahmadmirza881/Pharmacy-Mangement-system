@@ -73,5 +73,31 @@ class TestPinOtpAttendance(unittest.TestCase):
         self.assertTrue(verify_data['success'])
         self.assertIn('punch_type', verify_data)
 
+    def test_03_explicit_user_action_choice(self):
+        staff_res = client.get('/api/staff')
+        staff = staff_res.json()[0]
+        staff_id = staff['id']
+        staff_pin = staff.get('pin') or '1001'
+
+        # Explicitly choose IN
+        res_in = client.post('/api/attendance/request-pin-otp', json={
+            'staff_id': staff_id,
+            'pin': staff_pin,
+            'action': 'IN'
+        })
+        self.assertEqual(res_in.status_code, 200)
+        self.assertEqual(res_in.json()['action'], 'IN')
+        self.assertEqual(res_in.json()['target_type'], 'ADMIN')
+
+        # Explicitly choose OUT
+        res_out = client.post('/api/attendance/request-pin-otp', json={
+            'staff_id': staff_id,
+            'pin': staff_pin,
+            'action': 'OUT'
+        })
+        self.assertEqual(res_out.status_code, 200)
+        self.assertEqual(res_out.json()['action'], 'OUT')
+        self.assertEqual(res_out.json()['target_type'], 'STAFF')
+
 if __name__ == '__main__':
     unittest.main()

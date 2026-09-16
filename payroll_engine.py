@@ -19,23 +19,21 @@ def parse_time_str(time_str: str) -> time:
     parts = time_str.split(":")
     return time(int(parts[0]), int(parts[1]), int(parts[2]) if len(parts) > 2 else 0)
 
-def process_punch(staff_id: int, punch_dt: datetime = None, method: str = "FINGERPRINT"):
+def process_punch(staff_id: int, punch_dt: datetime = None, method: str = "FINGERPRINT", force_action: str = None):
     """
-    Handles staff biometric punch (IN or OUT).
-    - If no punch exists for today: Registers Time-IN, checks against shift start + grace.
-    - If Time-IN exists but no Time-OUT: Registers Time-OUT, calculates worked minutes & overtime.
-    - If both exist: Updates Time-OUT to the latest punch.
+    Authoritative Attendance Punch Engine with Flexible Arrival Time.
+    If force_action is specified ('IN' or 'OUT'), respects user's explicit choice.
     """
-    if punch_dt is None:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if not punch_dt:
         punch_dt = datetime.now()
 
     punch_date_str = punch_dt.strftime("%Y-%m-%d")
     punch_time_str = punch_dt.strftime("%H:%M:%S")
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Get staff & shift info
+    # Fetch staff and shift info
     cursor.execute("""
         SELECT s.id, s.name, s.shift_id, s.daily_hours, s.allowed_leaves, sh.name as shift_name, 
                sh.start_time, sh.end_time, sh.grace_minutes, sh.half_day_minutes, sh.is_night_shift
@@ -56,18 +54,31 @@ def process_punch(staff_id: int, punch_dt: datetime = None, method: str = "FINGE
     daily_hours = float(staff["daily_hours"]) if ("daily_hours" in staff.keys() and staff["daily_hours"]) else 8.0
     required_minutes = int(daily_hours * 60)
 
+    # Determine action: explicit force_action takes precedence over automatic detection
+    target_action = force_action.upper() if force_action and force_action.upper() in ["IN", "OUT"] else None
+    if not target_action:
+        target_action = "IN" if not log else "OUT"
+
     # 1. PUNCH IN (Flexible Start)
-    if not log:
+    if target_action == "IN":
         target_out_dt = punch_dt + timedelta(minutes=required_minutes)
         target_out_str = target_out_dt.strftime("%I:%M %p")
         status = "ON_TIME"
         late_minutes = 0
 
-        cursor.execute("""
-            INSERT INTO attendance_logs 
-            (staff_id, date, time_in, status, late_minutes, punch_method)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (staff_id, punch_date_str, punch_time_str, status, late_minutes, method))
+        if not log:
+            cursor.execute("""
+                INSERT INTO attendance_logs 
+                (staff_id, date, time_in, status, late_minutes, punch_method)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (staff_id, punch_date_str, punch_time_str, status, late_minutes, method))
+        else:
+            # Overwrite/update time_in if explicitly re-checking in
+            cursor.execute("""
+                UPDATE attendance_logs 
+                SET time_in = ?, status = ?, punch_method = ?
+                WHERE id = ?
+            """, (punch_time_str, status, method, log["id"]))
         conn.commit()
         conn.close()
 
