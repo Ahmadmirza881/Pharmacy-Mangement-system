@@ -603,14 +603,17 @@ def mark_otp_notified(otp_id: int) -> bool:
     """
     For OUT checkout: marks the OTP record as 'notified' by setting verified_at
     and is_used=1 when staff clicks the WhatsApp notify-admin button.
-    This records the exact notify time for the Admin audit log.
+    Safety: only updates if still is_used=0 (not already consumed) and created today.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    today_str = datetime.now().strftime("%Y-%m-%d")
     cursor.execute(
-        "UPDATE otp_verifications SET is_used = 1, verified_at = ? WHERE id = ?",
-        (now_str, otp_id)
+        """UPDATE otp_verifications 
+           SET is_used = 1, verified_at = ? 
+           WHERE id = ? AND is_used = 0 AND date(created_at) = ?""",
+        (now_str, otp_id, today_str)
     )
     updated = cursor.rowcount > 0
     conn.commit()
