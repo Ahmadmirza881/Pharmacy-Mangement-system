@@ -5410,6 +5410,10 @@
         window.removeEventListener('keydown', kioskKeydownHandler);
         kioskKeydownHandler = null;
       }
+      // Clean up checkout notify stage if present
+      const notifyStage = document.getElementById('kiosk-stage-checkout-notify');
+      if (notifyStage) notifyStage.remove();
+      _checkoutNotifyData = null;
       pinInputBuffer = '';
       currentKioskStaff = null;
     }
@@ -5461,24 +5465,21 @@
       const errText = document.getElementById('pin-error-text');
       const action = currentKioskAction || 'IN';
 
-      // ── CHECK-OUT: PIN only, no OTP needed ──────────────────────────────────
+      // ── CHECK-OUT: Step 1 — verify PIN only, do NOT record punch yet ─────────
       if (action === 'OUT') {
-        errText.innerText = 'Verifying PIN & recording checkout...';
+        errText.innerText = 'PIN verify ho rahi hai...';
         errText.className = 'text-xs font-bold text-sky-600 animate-pulse';
 
         try {
-          const res = await fetch('/api/attendance/checkout-by-pin', {
+          const res = await fetch('/api/attendance/verify-checkout-pin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ staff_id: currentKioskStaff.id, pin: pinInputBuffer })
           });
           const data = await res.json();
           if (res.ok && data.success) {
-            playSuccessChime();
-            applyImmediatePunchUpdate(currentKioskStaff.id, 'OUT', data.time, data.status, data.staff_name || currentKioskStaff.name);
-            showCheckoutSuccessStage(data);
-            loadTodayAttendance();
-            if (typeof loadTodayActivities === 'function') loadTodayActivities();
+            // PIN is correct — show mandatory WhatsApp notify screen, DON'T record yet
+            showCheckoutNotifyStage(data);
             return;
           } else {
             errText.innerText = data.detail || 'Ghalat PIN! Barah-e-karam dobara enter karein.';
@@ -5488,7 +5489,7 @@
             return;
           }
         } catch (err) {
-          // Offline fallback: verify PIN locally and show WA link
+          // Offline fallback: verify PIN locally
           const savedPin = String(currentKioskStaff.pin || (1000 + currentKioskStaff.id));
           if (pinInputBuffer !== savedPin && pinInputBuffer !== '1234') {
             errText.innerText = 'Ghalat PIN! Barah-e-karam apni 4-digit secret PIN sahi darj karein.';
@@ -5497,12 +5498,10 @@
             updatePinDots();
             return;
           }
-          const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          playSuccessChime();
-          applyImmediatePunchUpdate(currentKioskStaff.id, 'OUT', timeNow, 'ON_TIME', currentKioskStaff.name);
+          const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           const adminPhone = (localStorage.getItem('mumtaz_admin_whatsapp') || '0300-1234567').replace(/[^0-9]/g,'');
-          const waLink = `https://wa.me/${adminPhone}?text=MUMTAZ%20PHARMACY%0A%E2%9C%85%20${encodeURIComponent(currentKioskStaff.name)}%20ne%20${encodeURIComponent(timeNow)}%20par%20Check-OUT%20kar%20liya%20hai.`;
-          showCheckoutSuccessStage({ success: true, staff_name: currentKioskStaff.name, time: timeNow, status: 'ON_TIME', punch_type: 'OUT', admin_wa_link: waLink, admin_phone_masked: '03**-****567' });
+          const waLink = `https://wa.me/${adminPhone}?text=MUMTAZ%20PHARMACY%0A%E2%9C%85%20${encodeURIComponent(currentKioskStaff.name)}%20ne%20${encodeURIComponent(timeNow)}%20par%20Check-OUT%20kiya%20hai.%0APIN%20verified%20%E2%80%94%20attendance%20update%20ho%20rahi%20hai.`;
+          showCheckoutNotifyStage({ success: true, pin_verified: true, staff_id: currentKioskStaff.id, staff_name: currentKioskStaff.name, time: timeNow, admin_wa_link: waLink, admin_phone_masked: '03**-****567' });
           return;
         }
       }
@@ -5570,67 +5569,137 @@
       showOtpStage(activeOtpData);
     }
 
-    // Checkout success stage (OUT via PIN only — shows WhatsApp notify-admin button)
-    function showCheckoutSuccessStage(data) {
+    // Checkout STEP 2: Show mandatory Admin-notify screen (attendance NOT yet recorded)
+    // Staff MUST click the WhatsApp button to confirm checkout
+    let _checkoutNotifyData = null; // store data for confirm step
+
+    function showCheckoutNotifyStage(data) {
+      _checkoutNotifyData = data;
       if (otpTimerInterval) clearInterval(otpTimerInterval);
+
+      // Hide PIN stage, show a dedicated "notify" stage (reusing otp stage div for simplicity)
       document.getElementById('kiosk-stage-pin').classList.add('hidden');
       document.getElementById('kiosk-stage-otp').classList.add('hidden');
-      document.getElementById('kiosk-stage-success').classList.remove('hidden');
+      document.getElementById('kiosk-stage-success').classList.add('hidden');
 
+      // Use a custom injected div for the notify screen
+      const modal = document.getElementById('pin-otp-modal');
+      let notifyStage = document.getElementById('kiosk-stage-checkout-notify');
+      if (!notifyStage) {
+        notifyStage = document.createElement('div');
+        notifyStage.id = 'kiosk-stage-checkout-notify';
+        modal.querySelector('.bg-white').appendChild(notifyStage);
+      }
+      notifyStage.className = 'p-6 space-y-4';
+      notifyStage.innerHTML = `
+        <div class="text-center">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-50 border-2 border-emerald-200 flex items-center justify-center mx-auto mb-3 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 fill-[#25D366]" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </div>
+          <h3 class="text-base font-black text-slate-900">PIN Sahi Hai ✅</h3>
+          <p class="text-sm text-slate-600 mt-1">Pehle <strong>Admin ko WhatsApp par notify karen</strong> — uske baad Check-OUT record hoga</p>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-center">
+          <p class="text-xs font-bold text-amber-800">⚠️ Zaruri — Admin Notification</p>
+          <p class="text-[11px] text-amber-700 mt-0.5">
+            Jab tak aap neeche ka button click nahi karte, attendance mein Check-OUT record nahi hoga.
+          </p>
+        </div>
+
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 rounded-lg px-3 py-2">
+            <span class="font-semibold">Staff:</span>
+            <span class="font-bold text-slate-900">${data.staff_name}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 rounded-lg px-3 py-2">
+            <span class="font-semibold">Waqt:</span>
+            <span class="font-bold text-slate-900">${data.time}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs text-slate-600 bg-slate-50 rounded-lg px-3 py-2">
+            <span class="font-semibold">Admin:</span>
+            <span class="font-bold text-slate-900">${data.admin_phone_masked}</span>
+          </div>
+        </div>
+
+        <a href="${data.admin_wa_link}" target="_blank"
+           onclick="confirmCheckoutAfterNotify()"
+           class="flex w-full items-center justify-center gap-2.5 px-5 py-3.5 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-extrabold text-sm shadow-lg transition active:scale-95 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          Admin ko WhatsApp Notify Karo
+        </a>
+        <p class="text-center text-[11px] text-slate-400">Button dabane ke baad hi attendance update hogi</p>
+      `;
+    }
+
+    // Called when staff clicks the WhatsApp notify button — NOW record the OUT punch
+    async function confirmCheckoutAfterNotify() {
+      const data = _checkoutNotifyData;
+      if (!data || !currentKioskStaff) return;
+
+      // Hide notify stage
+      const notifyStage = document.getElementById('kiosk-stage-checkout-notify');
+      if (notifyStage) notifyStage.innerHTML = `
+        <div class="p-6 text-center">
+          <div class="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center mx-auto mb-2">
+            <svg class="animate-spin w-5 h-5 text-sky-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+          </div>
+          <p class="text-xs font-bold text-slate-700">Checkout record ho rahi hai...</p>
+        </div>
+      `;
+
+      try {
+        const res = await fetch('/api/attendance/confirm-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ staff_id: currentKioskStaff.id })
+        });
+        const result = await res.json();
+        const timeStr = (res.ok && result.time) ? result.time : data.time;
+        const staffName = (res.ok && result.staff_name) ? result.staff_name : data.staff_name;
+
+        if (notifyStage) notifyStage.remove();
+        playSuccessChime();
+        applyImmediatePunchUpdate(currentKioskStaff.id, 'OUT', timeStr, (result.status || 'ON_TIME'), staffName);
+        showFinalCheckoutSuccess({ staff_name: staffName, time: timeStr });
+        loadTodayAttendance();
+        if (typeof loadTodayActivities === 'function') loadTodayActivities();
+      } catch (err) {
+        // Offline: still mark locally
+        if (notifyStage) notifyStage.remove();
+        playSuccessChime();
+        applyImmediatePunchUpdate(currentKioskStaff.id, 'OUT', data.time, 'ON_TIME', data.staff_name);
+        showFinalCheckoutSuccess(data);
+      }
+    }
+
+    // Final success screen after checkout confirmed
+    function showFinalCheckoutSuccess(data) {
+      document.getElementById('kiosk-stage-success').classList.remove('hidden');
       const title = document.getElementById('success-title');
       const subtitle = document.getElementById('success-subtitle');
       title.innerHTML = `🔵 Check-OUT Mukammal!`;
-      subtitle.innerHTML = `Khuda Hafiz <strong>${data.staff_name}</strong> • Waqt: <strong>${data.time}</strong>`;
-
-      // Inject WhatsApp admin notify button into success stage
-      const successStage = document.getElementById('kiosk-stage-success');
-      const existingWaBtn = document.getElementById('checkout-wa-notify-btn');
-      if (existingWaBtn) existingWaBtn.remove();
-
-      if (data.admin_wa_link) {
-        const waDiv = document.createElement('div');
-        waDiv.className = 'mt-3 text-center';
-        waDiv.id = 'checkout-wa-notify-btn';
-        waDiv.innerHTML = `
-          <a href="${data.admin_wa_link}" target="_blank"
-             class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-bold text-sm shadow-lg transition cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            Admin ko Notify Karen
-          </a>
-          <p class="text-[11px] text-slate-500 mt-1.5">
-            Admin ko WhatsApp par batao k aap ne <strong>${data.time}</strong> par Check-OUT kar liya
-          </p>
-        `;
-        // Insert before the reset bar
-        const resetBar = successStage.querySelector('#success-reset-bar')?.parentElement || successStage;
-        successStage.appendChild(waDiv);
-      }
+      subtitle.innerHTML = `Khuda Hafiz <strong>${data.staff_name}</strong> • Waqt: <strong>${data.time}</strong> • Admin ko notify kar diya gaya ✅`;
 
       // Add to punches stream
       const stream = document.getElementById('kiosk-punches-stream');
       if (stream) {
         const item = document.createElement('div');
-        item.className = "py-3 flex items-center justify-between animate-in fade-in duration-300";
+        item.className = 'py-3 flex items-center justify-between animate-in fade-in duration-300';
         item.innerHTML = `
           <div>
             <div class="font-bold text-xs text-slate-900">${data.staff_name}</div>
-            <div class="text-[11px] text-slate-500 mt-0.5">${data.time} • Checkout via PIN</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">${data.time} • Checkout (Admin Notified)</div>
           </div>
           <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-800">Time-OUT</span>
         `;
         stream.insertBefore(item, stream.firstChild);
       }
 
-      // Auto-reset
+      // Auto-reset bar
       const bar = document.getElementById('success-reset-bar');
       if (bar) { bar.style.width = '100%'; setTimeout(() => { bar.style.width = '0%'; }, 50); }
-      setTimeout(() => {
-        // Remove injected WA button before closing
-        const btn = document.getElementById('checkout-wa-notify-btn');
-        if (btn) btn.remove();
-        closePinKiosk();
-        renderKioskStaffGrid();
-      }, 6000);
+      setTimeout(() => { closePinKiosk(); renderKioskStaffGrid(); }, 4000);
     }
 
     // Transition to OTP Stage (Check-IN only)

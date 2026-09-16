@@ -62,6 +62,10 @@ class CheckoutPinRequest(BaseModel):
     pin: str
     custom_time: Optional[str] = None
 
+class ConfirmCheckoutRequest(BaseModel):
+    staff_id: int
+    custom_time: Optional[str] = None  # Optional override for exact punch time
+
 class SettingsUpdate(BaseModel):
     admin_whatsapp_number: Optional[str] = None
     admin_name: Optional[str] = None
@@ -376,12 +380,13 @@ def get_audit_log(date: Optional[str] = Query(None, description="Date in YYYY-MM
     return get_pin_otp_audit_logs(date_str=date)
 
 
-@app.post("/api/attendance/checkout-by-pin")
-def checkout_by_pin(req: CheckoutPinRequest):
+@app.post("/api/attendance/verify-checkout-pin")
+def verify_checkout_pin(req: CheckoutPinRequest):
     """
-    Check-OUT using PIN only — no OTP required for OUT.
-    Verifies staff PIN, records OUT punch immediately, and returns a WhatsApp
-    notification link so staff can optionally notify Admin via WhatsApp.
+    STEP 1 of 2-step checkout:
+    Verifies staff PIN for Check-OUT. Does NOT record any punch yet.
+    Returns a WhatsApp notification link — staff must click it to notify Admin.
+    Actual punch is only recorded when /confirm-checkout is called.
     """
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -397,13 +402,54 @@ def checkout_by_pin(req: CheckoutPinRequest):
     if not staff:
         raise HTTPException(status_code=404, detail="Staff member not found or inactive.")
 
-    # Verify PIN
+    # Verify PIN only — no punch recorded here
     saved_pin = str(staff["pin"] or "").strip()
     entered_pin = str(req.pin or "").strip()
     if not saved_pin or saved_pin != entered_pin:
         raise HTTPException(status_code=400, detail="Ghalat PIN! Barah-e-karam apni 4-digit secret PIN sahi darj karein.")
 
-    # Process OUT punch directly
+    # Build admin WhatsApp notification link
+    time_str = datetime.now().strftime("%I:%M %p")
+    admin_phone = get_setting("admin_whatsapp_number", "0300-1234567")
+    admin_phone_digits = ''.join(c for c in admin_phone if c.isdigit())
+    staff_name = staff["name"]
+    wa_msg = (f"MUMTAZ PHARMACY%0A"
+              f"%E2%9C%85 {staff_name} ne {time_str} par Check-OUT kiya hai.%0A"
+              f"PIN verified — attendance update ho rahi hai.")
+    wa_link = f"https://wa.me/{admin_phone_digits}?text={wa_msg}"
+
+    return {
+        "success": True,
+        "pin_verified": True,
+        "staff_id": staff["id"],
+        "staff_name": staff_name,
+        "time": time_str,
+        "admin_wa_link": wa_link,
+        "admin_phone_masked": whatsapp_service.mask_phone(admin_phone),
+        "message": "PIN sahi hai. Admin ko notify karen phir checkout record hoga."
+    }
+
+
+@app.post("/api/attendance/confirm-checkout")
+def confirm_checkout(req: ConfirmCheckoutRequest):
+    """
+    STEP 2 of 2-step checkout:
+    Called AFTER staff clicks the WhatsApp Admin-notify button.
+    Records the actual OUT punch in attendance.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT s.*, coalesce(nullif(s.designation, ''), s.role) as designation
+        FROM staff s WHERE s.id = ? AND s.is_active = 1
+    """, (req.staff_id,))
+    staff = cursor.fetchone()
+    conn.close()
+
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff member not found or inactive.")
+
+    # Record the OUT punch now
     punch_dt = datetime.now()
     if req.custom_time:
         try:
@@ -411,7 +457,7 @@ def checkout_by_pin(req: CheckoutPinRequest):
         except ValueError:
             pass
 
-    result = process_punch(req.staff_id, punch_dt=punch_dt, method="PIN_ONLY", force_action="OUT")
+    result = process_punch(req.staff_id, punch_dt=punch_dt, method="PIN_NOTIFY", force_action="OUT")
     if not result.get("success"):
         raise HTTPException(status_code=400, detail=result.get("message"))
 
@@ -419,29 +465,21 @@ def checkout_by_pin(req: CheckoutPinRequest):
     time_str = result.get("time", punch_dt.strftime("%I:%M %p"))
     date_str = punch_dt.strftime("%Y-%m-%d")
 
-    # Record PIN in otp_verifications with action=OUT (no OTP — mark as DIRECT_PIN)
-    create_otp_record(req.staff_id, "PIN_ONLY", "OUT", staff["phone"] or "0300-0000000", expiry_minutes=0)
+    # Record in otp_verifications audit log
+    create_otp_record(req.staff_id, "PIN_NOTIFY", "OUT", staff["phone"] or "0300-0000000", expiry_minutes=0)
 
     # Log activity
     log_activity(
         category="ATTENDANCE",
         action_type="PUNCH_OUT",
-        title=f"PIN Checkout: {staff_name}",
-        description=f"Checked OUT via PIN at {time_str} — no OTP required",
+        title=f"Check-OUT Confirmed: {staff_name}",
+        description=f"OUT recorded at {time_str} — Admin notified via WhatsApp (PIN_NOTIFY)",
         staff_name=staff_name,
         date_str=date_str,
         time_str=time_str
     )
 
-    # Build admin WhatsApp notification link
-    admin_phone = get_setting("admin_whatsapp_number", "0300-1234567")
-    admin_phone_digits = ''.join(c for c in admin_phone if c.isdigit())
-    wa_msg = f"MUMTAZ PHARMACY%0A%E2%9C%85 {staff_name} ne {time_str} par Check-OUT kar liya hai (PIN verified)."
-    wa_link = f"https://wa.me/{admin_phone_digits}?text={wa_msg}"
-
-    result["checkout_method"] = "PIN_ONLY"
-    result["admin_wa_link"] = wa_link
-    result["admin_phone_masked"] = whatsapp_service.mask_phone(admin_phone)
+    result["checkout_method"] = "PIN_NOTIFY"
     return result
 
 
