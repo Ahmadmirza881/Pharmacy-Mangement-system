@@ -1374,80 +1374,6 @@
         </div>
       </div>
 
-      <!-- DUKAN PAR KAUN MOJOOD HAI? (REAL-TIME LIVE PRESENCE BOARD) -->
-      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div class="px-5 py-3.5 bg-gradient-to-r from-emerald-900 via-[#156D38] to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-          <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0 shadow-2xs">
-              <i data-lucide="radio" class="w-4 h-4 text-emerald-300 animate-pulse"></i>
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <h3 class="text-sm font-black tracking-tight">Dukan Par Kaun Mojood Hai? (Live Presence)</h3>
-                <span id="on-duty-count-pill" class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-400/25 text-emerald-100 border border-emerald-400/30">
-                  0 On Duty
-                </span>
-              </div>
-              <p class="text-[11px] text-emerald-100/70">Real-time duty attendance overview — kaun a gaya hai, kaun dukan par mojood hai, aur kaun abhi nahi aaya</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="switchTab('kiosk')" class="text-xs bg-white text-[#156D38] hover:bg-emerald-50 px-3 py-1.5 rounded-xl font-extrabold shadow-xs flex items-center gap-1.5 transition cursor-pointer">
-              <i data-lucide="fingerprint" class="w-3.5 h-3.5"></i>
-              <span>Kiosk Attendance</span>
-            </button>
-            <button onclick="loadTodayAttendance()" class="p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs transition cursor-pointer" title="Refresh Live Presence">
-              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- 3-Column Live Presence Cards -->
-        <div class="p-4 sm:p-5 grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50/60">
-          <!-- 1. On Duty (Inside Pharmacy) -->
-          <div class="bg-white rounded-xl border border-emerald-200/90 p-4 shadow-2xs flex flex-col">
-            <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b border-emerald-100">
-              <span class="text-xs font-black text-emerald-900 flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-                <span>🟢 On Duty (Dukan Par Mojood)</span>
-              </span>
-              <span id="live-on-duty-count" class="text-xs font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">0</span>
-            </div>
-            <div id="live-on-duty-list" class="space-y-2 max-h-60 overflow-y-auto pr-1 flex-1">
-              <div class="p-4 text-center text-slate-400 text-xs italic">Koi staff member abhi on duty nahi hai.</div>
-            </div>
-          </div>
-
-          <!-- 2. Abhi Tak Nahi Aaye (Pending Check-IN) -->
-          <div class="bg-white rounded-xl border border-amber-200/90 p-4 shadow-2xs flex flex-col">
-            <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b border-amber-100">
-              <span class="text-xs font-black text-amber-900 flex items-center gap-1.5">
-                <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-600"></i>
-                <span>⏳ Abhi Tak Nahi Aaye (Pending)</span>
-              </span>
-              <span id="live-pending-count" class="text-xs font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">0</span>
-            </div>
-            <div id="live-pending-list" class="space-y-2 max-h-60 overflow-y-auto pr-1 flex-1">
-              <div class="p-4 text-center text-emerald-700 font-bold text-xs">Tamam staff members a chukay hain!</div>
-            </div>
-          </div>
-
-          <!-- 3. Shift Mukammal (Rukhsat / Completed) -->
-          <div class="bg-white rounded-xl border border-blue-200/90 p-4 shadow-2xs flex flex-col">
-            <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b border-blue-100">
-              <span class="text-xs font-black text-blue-900 flex items-center gap-1.5">
-                <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-blue-600"></i>
-                <span>✅ Shift Mukammal (Ghar Gaye)</span>
-              </span>
-              <span id="live-completed-count" class="text-xs font-black bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">0</span>
-            </div>
-            <div id="live-completed-list" class="space-y-2 max-h-60 overflow-y-auto pr-1 flex-1">
-              <div class="p-4 text-center text-slate-400 text-xs italic">Abhi tak kisi staff ne check-out nahi kiya.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- REAL-TIME TODAY'S LIVE ACTIVITY FEED (AIRY, UNCLUTTERED EXECUTIVE DESIGN) -->
       <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
         <!-- TIER 1: CLEAN HEADER -->
@@ -5466,7 +5392,7 @@
                 item.status = 'COMPLETED';
               }
             }
-            renderLivePresenceWidget(roster);
+            
             renderLiveRosterTable();
             renderKioskStaffGrid();
           } else {
@@ -5740,121 +5666,6 @@
     let currentLiveFilter = 'ALL';
 
     
-    // 4.1 RENDER LIVE PRESENCE: DUKAN PAR KAUN MOJOOD HAI?
-    function renderLivePresenceWidget(roster) {
-      const onDutyListEl = document.getElementById('live-on-duty-list');
-      const pendingListEl = document.getElementById('live-pending-list');
-      const completedListEl = document.getElementById('live-completed-list');
-
-      const onDutyCountEl = document.getElementById('live-on-duty-count');
-      const pendingCountEl = document.getElementById('live-pending-count');
-      const completedCountEl = document.getElementById('live-completed-count');
-      const pillCountEl = document.getElementById('on-duty-count-pill');
-
-      if (!onDutyListEl) return;
-
-      const staffRoster = roster || rawTodayRoster || [];
-
-      const onDuty = staffRoster.filter(s => s.time_in && !s.time_out);
-      const pending = staffRoster.filter(s => !s.time_in && s.status !== 'LEAVE');
-      const completed = staffRoster.filter(s => s.time_in && s.time_out);
-
-      if (onDutyCountEl) onDutyCountEl.innerText = onDuty.length;
-      if (pendingCountEl) pendingCountEl.innerText = pending.length;
-      if (completedCountEl) completedCountEl.innerText = completed.length;
-      if (pillCountEl) pillCountEl.innerText = `${onDuty.length} On Duty`;
-
-      // 1. On Duty List
-      if (onDuty.length === 0) {
-        onDutyListEl.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs italic">Koi staff member abhi dukan par active nahi hai.</div>`;
-      } else {
-        onDutyListEl.innerHTML = onDuty.map(item => {
-          const initials = getInitials(item.name);
-          return `
-            <div class="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/90 flex items-center justify-between gap-2 shadow-2xs hover:bg-emerald-50 transition">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-lg bg-[#156D38] text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                  ${initials}
-                </div>
-                <div class="min-w-0">
-                  <h5 class="text-xs font-black text-slate-900 truncate">${item.name}</h5>
-                  <p class="text-[10px] text-emerald-800 font-semibold truncate">${item.designation || item.role}</p>
-                  <div class="text-[10px] text-slate-600 font-mono mt-0.5">
-                    Aamad: <strong>${item.time_in}</strong>${item.target_out ? ` • Target: <strong>${item.target_out}</strong>` : ''}
-                  </div>
-                </div>
-              </div>
-              <button type="button" onclick="openPinKioskWithAction(${item.id}, 'OUT'); switchTab('kiosk');" 
-                class="px-2.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-black shrink-0 shadow-xs transition active:scale-95 cursor-pointer">
-                Quick OUT
-              </button>
-            </div>
-          `;
-        }).join('');
-      }
-
-      // 2. Pending List (Abhi Tak Nahi Aaye)
-      if (pending.length === 0) {
-        pendingListEl.innerHTML = `<div class="p-4 text-center text-emerald-700 font-bold text-xs">Tamam staff members a chukay hain!</div>`;
-      } else {
-        pendingListEl.innerHTML = pending.map(item => {
-          const initials = getInitials(item.name);
-          return `
-            <div class="p-2.5 rounded-xl bg-amber-50/70 border border-amber-200/90 flex items-center justify-between gap-2 shadow-2xs hover:bg-amber-50 transition">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-lg bg-amber-600 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                  ${initials}
-                </div>
-                <div class="min-w-0">
-                  <h5 class="text-xs font-black text-slate-900 truncate">${item.name}</h5>
-                  <p class="text-[10px] text-amber-800 font-semibold truncate">${item.designation || item.role}</p>
-                  <div class="text-[10px] text-slate-600 font-mono mt-0.5">
-                    Shift: <strong>${item.shift_name || 'Morning'}</strong> (${item.start_time || '09:00'})
-                  </div>
-                </div>
-              </div>
-              <button type="button" onclick="openPinKioskWithAction(${item.id}, 'IN'); switchTab('kiosk');" 
-                class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-black shrink-0 shadow-xs transition active:scale-95 cursor-pointer">
-                Quick IN
-              </button>
-            </div>
-          `;
-        }).join('');
-      }
-
-      // 3. Completed List (Shift Mukammal)
-      if (completed.length === 0) {
-        completedListEl.innerHTML = `<div class="p-4 text-center text-slate-400 text-xs italic">Abhi tak kisi staff ne shift complete nahi ki.</div>`;
-      } else {
-        completedListEl.innerHTML = completed.map(item => {
-          const initials = getInitials(item.name);
-          const workedH = Math.floor((item.worked_minutes || 0) / 60);
-          const workedM = (item.worked_minutes || 0) % 60;
-          return `
-            <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/90 flex items-center justify-between gap-2 shadow-2xs">
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-lg bg-slate-700 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
-                  ${initials}
-                </div>
-                <div class="min-w-0">
-                  <h5 class="text-xs font-black text-slate-900 truncate">${item.name}</h5>
-                  <p class="text-[10px] text-slate-500 font-semibold truncate">${item.designation || item.role}</p>
-                  <div class="text-[10px] text-slate-600 font-mono mt-0.5">
-                    ${item.time_in} ➔ ${item.time_out} (Worked: ${workedH}h ${workedM}m)
-                  </div>
-                </div>
-              </div>
-              <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-blue-100 text-blue-800 shrink-0">
-                Ghar Gaye
-              </span>
-            </div>
-          `;
-        }).join('');
-      }
-
-      if (window.lucide) lucide.createIcons();
-    }
-
     async function loadTodayAttendance() {
       try {
         let data;
@@ -5904,7 +5715,7 @@
         recentPunches = livePunches;
         renderPunchesStream();
 
-        renderLivePresenceWidget(rawTodayRoster);
+        
         renderLiveRosterTable();
         loadTodayActivities();
         if (typeof buildNotificationList === 'function') buildNotificationList();
