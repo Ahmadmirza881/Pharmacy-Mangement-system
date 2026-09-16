@@ -2897,36 +2897,50 @@
       </div>
 
       <!-- STAGE 2: 4-DIGIT OTP VERIFICATION ENTRY -->
-      <div id="kiosk-stage-otp" class="p-6 space-y-5 hidden">
+      <div id="kiosk-stage-otp" class="p-6 space-y-4 hidden">
         <div class="text-center">
           <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-2 shadow-xs">
             <i data-lucide="message-square-code" class="w-6 h-6"></i>
           </div>
-          <h4 class="font-extrabold text-base text-slate-900">Enter WhatsApp Verification Code</h4>
+          <h4 class="font-extrabold text-base text-slate-900">WhatsApp Code Darj Karen</h4>
           <p id="otp-destination-text" class="text-xs text-slate-500 mt-1">
-            4-digit code WhatsApp par send kar diya gaya hai.
+            4-digit code Admin WhatsApp par send kar diya gaya hai.
           </p>
         </div>
 
-        <!-- 4-DIGIT AUTO-ADVANCING BOXES -->
-        <div class="flex items-center justify-center gap-3">
-          <input type="password" id="otp-box-1" maxlength="1" inputmode="numeric" oninput="onOtpInput(1, this.value)" onkeydown="onOtpKeyDown(1, event)"
-            class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
-          <input type="password" id="otp-box-2" maxlength="1" inputmode="numeric" oninput="onOtpInput(2, this.value)" onkeydown="onOtpKeyDown(2, event)"
-            class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
-          <input type="password" id="otp-box-3" maxlength="1" inputmode="numeric" oninput="onOtpInput(3, this.value)" onkeydown="onOtpKeyDown(3, event)"
-            class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
-          <input type="password" id="otp-box-4" maxlength="1" inputmode="numeric" oninput="onOtpInput(4, this.value)" onkeydown="onOtpKeyDown(4, event)"
-            class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
+        <!-- STEP 1: Open WhatsApp button — prominently above code boxes -->
+        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3">
+          <p class="text-[11px] font-bold text-emerald-800 text-center mb-2.5">
+            Step 1: Admin ke WhatsApp par code check karen
+          </p>
+          <a id="otp-direct-wa-link" href="#" target="_blank"
+             class="flex w-full items-center justify-center gap-2.5 px-4 py-3 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-extrabold text-sm shadow-md transition active:scale-95 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp Khol kar Code Dekhein
+          </a>
+          <p class="text-[10px] text-emerald-700 text-center mt-1.5 font-semibold">
+            ↑ Admin ke phone par OTP aaya hoga — wahan se code lein
+          </p>
+        </div>
+
+        <!-- STEP 2: Enter the code -->
+        <div>
+          <p class="text-[11px] font-bold text-slate-600 text-center mb-2.5">Step 2: Admin se mila code neeche darj karen</p>
+
+          <!-- 4-DIGIT AUTO-ADVANCING BOXES -->
+          <div class="flex items-center justify-center gap-3">
+            <input type="password" id="otp-box-1" maxlength="1" inputmode="numeric" oninput="onOtpInput(1, this.value)" onkeydown="onOtpKeyDown(1, event)"
+              class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
+            <input type="password" id="otp-box-2" maxlength="1" inputmode="numeric" oninput="onOtpInput(2, this.value)" onkeydown="onOtpKeyDown(2, event)"
+              class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
+            <input type="password" id="otp-box-3" maxlength="1" inputmode="numeric" oninput="onOtpInput(3, this.value)" onkeydown="onOtpKeyDown(3, event)"
+              class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
+            <input type="password" id="otp-box-4" maxlength="1" inputmode="numeric" oninput="onOtpInput(4, this.value)" onkeydown="onOtpKeyDown(4, event)"
+              class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
+          </div>
         </div>
 
         <p id="otp-error-text" class="text-xs font-bold text-rose-600 text-center min-h-[16px]"></p>
-
-        <!-- FALLBACK DIRECT LINK (IF TESTING OFFLINE / INSTANT) -->
-        <div id="otp-direct-link-container" class="hidden text-center bg-indigo-50 border border-indigo-200/60 rounded-xl p-2.5">
-          <span class="text-[11px] text-indigo-700">Code receive nahi hua? </span>
-          <a id="otp-direct-wa-link" href="#" target="_blank" class="text-xs font-bold text-[#156D38] underline">WhatsApp link khol kar dekhein</a>
-        </div>
 
         <div class="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
           <button type="button" onclick="backToPinStage()" class="text-slate-600 hover:text-slate-900 font-bold flex items-center gap-1 cursor-pointer">
@@ -5758,17 +5772,13 @@
       const destText = document.getElementById('otp-destination-text');
       const actionBadge = data.action === 'IN' ? '🟢 Check-IN' : '🔵 Check-OUT';
       destText.innerHTML = `
-        ${actionBadge} confirmation code <strong class="text-slate-900">${data.target_label}</strong> (${data.target_masked_phone}) par bhej diya gaya hai.
+        ${actionBadge} code <strong class="text-slate-900">${data.target_label}</strong> (${data.target_masked_phone}) par bhej diya gaya hai.
       `;
 
-      // Fallback Direct WhatsApp Link (if testing offline / simulation)
-      const directContainer = document.getElementById('otp-direct-link-container');
+      // Set WhatsApp button href (always visible button above OTP boxes)
       const directLink = document.getElementById('otp-direct-wa-link');
-      if (data.direct_link && directContainer && directLink) {
+      if (directLink && data.direct_link) {
         directLink.href = data.direct_link;
-        directContainer.classList.remove('hidden');
-      } else if (directContainer) {
-        directContainer.classList.add('hidden');
       }
 
       // Clear OTP boxes
