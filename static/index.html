@@ -30,7 +30,7 @@
     // ==========================================
     // DEMO / DUMMY DATA ENGINE
     // ==========================================
-    let USE_DUMMY_DATA = false;
+    let USE_DUMMY_DATA = true;
 
     const MOCK_STAFF = [
       {
@@ -50,7 +50,8 @@
         allowed_leaves: 2,
         address: "House 14, St 3, Model Town, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       },
       {
         id: 2,
@@ -69,7 +70,8 @@
         allowed_leaves: 2,
         address: "Plot 88, Block B, Faisal Town, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       },
       {
         id: 3,
@@ -88,7 +90,8 @@
         allowed_leaves: 2,
         address: "Main Bazar, Kot Lakhpat, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       },
       {
         id: 4,
@@ -107,7 +110,8 @@
         allowed_leaves: 2,
         address: "Sector J, Phase 2, Johar Town, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       },
       {
         id: 5,
@@ -126,7 +130,8 @@
         allowed_leaves: 2,
         address: "Raza Block, Allama Iqbal Town, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       },
       {
         id: 6,
@@ -145,7 +150,8 @@
         allowed_leaves: 2,
         address: "Sector B-1, Township, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       },
       {
         id: 7,
@@ -164,7 +170,8 @@
         allowed_leaves: 2,
         address: "Main Market, Gulberg III, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       },
       {
         id: 8,
@@ -183,7 +190,8 @@
         allowed_leaves: 2,
         address: "Pakki Thathi, Samanabad, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       },
       {
         id: 9,
@@ -202,7 +210,8 @@
         allowed_leaves: 2,
         address: "Civic Centre, Garden Town, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       },
       {
         id: 10,
@@ -221,7 +230,8 @@
         allowed_leaves: 2,
         address: "Defence Road, Walton, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       },
       {
         id: 11,
@@ -240,7 +250,8 @@
         allowed_leaves: 2,
         address: "Ferozepur Road, Chungi, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       },
       {
         id: 12,
@@ -259,7 +270,8 @@
         allowed_leaves: 2,
         address: "Nishtar Colony, Lahore",
         police_report: 1,
-        is_active: 1
+        is_active: 1,
+        pin: "1234"
       }
     ];
 
@@ -518,7 +530,6 @@
               amber: '#D97706',
               teal: '#0D9488',
             }
-          }
           }
         }
       }
@@ -1196,10 +1207,10 @@
       <!-- Right: Search, Clock, Notifications, Admin Profile -->
       <div class="flex items-center gap-4 sm:gap-5">
         <!-- Mode Switcher: Dummy Data vs Live DB -->
-        <div id="demo-mode-badge" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-700 text-xs font-semibold shadow-xs">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span id="demo-mode-text">Live DB</span>
-          <button type="button" onclick="toggleDummyData()" class="ml-1 text-[11px] underline text-emerald-700 hover:text-emerald-900 font-bold cursor-pointer" title="Click to switch between Live Database and Dummy Demo Data">Switch to Dummy Data</button>
+        <div id="demo-mode-badge" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-700 text-xs font-semibold shadow-xs">
+          <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+          <span id="demo-mode-text">Demo Mode (Dummy Data)</span>
+          <button type="button" onclick="toggleDummyData()" class="ml-1 text-[11px] underline text-amber-800 hover:text-amber-950 font-black cursor-pointer" title="Click to switch to Live Database">Live DB</button>
         </div>
 
         <!-- Add New Pill Button (from screenshot) -->
@@ -4906,6 +4917,7 @@
           const res = await fetch('/api/staff');
           staffList = await res.json();
         }
+        allStaffList = staffList;
         
         // Populate kiosk select
         const select = document.getElementById('kiosk-staff-select');
@@ -5260,6 +5272,30 @@
       errText.innerText = 'Verifying PIN & dispatching WhatsApp code...';
       errText.className = 'text-xs font-bold text-indigo-600 animate-pulse';
 
+      if (USE_DUMMY_DATA) {
+        setTimeout(() => {
+          const action = currentKioskAction || 'IN';
+          const targetLabel = action === 'IN' ? 'Admin WhatsApp' : `${currentKioskStaff.name} ka Phone`;
+          const targetPhone = action === 'IN' ? '0300-***-4567' : (currentKioskStaff.phone || '0321-***-1234');
+          activeOtpData = {
+            success: true,
+            staff_id: currentKioskStaff.id,
+            staff_name: currentKioskStaff.name,
+            designation: currentKioskStaff.designation || currentKioskStaff.role,
+            action: action,
+            target_type: action === 'IN' ? 'ADMIN' : 'STAFF',
+            target_label: targetLabel,
+            target_masked_phone: targetPhone,
+            direct_link: 'https://api.whatsapp.com/send?phone=923001234567&text=MUMTAZ%20OTP:1234',
+            expiry_minutes: 5,
+            otp_code: '1234',
+            message: `Confirmation code sent to ${targetLabel}`
+          };
+          showOtpStage(activeOtpData);
+        }, 300);
+        return;
+      }
+
       try {
         const res = await fetch('/api/attendance/request-pin-otp', {
           method: 'POST',
@@ -5402,6 +5438,53 @@
       const errText = document.getElementById('otp-error-text');
       errText.innerText = 'Verifying confirmation code...';
       errText.className = 'text-xs font-bold text-indigo-600 animate-pulse';
+
+      if (USE_DUMMY_DATA) {
+        setTimeout(() => {
+          if (otpCode === '1234' || (activeOtpData && otpCode === activeOtpData.otp_code)) {
+            playSuccessChime();
+            const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const data = {
+              success: true,
+              punch_type: currentKioskAction || 'IN',
+              staff_name: currentKioskStaff.name,
+              time: timeNow,
+              status: 'ON_TIME',
+              message: `Mubarak! ${currentKioskStaff.name} Time-${currentKioskAction || 'IN'} record ho gaya at ${timeNow}.`
+            };
+            showSuccessStage(data);
+            
+            const roster = MOCK_ATTENDANCE_DATA.roster;
+            const item = roster.find(r => r.id === currentKioskStaff.id);
+            if (item) {
+              if (currentKioskAction === 'IN') {
+                item.time_in = timeNow;
+                item.time_out = null;
+                item.status = 'ON_TIME';
+              } else {
+                item.time_out = timeNow;
+                item.status = 'COMPLETED';
+              }
+            }
+            renderLivePresenceWidget(roster);
+            renderLiveRosterTable();
+            renderKioskStaffGrid();
+          } else {
+            errText.innerText = "Ghalat code! Demo OTP '1234' enter karein.";
+            errText.className = 'text-xs font-bold text-rose-600';
+            for (let i = 1; i <= 4; i++) {
+              const b = document.getElementById(`otp-box-${i}`);
+              if (b) {
+                b.value = '';
+                b.classList.add('border-rose-500');
+              }
+            }
+            const b1 = document.getElementById('otp-box-1');
+            if (b1) b1.focus();
+          }
+        }, 300);
+        return;
+      }
 
       try {
         const res = await fetch('/api/attendance/verify-pin-otp', {
