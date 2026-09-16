@@ -1,5 +1,7 @@
 # Mumtaz Pharmacy — Biometric Staff Attendance & Payroll System
 
+![Mumtaz Pharmacy Logo](static/logo.jpg)
+
 A dedicated, high-performance Biometric Staff Attendance and Automated Payroll Management System engineered for **Mumtaz Pharmacy**.
 
 ## Features

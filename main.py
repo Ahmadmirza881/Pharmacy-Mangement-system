@@ -14,10 +14,16 @@ import os
 import calendar
 import re
 import urllib.parse
+import random
 
-from database import init_db, get_db_connection, log_activity, get_today_activities
+from database import (
+    init_db, get_db_connection, log_activity, get_today_activities,
+    get_setting, set_setting, get_all_settings, create_otp_record,
+    verify_and_consume_otp, get_active_otps
+)
 from payroll_engine import process_punch, calculate_monthly_payroll
 from biometric_service import biometric_service
+from whatsapp_service import whatsapp_service
 
 app = FastAPI(title="Mumtaz Pharmacy Attendance & Payroll System")
 
@@ -40,6 +46,26 @@ class PunchRequest(BaseModel):
     method: Optional[str] = "FINGERPRINT"
     custom_time: Optional[str] = None # For testing past or specific punch times
 
+class PinOtpRequest(BaseModel):
+    staff_id: int
+    pin: str
+    custom_time: Optional[str] = None
+
+class PinOtpVerify(BaseModel):
+    staff_id: int
+    otp_code: str
+    custom_time: Optional[str] = None
+
+class SettingsUpdate(BaseModel):
+    admin_whatsapp_number: Optional[str] = None
+    admin_name: Optional[str] = None
+    pharmacy_name: Optional[str] = None
+    otp_expiry_minutes: Optional[str] = None
+
+class WhatsAppTestRequest(BaseModel):
+    phone: Optional[str] = None
+    message: Optional[str] = None
+
 class StaffCreate(BaseModel):
     name: str
     phone: Optional[str] = None
@@ -53,6 +79,7 @@ class StaffCreate(BaseModel):
     police_report: Optional[int] = 0
     allowed_leaves: Optional[int] = 2
     daily_hours: Optional[float] = 8.0
+    pin: Optional[str] = None
 
 class StaffUpdate(BaseModel):
     name: Optional[str] = None
@@ -67,6 +94,7 @@ class StaffUpdate(BaseModel):
     police_report: Optional[int] = None
     allowed_leaves: Optional[int] = None
     daily_hours: Optional[float] = None
+    pin: Optional[str] = None
 
 class AdvanceCreate(BaseModel):
     staff_id: int
@@ -183,6 +211,210 @@ def punch_attendance(req: PunchRequest):
     )
 
     return result
+
+# =====================================================================
+# PIN + WHATSAPP OTP ATTENDANCE ENDPOINTS
+# =====================================================================
+
+@app.post("/api/attendance/request-pin-otp")
+def request_pin_otp(req: PinOtpRequest):
+    """
+    Validates staff PIN and initiates WhatsApp OTP verification.
+    - If Check-IN: OTP is dispatched to Admin's configured WhatsApp number.
+    - If Check-OUT: OTP is dispatched to Staff's registered WhatsApp number.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT s.*, coalesce(nullif(s.designation, ''), s.role) as designation, sh.name as shift_name
+        FROM staff s
+        JOIN shifts sh ON s.shift_id = sh.id
+        WHERE s.id = ? AND s.is_active = 1
+    """, (req.staff_id,))
+    staff = cursor.fetchone()
+
+    if not staff:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Staff member not found or inactive.")
+
+    # 1. Verify Secret PIN
+    saved_pin = str(staff["pin"] or "").strip()
+    entered_pin = str(req.pin or "").strip()
+    if not saved_pin or saved_pin != entered_pin:
+        conn.close()
+        raise HTTPException(status_code=400, detail="Ghalat PIN! Barah-e-karam apni 4-digit secret PIN sahi darj karein.")
+
+    # 2. Determine Action (IN or OUT) based on today's logs
+    today_str = date.today().strftime("%Y-%m-%d")
+    if req.custom_time:
+        try:
+            today_str = datetime.strptime(req.custom_time, "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d")
+        except ValueError:
+            pass
+
+    cursor.execute("SELECT time_in, time_out FROM attendance_logs WHERE staff_id = ? AND date = ?", (req.staff_id, today_str))
+    log = cursor.fetchone()
+    conn.close()
+
+    if not log or not log["time_in"]:
+        action = "IN"
+    elif log["time_in"] and not log["time_out"]:
+        action = "OUT"
+    else:
+        action = "OUT" # Update/overwrite checkout if punched again
+
+    # 3. Determine Target Destination Phone
+    if action == "IN":
+        target_phone = get_setting("admin_whatsapp_number", "0300-1234567")
+        target_type = "ADMIN"
+        target_label = "Admin WhatsApp"
+    else:
+        target_phone = staff["phone"] or get_setting("admin_whatsapp_number", "0300-1234567")
+        target_type = "STAFF"
+        target_label = f"{staff['name']} ka Phone"
+
+    # 4. Generate 4-digit OTP & record in DB
+    otp_code = f"{random.randint(1000, 9999)}"
+    expiry_mins = int(get_setting("otp_expiry_minutes", "5") or "5")
+    create_otp_record(req.staff_id, otp_code, action, target_phone, expiry_minutes=expiry_mins)
+
+    # 5. Dispatch WhatsApp Message
+    dispatch_info = whatsapp_service.send_otp(
+        target_phone=target_phone,
+        staff_name=staff["name"],
+        designation=staff["designation"],
+        otp_code=otp_code,
+        action=action
+    )
+
+    # 6. Audit activity log
+    log_activity(
+        category="ATTENDANCE",
+        action_type=f"OTP_REQUEST_{action}",
+        title=f"OTP Requested ({action}): {staff['name']}",
+        description=f"Sent to {target_label} ({whatsapp_service.mask_phone(target_phone)}) • Action: {action}",
+        staff_name=staff["name"]
+    )
+
+    return {
+        "success": True,
+        "staff_id": staff["id"],
+        "staff_name": staff["name"],
+        "designation": staff["designation"],
+        "action": action,
+        "target_type": target_type,
+        "target_label": target_label,
+        "target_masked_phone": whatsapp_service.mask_phone(target_phone),
+        "direct_link": dispatch_info.get("direct_link", ""),
+        "expiry_minutes": expiry_mins,
+        "otp_code": otp_code, # Sent for immediate simulation / offline testing fallback
+        "message": f"Confirmation code has been sent to {target_label} ({whatsapp_service.mask_phone(target_phone)})."
+    }
+
+@app.post("/api/attendance/verify-pin-otp")
+def verify_pin_otp(req: PinOtpVerify):
+    """
+    Validates the 4-digit OTP provided by Staff/Admin and records the punch (IN or OUT).
+    """
+    is_valid, action, message = verify_and_consume_otp(req.staff_id, req.otp_code)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=message)
+
+    punch_dt = datetime.now()
+    if req.custom_time:
+        try:
+            punch_dt = datetime.strptime(req.custom_time, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            pass
+
+    # Process punch via authoritative payroll engine
+    result = process_punch(req.staff_id, punch_dt=punch_dt, method="PIN_OTP")
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("message"))
+
+    staff_name = result.get("staff_name", f"Staff #{req.staff_id}")
+    punch_type = result.get("punch_type", action or "IN")
+    status = result.get("status", "ON_TIME")
+    status_label = "On-Time" if status == "ON_TIME" else ("Late Arrival" if status == "LATE" else status)
+    time_str = result.get("time", punch_dt.strftime("%I:%M:%S %p"))
+    date_str = punch_dt.strftime("%Y-%m-%d")
+
+    log_activity(
+        category="ATTENDANCE",
+        action_type=f"PUNCH_{punch_type}",
+        title=f"PIN+OTP Attendance {punch_type}: {staff_name}",
+        description=f"Verified via OTP at {time_str} • Status: {status_label} (PIN_OTP)",
+        staff_name=staff_name,
+        date_str=date_str,
+        time_str=time_str
+    )
+
+    result["verification_method"] = "PIN_OTP"
+    return result
+
+@app.get("/api/attendance/active-otps")
+def get_live_otps():
+    """Returns active pending OTP requests for live Admin monitoring."""
+    return get_active_otps()
+
+# =====================================================================
+# SYSTEM SETTINGS & WHATSAPP CONFIGURATION ENDPOINTS
+# =====================================================================
+
+@app.get("/api/settings")
+def get_system_settings():
+    """Returns persistent system settings."""
+    settings = get_all_settings()
+    settings["whatsapp_status"] = whatsapp_service.status
+    return settings
+
+@app.post("/api/settings")
+def update_system_settings(data: SettingsUpdate):
+    """Updates persistent system settings, including Admin WhatsApp alert number."""
+    updated = {}
+    if data.admin_whatsapp_number is not None:
+        set_setting("admin_whatsapp_number", data.admin_whatsapp_number.strip())
+        updated["admin_whatsapp_number"] = data.admin_whatsapp_number.strip()
+    if data.admin_name is not None:
+        set_setting("admin_name", data.admin_name.strip())
+        updated["admin_name"] = data.admin_name.strip()
+    if data.pharmacy_name is not None:
+        set_setting("pharmacy_name", data.pharmacy_name.strip())
+        updated["pharmacy_name"] = data.pharmacy_name.strip()
+    if data.otp_expiry_minutes is not None:
+        set_setting("otp_expiry_minutes", data.otp_expiry_minutes.strip())
+        updated["otp_expiry_minutes"] = data.otp_expiry_minutes.strip()
+
+    admin_phone = get_setting("admin_whatsapp_number", "0300-1234567")
+    log_activity(
+        category="SETTINGS",
+        action_type="SETTINGS_UPDATED",
+        title="Admin Alert Settings Updated",
+        description=f"Admin WhatsApp alert number saved: {admin_phone}",
+        staff_name="Admin"
+    )
+
+    return {
+        "success": True,
+        "message": "Settings updated successfully.",
+        "settings": get_all_settings()
+    }
+
+@app.post("/api/settings/test-whatsapp")
+def test_whatsapp(req: WhatsAppTestRequest):
+    """Sends a test WhatsApp message to the admin or specified phone number."""
+    phone = req.phone or get_setting("admin_whatsapp_number", "0300-1234567")
+    result = whatsapp_service.send_test_message(phone, custom_text=req.message)
+    return {
+        "success": True,
+        "message": f"Test WhatsApp message dispatched to {whatsapp_service.mask_phone(phone)}.",
+        "details": result
+    }
+
+@app.get("/api/whatsapp/messages")
+def get_recent_whatsapp_dispatches():
+    """Returns recent dispatched WhatsApp messages."""
+    return whatsapp_service.get_recent_messages()
 
 @app.get("/api/attendance/today")
 def get_today_attendance():
@@ -431,10 +663,11 @@ def create_staff(data: StaffCreate):
     police_report = 1 if data.police_report in (1, "1", "yes", "YES", True) else 0
     allowed_leaves = data.allowed_leaves if data.allowed_leaves is not None else 2
     daily_hours = data.daily_hours if data.daily_hours is not None else 8.0
+    pin = (data.pin or "").strip() or f"{random.randint(1000, 9999)}"
     cursor.execute("""
-        INSERT INTO staff (name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id, police_report, allowed_leaves, daily_hours)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (data.name, data.phone, data.cnic, address, designation, designation, data.monthly_salary, joining_date, data.shift_id, data.fingerprint_id, police_report, allowed_leaves, daily_hours))
+        INSERT INTO staff (name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id, police_report, allowed_leaves, daily_hours, pin)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (data.name, data.phone, data.cnic, address, designation, designation, data.monthly_salary, joining_date, data.shift_id, data.fingerprint_id, police_report, allowed_leaves, daily_hours, pin))
     new_id = cursor.lastrowid
     conn.commit()
     conn.close()
@@ -443,11 +676,11 @@ def create_staff(data: StaffCreate):
         category="STAFF",
         action_type="STAFF_ADDED",
         title=f"New Staff Registered: {data.name}",
-        description=f"Designation: {designation} • Salary: Rs. {data.monthly_salary:,.2f}",
+        description=f"Designation: {designation} • Salary: Rs. {data.monthly_salary:,.2f} • PIN Assigned",
         staff_name=data.name
     )
 
-    return {"success": True, "staff_id": new_id, "message": f"Staff member '{data.name}' registered successfully."}
+    return {"success": True, "staff_id": new_id, "pin": pin, "message": f"Staff member '{data.name}' registered successfully with PIN {pin}."}
 
 @app.put("/api/staff/{staff_id}")
 def update_staff(staff_id: int, data: StaffUpdate):
@@ -499,6 +732,9 @@ def update_staff(staff_id: int, data: StaffUpdate):
     if data.daily_hours is not None:
         fields.append("daily_hours = ?")
         values.append(data.daily_hours)
+    if data.pin is not None:
+        fields.append("pin = ?")
+        values.append(data.pin.strip())
 
     if fields:
         values.append(staff_id)
@@ -709,7 +945,7 @@ def settle_advance(advance_id: int, req: Optional[AdvanceSettleRequest] = None):
         cursor.execute("""
             INSERT INTO advance_salaries (staff_id, entry_type, amount, date, reason, is_settled)
             VALUES (?, ?, ?, ?, ?, 0)
-        """, (adv["staff_id"], adv["entry_type"], rem_amt, adv["date"], f"{adv['reason']} (Remaining Balance)"))
+        """, (adv["staff_id"], adv["entry_type"], rem_amt, adv["date"], f"{adv['reason']} (Baqaya / Remainder)"))
         conn.commit()
         conn.close()
 
@@ -722,7 +958,7 @@ def settle_advance(advance_id: int, req: Optional[AdvanceSettleRequest] = None):
             "settled_at": settled_date,
             "settlement_type": settlement_type,
             "notes": notes_val,
-            "message": f"Partial payment of Rs. {paid_amt:,.2f} recorded for {adv['staff_name']}. Remaining balance: Rs. {rem_amt:,.2f}."
+            "message": f"Partial settlement of Rs. {paid_amt:,.2f} recorded for {adv['staff_name']}. Baqaya remaining: Rs. {rem_amt:,.2f}."
         }
     else:
         # Full settlement
@@ -737,8 +973,8 @@ def settle_advance(advance_id: int, req: Optional[AdvanceSettleRequest] = None):
         log_activity(
             category="STAFF_KHATA",
             action_type="ADVANCE_SETTLED",
-            title=f"Staff Khata Cleared: {adv['staff_name']}",
-            description=f"Rs. {adv['amount']:,.2f} cleared via {settlement_type}",
+            title=f"Staff Khata Settled: {adv['staff_name']}",
+            description=f"Rs. {adv['amount']:,.2f} settled via {settlement_type}",
             staff_name=adv['staff_name'],
             amount=adv['amount'],
             date_str=settled_date
@@ -747,7 +983,7 @@ def settle_advance(advance_id: int, req: Optional[AdvanceSettleRequest] = None):
         return {
             "success": True,
             "partial": False,
-            "message": f"Advance #{advance_id} for {adv['staff_name']} (Rs. {adv['amount']:,.2f}) cleared successfully via '{settlement_type}' on {settled_date}.",
+            "message": f"Advance #{advance_id} for {adv['staff_name']} (Rs. {adv['amount']:,.2f}) settled successfully via '{settlement_type}' on {settled_date}.",
             "advance_id": advance_id,
             "settled_at": settled_date,
             "settlement_type": settlement_type,
@@ -763,12 +999,12 @@ def clear_settled_advances():
     count = cursor.fetchone()[0] or 0
     if count == 0:
         conn.close()
-        return {"success": True, "deleted_count": 0, "message": "No cleared staff advance records found."}
+        return {"success": True, "deleted_count": 0, "message": "Koi settled staff khata record mojood nahi hai."}
     
     cursor.execute("DELETE FROM advance_salaries WHERE is_settled = 1")
     conn.commit()
     conn.close()
-    return {"success": True, "deleted_count": count, "message": f"{count} cleared staff advance records deleted successfully."}
+    return {"success": True, "deleted_count": count, "message": f"{count} settled staff khata records kamyabi se delete ho gaye."}
 
 
 @app.post("/api/leaves")
@@ -844,7 +1080,7 @@ def update_leave(leave_id: int, data: LeaveUpdate):
         cursor.execute("SELECT id FROM leaves WHERE staff_id = ? AND date = ? AND id != ?", (staff_id, new_date, leave_id))
         if cursor.fetchone():
             conn.close()
-            raise HTTPException(status_code=400, detail="Leave is already recorded for this staff member on this date.")
+            raise HTTPException(status_code=400, detail="Is staff ki is date par pehle se leave darj hai.")
 
     cursor.execute("UPDATE leaves SET date = ?, reason = ?, leave_type = ? WHERE id = ?", (new_date, new_reason, new_type, leave_id))
 
@@ -1031,7 +1267,7 @@ def disburse_salary(data: PayrollDisburseRequest):
 
     return {
         "success": True,
-        "message": f"Salary for {staff['name']} ({month_name} {data.year}) marked as PAID on {paid_date} via {payment_method}. {auto_settled_count} Khata advance(s) totalling Rs. {auto_settled_amount:,.2f} cleared.",
+        "message": f"Salary for {staff['name']} ({month_name} {data.year}) marked as PAID on {paid_date} via {payment_method}. {auto_settled_count} Khata advance(s) totalling Rs. {auto_settled_amount:,.2f} auto-settled.",
         "staff_id": data.staff_id,
         "staff_name": staff["name"],
         "month": data.month,
@@ -1059,7 +1295,7 @@ def format_whatsapp_number(phone: str) -> str:
 
 @app.get("/api/customers")
 def get_customers():
-    """Returns all customers with aggregated series khata metrics, overdue flags, and credit limit alerts."""
+    """Returns all customers with aggregated series khata metrics."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -1069,8 +1305,7 @@ def get_customers():
             COALESCE(SUM(CASE WHEN k.is_settled = 1 THEN k.amount ELSE 0 END), 0) as total_settled,
             COALESCE(SUM(CASE WHEN k.is_settled = 0 THEN k.amount ELSE 0 END), 0) as current_balance,
             COALESCE(SUM(CASE WHEN k.is_settled = 0 THEN 1 ELSE 0 END), 0) as pending_invoices_count,
-            COUNT(k.id) as total_invoices_count,
-            MIN(CASE WHEN k.is_settled = 0 THEN k.date ELSE NULL END) as oldest_unpaid_date
+            COUNT(k.id) as total_invoices_count
         FROM customers c
         LEFT JOIN customer_khata k ON c.id = k.customer_id
         GROUP BY c.id
@@ -1078,35 +1313,15 @@ def get_customers():
     """)
     rows = cursor.fetchall()
     customers = []
-    today = date.today()
     for r in rows:
         c_dict = dict(r)
         c_dict["credit_limit"] = float(c_dict["credit_limit"])
         c_dict["total_credit"] = float(c_dict["total_credit"])
         c_dict["total_settled"] = float(c_dict["total_settled"])
         c_dict["current_balance"] = float(c_dict["current_balance"])
-        limit_used_pct = round((c_dict["current_balance"] / c_dict["credit_limit"]) * 100, 1) if c_dict["credit_limit"] > 0 else 0.0
-        c_dict["limit_used_pct"] = min(999.0, limit_used_pct)
-        c_dict["is_limit_warning"] = (limit_used_pct >= 80.0)
-        c_dict["is_limit_exceeded"] = (c_dict["current_balance"] >= c_dict["credit_limit"] and c_dict["credit_limit"] > 0)
+        limit_used_pct = round((c_dict["current_balance"] / c_dict["credit_limit"]) * 100, 1) if c_dict["credit_limit"] > 0 else 0
+        c_dict["limit_used_pct"] = min(100.0, limit_used_pct)
         c_dict["wa_phone"] = format_whatsapp_number(c_dict["phone"])
-
-        # 30+ Days Overdue calculation
-        oldest_unpaid = c_dict.get("oldest_unpaid_date")
-        days_overdue = 0
-        is_overdue = False
-        if oldest_unpaid and c_dict["current_balance"] > 0:
-            try:
-                oldest_d = datetime.strptime(oldest_unpaid, "%Y-%m-%d").date()
-                days_overdue = max(0, (today - oldest_d).days)
-                is_overdue = (days_overdue >= 30)
-            except Exception:
-                days_overdue = 0
-                is_overdue = False
-
-        c_dict["oldest_unpaid_date"] = oldest_unpaid or ""
-        c_dict["days_overdue"] = days_overdue
-        c_dict["is_overdue"] = is_overdue
         customers.append(c_dict)
     conn.close()
     return customers
@@ -1153,7 +1368,7 @@ def update_customer(customer_id: int, data: CustomerUpdate):
 
 @app.get("/api/customers/{customer_id}/ledger")
 def get_customer_ledger(customer_id: int):
-    """Returns chronological series khata ledger for a customer with bill age and overdue indicators."""
+    """Returns chronological series khata ledger for a customer."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM customers WHERE id = ?", (customer_id,))
@@ -1171,33 +1386,12 @@ def get_customer_ledger(customer_id: int):
     entries = [dict(r) for r in cursor.fetchall()]
     conn.close()
 
-    today = date.today()
-    for e in entries:
-        is_settled = (e.get("is_settled") == 1)
-        entry_date_str = e.get("date")
-        age_days = 0
-        entry_overdue = False
-        if not is_settled and entry_date_str:
-            try:
-                ed = datetime.strptime(entry_date_str, "%Y-%m-%d").date()
-                age_days = max(0, (today - ed).days)
-                entry_overdue = (age_days >= 30)
-            except Exception:
-                age_days = 0
-                entry_overdue = False
-        e["age_days"] = age_days
-        e["is_overdue"] = entry_overdue
-
     total_credit = sum(e["amount"] for e in entries)
     total_settled = sum(e["amount"] for e in entries if e["is_settled"] == 1)
     current_balance = sum(e["amount"] for e in entries if e["is_settled"] == 0)
     pending_count = sum(1 for e in entries if e["is_settled"] == 0)
 
     customer["wa_phone"] = format_whatsapp_number(customer["phone"])
-    credit_limit = float(customer.get("credit_limit") or 15000.0)
-    limit_pct = round((current_balance / credit_limit) * 100, 1) if credit_limit > 0 else 0.0
-    has_overdue = any(e["is_overdue"] for e in entries if e.get("is_settled") == 0)
-    oldest_unpaid_days = max((e["age_days"] for e in entries if e.get("is_settled") == 0), default=0)
 
     return {
         "customer": customer,
@@ -1206,12 +1400,7 @@ def get_customer_ledger(customer_id: int):
             "total_settled": total_settled,
             "current_balance": current_balance,
             "pending_count": pending_count,
-            "total_entries": len(entries),
-            "limit_used_pct": limit_pct,
-            "is_limit_warning": (limit_pct >= 80.0),
-            "is_limit_exceeded": (current_balance >= credit_limit and credit_limit > 0),
-            "has_overdue": has_overdue,
-            "oldest_unpaid_days": oldest_unpaid_days
+            "total_entries": len(entries)
         },
         "ledger": entries
     }
@@ -1256,12 +1445,6 @@ def add_customer_khata(data: CustomerKhataCreate):
         date_str=entry_date
     )
 
-    # Check credit limit warnings
-    credit_limit = float(customer["credit_limit"] or 15000.0)
-    limit_pct = round((new_balance / credit_limit) * 100, 1) if credit_limit > 0 else 0.0
-    limit_warning = (limit_pct >= 80.0)
-    limit_exceeded = (new_balance >= credit_limit and credit_limit > 0)
-
     return {
         "success": True,
         "id": entry_id,
@@ -1269,10 +1452,6 @@ def add_customer_khata(data: CustomerKhataCreate):
         "amount": data.amount,
         "customer_name": customer["name"],
         "new_balance": new_balance,
-        "credit_limit": credit_limit,
-        "limit_used_pct": limit_pct,
-        "limit_warning": limit_warning,
-        "limit_exceeded": limit_exceeded,
         "message": f"Credit purchase of Rs. {data.amount:,.2f} recorded for {customer['name']} ({invoice_no})."
     }
 
@@ -1290,7 +1469,7 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
     entry = dict(entry_row)
     if entry["is_settled"] == 1:
         conn.close()
-        return {"success": True, "message": "This bill is already fully paid.", "already_settled": True}
+        return {"success": True, "message": "Yeh invoice pehle se settled hai.", "already_settled": True}
 
     settle_date = data.settled_at or date.today().isoformat()
     pay_method = data.payment_method or "Cash"
@@ -1323,7 +1502,7 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
         cursor.execute("""
             INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes)
             VALUES (?, ?, ?, ?, ?, 0, ?)
-        """, (entry["customer_id"], f"{entry['invoice_no']}-REM", entry["date"], f"{entry['item_description']} (Remaining Balance)", rem_amt, f"Remaining balance from {entry['invoice_no']} after partial payment of Rs. {paid_amt:,.2f}"))
+        """, (entry["customer_id"], f"{entry['invoice_no']}-REM", entry["date"], f"{entry['item_description']} (Baqaya)", rem_amt, f"Remaining baqaya from {entry['invoice_no']} after partial payment of Rs. {paid_amt:,.2f}"))
         conn.commit()
 
         cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (entry["customer_id"],))
@@ -1339,7 +1518,7 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
             "settled_at": settle_date,
             "payment_method": pay_method,
             "updated_balance": updated_balance,
-            "message": f"Partial payment of Rs. {paid_amt:,.2f} recorded for {entry['invoice_no']}. Remaining balance: Rs. {rem_amt:,.2f}."
+            "message": f"Partial payment of Rs. {paid_amt:,.2f} recorded for {entry['invoice_no']}. Baqaya remaining: Rs. {rem_amt:,.2f}."
         }
     else:
         # Full settlement
@@ -1369,8 +1548,8 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
         log_activity(
             category="CUSTOMER_KHATA",
             action_type="CUSTOMER_KHATA_SETTLED",
-            title=f"Customer Khata Cleared: {cust_name}",
-            description=f"Invoice #{entry['invoice_no']} of Rs. {orig_amount:,.2f} cleared in full via {pay_method}",
+            title=f"Customer Khata Settled: {cust_name}",
+            description=f"Invoice #{entry['invoice_no']} of Rs. {orig_amount:,.2f} settled in full via {pay_method}",
             staff_name=cust_name,
             amount=orig_amount,
             date_str=settle_date
@@ -1384,7 +1563,7 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
             "payment_method": pay_method,
             "amount": orig_amount,
             "updated_balance": updated_balance,
-            "message": f"Invoice {entry['invoice_no']} (Rs. {orig_amount:,.2f}) cleared in full via {pay_method}."
+            "message": f"Invoice {entry['invoice_no']} (Rs. {orig_amount:,.2f}) settled in full via {pay_method}."
         }
 
 
@@ -1403,7 +1582,7 @@ def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
     pending_items = [dict(r) for r in cursor.fetchall()]
     if not pending_items:
         conn.close()
-        return {"success": True, "message": "No pending balance found for this customer.", "settled_count": 0, "settled_amount": 0}
+        return {"success": True, "message": "Koi pending balance mojood nahi.", "settled_count": 0, "settled_amount": 0}
 
     settle_date = data.settled_at or date.today().isoformat()
     pay_method = data.payment_method or "Cash"
@@ -1459,7 +1638,7 @@ def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
             cursor.execute("""
                 INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes)
                 VALUES (?, ?, ?, ?, ?, 0, ?)
-            """, (customer_id, f"{item['invoice_no']}-REM", item['date'], f"{item['item_description']} (Remaining Balance)", rem_portion, f"Remaining balance from {item['invoice_no']} after partial payment of Rs. {paid_portion:,.2f}"))
+            """, (customer_id, f"{item['invoice_no']}-REM", item['date'], f"{item['item_description']} (Baqaya)", rem_portion, f"Remaining baqaya from {item['invoice_no']} after partial payment of Rs. {paid_portion:,.2f}"))
 
             remaining_to_pay = 0
             settled_count += 1
@@ -1482,7 +1661,7 @@ def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
             "remaining_balance": updated_balance,
             "settled_at": settle_date,
             "payment_method": pay_method,
-            "message": f"Partial payment of Rs. {pay_amount:,.2f} received for {customer['name']} via {pay_method}. Remaining balance: Rs. {updated_balance:,.2f}."
+            "message": f"Juzwi Adaigi (Partial payment) of Rs. {pay_amount:,.2f} for {customer['name']} received via {pay_method}. Baqaya balance: Rs. {updated_balance:,.2f}."
         }
     else:
         return {
@@ -1495,7 +1674,7 @@ def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
             "remaining_balance": updated_balance,
             "settled_at": settle_date,
             "payment_method": pay_method,
-            "message": f"Full balance of Rs. {pay_amount:,.2f} ({settled_count} bills) for {customer['name']} paid in full via {pay_method}."
+            "message": f"Full balance of Rs. {pay_amount:,.2f} ({settled_count} invoices) for {customer['name']} settled via {pay_method}."
         }
 
 @app.post("/api/customer-khata/clear-settled")
@@ -1507,12 +1686,12 @@ def clear_settled_customer_khata():
     count = cursor.fetchone()[0] or 0
     if count == 0:
         conn.close()
-        return {"success": True, "deleted_count": 0, "message": "No cleared customer records found."}
+        return {"success": True, "deleted_count": 0, "message": "Koi settled customer khata record mojood nahi hai."}
     
     cursor.execute("DELETE FROM customer_khata WHERE is_settled = 1")
     conn.commit()
     conn.close()
-    return {"success": True, "deleted_count": count, "message": f"{count} cleared customer records deleted successfully."}
+    return {"success": True, "deleted_count": count, "message": f"{count} settled customer khata records kamyabi se delete ho gaye."}
 
 @app.get("/api/customer-khata/kpis")
 def get_customer_khata_kpis():
@@ -1541,17 +1720,6 @@ def get_customer_khata_kpis():
     cursor.execute("SELECT COUNT(*) FROM customers WHERE is_active = 1")
     total_customers_count = int(cursor.fetchone()[0])
 
-    # 6. Overdue Debtors Count (> 30 days unpaid)
-    thirty_days_ago = (date.today() - timedelta(days=30)).isoformat()
-    cursor.execute("""
-        SELECT COUNT(DISTINCT customer_id), COALESCE(SUM(amount), 0)
-        FROM customer_khata 
-        WHERE is_settled = 0 AND date <= ?
-    """, (thirty_days_ago,))
-    overdue_row = cursor.fetchone()
-    overdue_debtors_count = int(overdue_row[0] or 0)
-    overdue_total_amount = float(overdue_row[1] or 0.0)
-
     conn.close()
 
     return {
@@ -1560,8 +1728,6 @@ def get_customer_khata_kpis():
         "this_week_recovered": this_week_recovered,
         "active_debtors_count": active_debtors_count,
         "total_customers_count": total_customers_count,
-        "overdue_debtors_count": overdue_debtors_count,
-        "overdue_total_amount": overdue_total_amount,
         "since_date": seven_days_ago
     }
 
@@ -1619,4 +1785,25 @@ if os.path.exists(static_dir):
 
 if __name__ == "__main__":
     import uvicorn
+    import socket
+
+    local_ip = "127.0.0.1"
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+    except Exception:
+        try:
+            local_ip = socket.gethostbyname(socket.gethostname())
+        except Exception:
+            pass
+
+    print("\n" + "=" * 60)
+    print(" MUMTAZ PHARMACY SYSTEM - SERVER CHAL RAHA HAI")
+    print(f" -> Is PC (Server) par:  http://localhost:8000")
+    print(f" -> Dosre PCs (LAN) par:  http://{local_ip}:8000")
+    print("=" * 60 + "\n")
+
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+

@@ -6,12 +6,12 @@ advance salary records, and month-end payroll sheets.
 
 import sqlite3
 import os
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "mumtaz_attendance.db")
 
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode = WAL")
     conn.execute("PRAGMA foreign_keys = ON")
@@ -52,6 +52,7 @@ def init_db():
         police_report INTEGER DEFAULT 0, -- 1 = Yes (Verified), 0 = No (Pending)
         allowed_leaves INTEGER DEFAULT 2, -- Dynamic monthly paid leaves quota
         daily_hours REAL DEFAULT 8.0,     -- Required daily work duty in hours
+        pin TEXT DEFAULT '1001',          -- 4-digit secret PIN for attendance
         is_active INTEGER DEFAULT 1,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (shift_id) REFERENCES shifts (id)
@@ -74,6 +75,9 @@ def init_db():
         cursor.execute("ALTER TABLE staff ADD COLUMN allowed_leaves INTEGER DEFAULT 2")
     if "daily_hours" not in existing_staff_cols:
         cursor.execute("ALTER TABLE staff ADD COLUMN daily_hours REAL DEFAULT 8.0")
+    if "pin" not in existing_staff_cols:
+        cursor.execute("ALTER TABLE staff ADD COLUMN pin TEXT DEFAULT '1001'")
+        cursor.execute("UPDATE staff SET pin = printf('%04d', 1000 + id) WHERE pin IS NULL OR pin = '' OR pin = '1001'")
 
     # 3. Attendance Logs Table
     cursor.execute("""
@@ -213,13 +217,6 @@ def init_db():
     );
     """)
 
-    cursor.execute("PRAGMA table_info(customers)")
-    existing_cust_cols = {row[1] for row in cursor.fetchall()}
-    if "last_wa_reminder_date" not in existing_cust_cols:
-        cursor.execute("ALTER TABLE customers ADD COLUMN last_wa_reminder_date TEXT DEFAULT ''")
-    if "last_wa_reminder_time" not in existing_cust_cols:
-        cursor.execute("ALTER TABLE customers ADD COLUMN last_wa_reminder_time TEXT DEFAULT ''")
-
     # 8. Customer Khata Series Ledger Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS customer_khata (
@@ -268,6 +265,41 @@ def init_db():
         date TEXT NOT NULL,           -- "YYYY-MM-DD"
         time TEXT NOT NULL,           -- "HH:MM:SS" or "08:02:15 AM"
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    # 10. System Settings Table (Stores Admin WhatsApp number, kiosk configs)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS system_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """)
+
+    default_settings = {
+        "admin_whatsapp_number": "0300-1234567",
+        "admin_name": "Pharmacy Owner / Manager",
+        "pharmacy_name": "Mumtaz Pharmacy",
+        "otp_expiry_minutes": "5",
+        "whatsapp_service_status": "READY"
+    }
+    for k, v in default_settings.items():
+        cursor.execute("INSERT OR IGNORE INTO system_settings (key, value) VALUES (?, ?)", (k, v))
+
+    # 11. OTP Verifications Table (Tracks active & past PIN-triggered OTPs)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS otp_verifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        staff_id INTEGER NOT NULL,
+        otp_code TEXT NOT NULL,
+        action TEXT NOT NULL,            -- "IN" or "OUT"
+        target_phone TEXT NOT NULL,
+        is_used INTEGER DEFAULT 0,
+        attempts INTEGER DEFAULT 0,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (staff_id) REFERENCES staff (id)
     );
     """)
 
@@ -504,6 +536,122 @@ def get_today_activities(target_date: str = None, limit: int = 50, category: str
         "category_counts": cat_counts,
         "activities": activities
     }
+
+# =====================================================================
+# SYSTEM SETTINGS & PIN OTP HELPER FUNCTIONS
+# =====================================================================
+
+def get_setting(key: str, default: str = None) -> str:
+    """Retrieves a setting value by key."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT value FROM system_settings WHERE key = ?", (key,))
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row else default
+
+def set_setting(key: str, value: str):
+    """Saves or updates a setting value."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("""
+        INSERT INTO system_settings (key, value, updated_at) 
+        VALUES (?, ?, ?)
+        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+    """, (key, str(value), now_str))
+    conn.commit()
+    conn.close()
+
+def get_all_settings() -> dict:
+    """Returns all key-value settings as a dictionary."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT key, value FROM system_settings")
+    rows = cursor.fetchall()
+    conn.close()
+    return {r["key"]: r["value"] for r in rows}
+
+def create_otp_record(staff_id: int, otp_code: str, action: str, target_phone: str, expiry_minutes: int = 5) -> int:
+    """Invalidates old pending OTPs and creates a new OTP record."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now = datetime.now()
+    expires_at = now + timedelta(minutes=expiry_minutes)
+    cursor.execute("""
+        UPDATE otp_verifications 
+        SET is_used = 1 
+        WHERE staff_id = ? AND action = ? AND is_used = 0
+    """, (staff_id, action))
+    cursor.execute("""
+        INSERT INTO otp_verifications (staff_id, otp_code, action, target_phone, is_used, attempts, expires_at)
+        VALUES (?, ?, ?, ?, 0, 0, ?)
+    """, (staff_id, otp_code, action, target_phone, expires_at.strftime("%Y-%m-%d %H:%M:%S")))
+    otp_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+    return otp_id
+
+def verify_and_consume_otp(staff_id: int, otp_code: str):
+    """
+    Validates the provided OTP.
+    Returns (True, action, message) if valid, or (False, None, error_message).
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    cursor.execute("""
+        SELECT * FROM otp_verifications
+        WHERE staff_id = ? AND is_used = 0
+        ORDER BY id DESC LIMIT 1
+    """, (staff_id,))
+    record = cursor.fetchone()
+
+    if not record:
+        conn.close()
+        return False, None, "Koi active confirmation code nahi mila. Barah-e-karam dobara PIN enter karein."
+
+    if record["expires_at"] < now_str:
+        cursor.execute("UPDATE otp_verifications SET is_used = 1 WHERE id = ?", (record["id"],))
+        conn.commit()
+        conn.close()
+        return False, None, "Yeh confirmation code expire ho chuka hai (5 min limit). Barah-e-karam naya code mangwayein."
+
+    if record["attempts"] >= 5:
+        cursor.execute("UPDATE otp_verifications SET is_used = 1 WHERE id = ?", (record["id"],))
+        conn.commit()
+        conn.close()
+        return False, None, "Bohat zyada ghalat attempts ki gayi hain. Barah-e-karam naya code mangwayein."
+
+    if str(record["otp_code"]).strip() != str(otp_code).strip():
+        cursor.execute("UPDATE otp_verifications SET attempts = attempts + 1 WHERE id = ?", (record["id"],))
+        conn.commit()
+        conn.close()
+        return False, None, "Ghalat confirmation code! Barah-e-karam check kar ke dobara enter karein."
+
+    # Mark as successfully used
+    cursor.execute("UPDATE otp_verifications SET is_used = 1 WHERE id = ?", (record["id"],))
+    conn.commit()
+    action = record["action"]
+    conn.close()
+    return True, action, "Confirmation Code verified successfully."
+
+def get_active_otps(limit: int = 10):
+    """Returns recently generated active/pending OTPs for real-time admin monitoring."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cursor.execute("""
+        SELECT o.*, s.name as staff_name, s.designation, s.phone as staff_phone
+        FROM otp_verifications o
+        JOIN staff s ON o.staff_id = s.id
+        WHERE o.is_used = 0 AND o.expires_at >= ?
+        ORDER BY o.id DESC LIMIT ?
+    """, (now_str, limit))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
 
 if __name__ == "__main__":
     init_db()
