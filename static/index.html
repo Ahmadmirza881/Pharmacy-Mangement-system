@@ -30,7 +30,7 @@
     // ==========================================
     // DEMO / DUMMY DATA ENGINE
     // ==========================================
-    let USE_DUMMY_DATA = true;
+    const USE_DUMMY_DATA = true; // Permanent: 12 Staff & Demo records always active
 
     const MOCK_STAFF = [
       {
@@ -475,36 +475,8 @@
       }
     ];
 
-    function toggleDummyData() {
-      USE_DUMMY_DATA = !USE_DUMMY_DATA;
-      const badge = document.getElementById('demo-mode-badge');
-      if (badge) {
-        if (USE_DUMMY_DATA) {
-          badge.className = 'hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-600 text-xs font-semibold shadow-xs';
-          badge.innerHTML = `
-            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            <span>Demo Mode: Dummy Data</span>
-            <button onclick="toggleDummyData()" class="ml-1 text-[11px] underline text-amber-700 hover:text-amber-900 font-bold cursor-pointer" title="Click to switch to Live Database data">Switch</button>
-          `;
-        } else {
-          badge.className = 'hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 text-xs font-semibold shadow-xs';
-          badge.innerHTML = `
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Live DB Connected</span>
-            <button onclick="toggleDummyData()" class="ml-1 text-[11px] underline text-emerald-700 hover:text-emerald-900 font-bold cursor-pointer" title="Click to switch to Dummy Demo Data">Switch</button>
-          `;
-        }
-      }
-      // Reload current tab data
-      loadStaff();
-      loadTodayAttendance();
-      loadCustomers();
-      loadCustomerKpis();
-      renderKioskStaffGrid();
-      loadSettingsView();
-      if (typeof generatePayroll === 'function') generatePayroll();
-      if (typeof loadAdvances === 'function') loadAdvances();
-    }
+    // Dummy data mode is permanent per user request
+
 
     tailwind.config = {
       theme: {
@@ -1206,14 +1178,6 @@
 
       <!-- Right: Search, Clock, Notifications, Admin Profile -->
       <div class="flex items-center gap-4 sm:gap-5">
-        <!-- Mode Switcher: Dummy Data vs Live DB -->
-        <div id="demo-mode-badge" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-700 text-xs font-semibold shadow-xs">
-          <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-          <span id="demo-mode-text">Demo Mode (Dummy Data)</span>
-          <button type="button" onclick="toggleDummyData()" class="ml-1 text-[11px] underline text-amber-800 hover:text-amber-950 font-black cursor-pointer" title="Click to switch to Live Database">Live DB</button>
-        </div>
-
-        <!-- Add New Pill Button (from screenshot) -->
         <button onclick="openStaffModal()" class="bg-[#156D38] hover:bg-[#0E4D27] text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-sm shadow-emerald-950/30 flex items-center gap-1.5 transition cursor-pointer">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
           <span>Add New</span>
@@ -7574,7 +7538,7 @@
                   </div>
                   <div>
                     <h5 class="font-bold text-slate-900 text-sm">${s.name}</h5>
-                    <p class="text-[11px] text-slate-400 font-mono">CNIC: ${cnic}</p>
+                    <p class="text-[11px] text-slate-400 font-mono">CNIC: ${cnic} • <span class="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">PIN: ${s.pin || (1000 + s.id)}</span></p>
                   </div>
                 </div>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
