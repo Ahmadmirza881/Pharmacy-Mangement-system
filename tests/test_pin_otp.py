@@ -14,14 +14,17 @@ class TestPinOtpAttendance(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         data = res.json()
         self.assertIn('admin_whatsapp_number', data)
+        self.assertIn('admin_master_pin', data)
 
         new_phone = '0300-9876543'
-        update_res = client.post('/api/settings', json={'admin_whatsapp_number': new_phone})
+        new_master_pin = '7860'
+        update_res = client.post('/api/settings', json={'admin_whatsapp_number': new_phone, 'admin_master_pin': new_master_pin})
         self.assertEqual(update_res.status_code, 200)
         self.assertEqual(database.get_setting('admin_whatsapp_number'), new_phone)
+        self.assertEqual(database.get_admin_master_pin(), new_master_pin)
 
-        # Restore test default
-        client.post('/api/settings', json={'admin_whatsapp_number': '0300-1234567'})
+        # Restore test defaults
+        client.post('/api/settings', json={'admin_whatsapp_number': '03166868169', 'admin_master_pin': '1370'})
 
     def test_02_pin_otp_flow_in_and_out(self):
         staff_res = client.get('/api/staff')
@@ -48,6 +51,8 @@ class TestPinOtpAttendance(unittest.TestCase):
         req_data = req_res.json()
         self.assertTrue(req_data['success'])
         self.assertIn('action', req_data)
+        self.assertIn('token', req_data)
+        self.assertIn('reveal_link', req_data)
         self.assertIn('target_masked_phone', req_data)
 
         # Active OTPs
@@ -97,7 +102,52 @@ class TestPinOtpAttendance(unittest.TestCase):
         })
         self.assertEqual(res_out.status_code, 200)
         self.assertEqual(res_out.json()['action'], 'OUT')
-        self.assertEqual(res_out.json()['target_type'], 'STAFF')
+        self.assertEqual(res_out.json()['target_type'], 'ADMIN')
+
+    def test_04_master_pin_otp_reveal_flow(self):
+        # Set Master PIN to 7860
+        client.post('/api/settings', json={'admin_master_pin': '7860'})
+
+        staff_res = client.get('/api/staff')
+        staff = staff_res.json()[0]
+        staff_id = staff['id']
+        staff_pin = staff.get('pin') or '1001'
+
+        # Request Check-IN OTP
+        req_res = client.post('/api/attendance/request-pin-otp', json={
+            'staff_id': staff_id,
+            'pin': staff_pin,
+            'action': 'IN'
+        })
+        self.assertEqual(req_res.status_code, 200)
+        data = req_res.json()
+        token = data['token']
+
+        # GET /otp-verify page
+        html_res = client.get(f'/otp-verify?token={token}')
+        self.assertEqual(html_res.status_code, 200)
+        self.assertIn('Mumtaz Pharmacy', html_res.text)
+
+        # POST /api/otp/reveal with Wrong Master PIN
+        wrong_pin_res = client.post('/api/otp/reveal', json={
+            'token': token,
+            'master_pin': '0000'
+        })
+        self.assertEqual(wrong_pin_res.status_code, 400)
+        self.assertIn('Ghalat Admin Master PIN', wrong_pin_res.json()['detail'])
+
+        # POST /api/otp/reveal with Correct Master PIN
+        reveal_res = client.post('/api/otp/reveal', json={
+            'token': token,
+            'master_pin': '7860'
+        })
+        self.assertEqual(reveal_res.status_code, 200)
+        reveal_data = reveal_res.json()
+        self.assertTrue(reveal_data['success'])
+        self.assertEqual(reveal_data['otp_code'], data['otp_code'])
+
+        # Restore default Master PIN
+        client.post('/api/settings', json={'admin_master_pin': '1370'})
 
 if __name__ == '__main__':
     unittest.main()

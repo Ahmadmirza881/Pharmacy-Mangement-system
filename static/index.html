@@ -992,16 +992,17 @@
       <!-- ATTENDANCE TAB -->
       <button onclick="switchTab('kiosk')" id="side-tab-kiosk" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
         <i data-lucide="fingerprint" class="w-4 h-4"></i>
-        <span>Staff Attendance</span>
+        <span>PIN &amp; OTP Attendance</span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
       </button>
 
       <!-- PIN & OTP AUDIT LOG TAB -->
       <button onclick="switchTab('audit-log')" id="side-tab-audit-log" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
         <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-        <span>PIN &amp; OTP Audit</span>
+        <span>PIN &amp; OTP Audit Log</span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
       </button>
+
 
       <!-- LEAVE MANAGEMENT TAB -->
       <button onclick="switchTab('leaves')" id="side-tab-leaves" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
@@ -1318,16 +1319,15 @@
             <thead class="bg-slate-50 text-slate-600 text-xs uppercase font-extrabold border-b border-slate-200">
               <tr>
                 <th class="py-3 px-4">Staff Member</th>
-                <th class="py-3 px-4">Duty Target</th>
-                <th class="py-3 px-4">Time IN</th>
-                <th class="py-3 px-4">Time OUT</th>
-                <th class="py-3 px-4 text-center">Duty Status</th>
+                <th class="py-3 px-4">Time</th>
+                <th class="py-3 px-4 text-center">Worked Hours</th>
+                <th class="py-3 px-4 text-center">Status (Admin Decider)</th>
                 <th class="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody id="live-attendance-tbody" class="divide-y divide-slate-100">
               <tr>
-                <td colspan="7" class="p-8 text-center text-slate-400">Loading live shift roster...</td>
+                <td colspan="5" class="p-8 text-center text-slate-400">Loading live shift roster...</td>
               </tr>
             </tbody>
           </table>
@@ -1918,89 +1918,160 @@
     <!-- ================================================================= -->
     <!-- TAB 4: STAFF ATTENDANCE KIOSK (PIN + WHATSAPP OTP)                -->
     <!-- ================================================================= -->
-    <section id="view-kiosk" class="space-y-6 hidden">
-      <!-- ATTENDANCE TOP HERO & WORKFLOW BANNER -->
-      <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-3xl p-6 sm:p-7 shadow-xl relative overflow-hidden">
-        <div class="absolute -right-8 -bottom-8 w-48 h-48 bg-white/5 rounded-full blur-2xl pointer-events-none"></div>
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-          <div>
-            <div class="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full text-xs font-bold mb-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>DIGITAL ATTENDANCE TERMINAL</span>
-            </div>
-            <h2 class="text-2xl sm:text-3xl font-black tracking-tight text-white">Mumtaz Pharmacy Staff Attendance</h2>
-            <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl">
-              Select your name, enter your 4-digit PIN, and confirm attendance via WhatsApp OTP verification.
-            </p>
-          </div>
+    <section id="view-kiosk" class="space-y-4 hidden">
+      <!-- CLEAN HEADER BAR -->
+      <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 class="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <i data-lucide="users" class="w-5 h-5 text-[#156D38]"></i>
+            <span>Staff Attendance Kiosk</span>
+          </h3>
+          <p class="text-xs text-slate-500 mt-0.5">Click your name card and enter your 4-digit PIN to punch attendance</p>
+        </div>
 
-          <!-- Quick Action & Verification Badges -->
-          <div class="flex flex-col sm:flex-row items-center gap-2.5 shrink-0">
-            <div class="bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/15 text-xs text-center">
-              <span class="text-emerald-300 font-bold">🟢 Check-IN</span>
-              <div class="text-[11px] text-slate-300">OTP to Admin WhatsApp</div>
-            </div>
-            <div class="bg-white/10 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/15 text-xs text-center">
-              <span class="text-sky-300 font-bold">🔵 Check-OUT</span>
-              <div class="text-[11px] text-slate-300">OTP to Staff WhatsApp</div>
-            </div>
-            <button onclick="switchTab('audit-log')" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer">
-              <i data-lucide="shield-check" class="w-4 h-4"></i>
-              <span>PIN Audit</span>
-            </button>
-          </div>
+        <!-- Quick Search Filter -->
+        <div class="relative w-full sm:w-72">
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+          <input type="text" id="kiosk-staff-search" oninput="filterKioskStaff(this.value)" placeholder="Search staff name..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3.5 py-2.5 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#156D38]/20 focus:border-[#156D38] transition">
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- PUNCH RESULT TOAST / BANNER -->
+      <div id="punch-result" class="hidden p-4 rounded-2xl border transition-all duration-300 shadow-sm"></div>
 
-        <!-- MAIN LEFT COLUMN: TOUCH STAFF ROSTER (8 COLS) -->
-        <div class="lg:col-span-8 space-y-4">
-          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <!-- STAFF CARDS SPACIOUS GRID -->
+      <div id="kiosk-staff-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- Ahmad saeed -->
+        <div onclick="openPinKiosk(48)" class="group p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50/80 shadow-xs hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between select-none">
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0F172A] to-slate-800 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0 group-hover:scale-105 transition-transform">AS</div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-1">
+                  <h4 class="font-extrabold text-base text-slate-900 truncate group-hover:text-[#156D38] transition-colors">Ahmad saeed</h4>
+                  <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#48</span>
+                </div>
+                <p class="text-xs text-slate-500 font-medium truncate mt-0.5">Senior Pharmacist</p>
+              </div>
+            </div>
             <div>
-              <h3 class="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                <i data-lucide="users" class="w-4.5 h-4.5 text-emerald-700"></i>
-                <span>Select Staff Member</span>
-              </h3>
-              <p class="text-xs text-slate-500 mt-0.5">Click your card and enter your 4-digit PIN</p>
-            </div>
-
-            <!-- Quick Search Filter -->
-            <div class="relative w-full sm:w-64">
-              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
-              <input type="text" id="kiosk-staff-search" oninput="filterKioskStaff(this.value)" placeholder="Search staff name..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Ready for IN</span>
+              </span>
             </div>
           </div>
-
-          <!-- STAFF CARDS TOUCH GRID -->
-          <div id="kiosk-staff-grid" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            <div class="col-span-full p-8 text-center text-slate-400 text-sm">Loading staff members...</div>
+          <div class="mt-4 pt-3 border-t border-slate-100" onclick="event.stopPropagation()">
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="openPinKioskWithAction(48, 'IN')" class="w-full py-2.5 px-2 rounded-xl font-black text-xs bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer">
+                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                <span>Check-IN</span>
+              </button>
+              <button type="button" disabled class="w-full py-2.5 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200/80 opacity-40 cursor-not-allowed flex items-center justify-center gap-1 select-none">
+                <span>Check-OUT</span>
+              </button>
+            </div>
           </div>
-
-          <!-- PUNCH RESULT TOAST / BANNER -->
-          <div id="punch-result" class="hidden p-4 rounded-2xl border transition-all duration-300 shadow-sm"></div>
         </div>
 
-        <!-- RIGHT COLUMN: LIVE RECENT STREAM (4 COLS) -->
-        <div class="lg:col-span-4 space-y-4">
-          
-          <!-- TODAY'S RECENT STREAM -->
-          <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs flex flex-col">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 class="font-extrabold text-xs uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                <i data-lucide="history" class="w-4 h-4 text-emerald-700"></i>
-                <span>Today's Verified Punches</span>
-              </h3>
-              <span id="kiosk-punches-count" class="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-bold">Live Stream</span>
+        <!-- Ali Raza -->
+        <div onclick="openPinKiosk(1)" class="group p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50/80 shadow-xs hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between select-none">
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0F172A] to-slate-800 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0 group-hover:scale-105 transition-transform">AR</div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-1">
+                  <h4 class="font-extrabold text-base text-slate-900 truncate group-hover:text-[#156D38] transition-colors">Ali Raza</h4>
+                  <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#1</span>
+                </div>
+                <p class="text-xs text-slate-500 font-medium truncate mt-0.5">Senior Pharmacist</p>
+              </div>
             </div>
-
-            <div id="kiosk-punches-stream" class="divide-y divide-slate-100 overflow-y-auto max-h-[480px] mt-2">
-              <div class="p-6 text-center text-slate-400 text-xs">Loading today's punches...</div>
+            <div>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Ready for IN</span>
+              </span>
             </div>
           </div>
-
+          <div class="mt-4 pt-3 border-t border-slate-100" onclick="event.stopPropagation()">
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="openPinKioskWithAction(1, 'IN')" class="w-full py-2.5 px-2 rounded-xl font-black text-xs bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer">
+                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                <span>Check-IN</span>
+              </button>
+              <button type="button" disabled class="w-full py-2.5 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200/80 opacity-40 cursor-not-allowed flex items-center justify-center gap-1 select-none">
+                <span>Check-OUT</span>
+              </button>
+            </div>
+          </div>
         </div>
 
+        <!-- Bilal Ahmed -->
+        <div onclick="openPinKiosk(2)" class="group p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50/80 shadow-xs hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between select-none">
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0F172A] to-slate-800 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0 group-hover:scale-105 transition-transform">BA</div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-1">
+                  <h4 class="font-extrabold text-base text-slate-900 truncate group-hover:text-[#156D38] transition-colors">Bilal Ahmed</h4>
+                  <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#2</span>
+                </div>
+                <p class="text-xs text-slate-500 font-medium truncate mt-0.5">Counter Sales &amp; Billing</p>
+              </div>
+            </div>
+            <div>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Ready for IN</span>
+              </span>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100" onclick="event.stopPropagation()">
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="openPinKioskWithAction(2, 'IN')" class="w-full py-2.5 px-2 rounded-xl font-black text-xs bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer">
+                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                <span>Check-IN</span>
+              </button>
+              <button type="button" disabled class="w-full py-2.5 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200/80 opacity-40 cursor-not-allowed flex items-center justify-center gap-1 select-none">
+                <span>Check-OUT</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Usman Tariq -->
+        <div onclick="openPinKiosk(3)" class="group p-5 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50/80 shadow-xs hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between select-none">
+          <div class="space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0F172A] to-slate-800 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0 group-hover:scale-105 transition-transform">UT</div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-1">
+                  <h4 class="font-extrabold text-base text-slate-900 truncate group-hover:text-[#156D38] transition-colors">Usman Tariq</h4>
+                  <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#3</span>
+                </div>
+                <p class="text-xs text-slate-500 font-medium truncate mt-0.5">Store Runner &amp; Dispenser</p>
+              </div>
+            </div>
+            <div>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>Ready for IN</span>
+              </span>
+            </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100" onclick="event.stopPropagation()">
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="openPinKioskWithAction(3, 'IN')" class="w-full py-2.5 px-2 rounded-xl font-black text-xs bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer">
+                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                <span>Check-IN</span>
+              </button>
+              <button type="button" disabled class="w-full py-2.5 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200/80 opacity-40 cursor-not-allowed flex items-center justify-center gap-1 select-none">
+                <span>Check-OUT</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
       <section id="view-payroll" class="space-y-5 hidden">
@@ -2035,6 +2106,13 @@
               <option value="2026" selected>2026</option>
               <option value="2027">2027</option>
             </select>
+            <div class="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs">
+              <span class="text-[10px] font-bold text-slate-400 uppercase">Custom Dates:</span>
+              <input type="date" id="global-payroll-from" class="bg-white border border-slate-200 rounded-md px-1.5 py-0.5 text-xs font-semibold text-slate-800 outline-none">
+              <span class="text-slate-400 font-bold">-</span>
+              <input type="date" id="global-payroll-to" class="bg-white border border-slate-200 rounded-md px-1.5 py-0.5 text-xs font-semibold text-slate-800 outline-none">
+              <button onclick="generatePayrollCustomRange()" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold px-2.5 py-1 rounded-md text-xs transition cursor-pointer shadow-2xs">Calculate Range</button>
+            </div>
             <button onclick="generatePayroll()" class="bg-[#0F172A] hover:bg-slate-800 active:scale-95 text-white text-xs font-bold py-2 px-3.5 rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer">
               <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
               <span>Recalculate</span>
@@ -2473,10 +2551,24 @@
                   <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-600 font-bold text-xs">
                     <i data-lucide="message-circle" class="w-4 h-4"></i>
                   </div>
-                  <input type="text" id="setting-admin-phone" placeholder="e.g. 0300-1234567" required
+                  <input type="text" id="setting-admin-phone" placeholder="e.g. 0316-6868169" required
                     class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent">
                 </div>
-                <p class="text-[11px] text-slate-400 mt-1">Jab bhi koi staff member Check-IN karega, verification code is number par WhatsApp hoga.</p>
+                <p class="text-[11px] text-slate-400 mt-1">Jab bhi koi staff member Check-IN karega, verification link is number par WhatsApp hoga.</p>
+              </div>
+
+              <div>
+                <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Admin Master PIN (Mobile OTP Security) *
+                </label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-600 font-bold text-xs">
+                    <i data-lucide="key-round" class="w-4 h-4"></i>
+                  </div>
+                  <input type="text" id="setting-admin-master-pin" placeholder="e.g. 1370" maxlength="4" required
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent">
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1">Jab Admin mobile par WhatsApp link kholega, OTP reveal karne ke liye yeh 4-digit PIN enter karni hogi.</p>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -2496,10 +2588,6 @@
                 <button type="submit" class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold text-xs py-2.5 px-6 rounded-xl flex items-center gap-2 shadow-sm transition cursor-pointer">
                   <i data-lucide="save" class="w-4 h-4"></i>
                   <span>Save Settings</span>
-                </button>
-                <button type="button" onclick="testAdminWhatsApp()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs py-2.5 px-4 rounded-xl flex items-center gap-1.5 transition cursor-pointer">
-                  <i data-lucide="send" class="w-3.5 h-3.5"></i>
-                  <span>Send Test Alert</span>
                 </button>
               </div>
             </form>
@@ -2544,8 +2632,6 @@
           </div>
         </div>
       </div>
-    </section>
-
     <!-- ================================================================= -->
     <!-- TAB: PIN & OTP ATTENDANCE AUDIT LOG (ADMIN PORTAL)               -->
     <!-- ================================================================= -->
@@ -2620,14 +2706,47 @@
               </tr>
             </thead>
             <tbody id="audit-table-tbody" class="divide-y divide-slate-100">
-              <tr>
-                <td colspan="7" class="py-8 text-center text-slate-400">Loading audit trail...</td>
+              <tr class="hover:bg-slate-50 transition-colors text-xs">
+                <td class="py-3 px-4 font-bold text-slate-800">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 text-white font-black text-xs flex items-center justify-center shrink-0">AS</div>
+                    <div>
+                      <div class="font-extrabold text-slate-900">Ahmad saeed</div>
+                      <div class="text-[11px] text-slate-400 font-mono">ID: #48 • Senior Pharmacist</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Check-IN</span></td>
+                <td class="py-3 px-4"><div class="font-mono font-bold text-slate-700">01:22 AM</div><div class="text-[10px] text-slate-400 mt-0.5">PIN Time</div></td>
+                <td class="py-3 px-4"><div class="font-mono font-bold text-emerald-700">01:22 AM</div><div class="text-[10px] text-slate-400 mt-0.5">OTP Time</div></td>
+                <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Instant</span></td>
+                <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800">✅ VERIFIED</span></td>
+                <td class="py-3 px-4 text-right text-slate-500 font-mono text-[11px]">Admin WhatsApp</td>
+              </tr>
+              <tr class="hover:bg-slate-50 transition-colors text-xs">
+                <td class="py-3 px-4 font-bold text-slate-800">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-slate-800 text-white font-black text-xs flex items-center justify-center shrink-0">AR</div>
+                    <div>
+                      <div class="font-extrabold text-slate-900">Ali Raza</div>
+                      <div class="text-[11px] text-slate-400 font-mono">ID: #1 • Senior Pharmacist</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[11px] font-black bg-blue-100 text-blue-800 border border-blue-300">Check-OUT</span></td>
+                <td class="py-3 px-4"><div class="font-mono font-bold text-slate-700">01:35 AM</div><div class="text-[10px] text-slate-400 mt-0.5">PIN Time</div></td>
+                <td class="py-3 px-4"><div class="font-mono font-bold text-emerald-700">01:35 AM</div><div class="text-[10px] text-slate-400 mt-0.5">Notify Time</div></td>
+                <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Instant</span></td>
+                <td class="py-3 px-4 text-center"><span class="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800">✅ VERIFIED</span></td>
+                <td class="py-3 px-4 text-right text-slate-500 font-mono text-[11px]">Admin WhatsApp</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
+
+
     </main>
 
   </div>
@@ -2674,6 +2793,24 @@
           </div>
         </div>
 
+        <!-- INTEGRATED CUSTOM PAY PERIOD DATE PICKER BAR -->
+        <div class="bg-indigo-50/60 border border-indigo-200/80 rounded-xl p-3 my-3 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center">
+              <i data-lucide="calendar-range" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <span class="text-xs font-black text-indigo-900 block leading-tight">Pay Period (Kahan Se Kahan Tak)</span>
+              <span class="text-[10px] text-indigo-600 font-medium">Dates select karein — salary &amp; cuts foran recalculate ho jayenge</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <input type="date" id="slip-from-date" onchange="recalculateSlipCustomDates()" class="bg-white border border-indigo-200 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer shadow-2xs">
+            <span class="text-slate-400 font-bold text-xs">to</span>
+            <input type="date" id="slip-to-date" onchange="recalculateSlipCustomDates()" class="bg-white border border-indigo-200 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 outline-none cursor-pointer shadow-2xs">
+          </div>
+        </div>
+
         <!-- EMPLOYEE METADATA GRID -->
         <div class="bg-slate-50/80 border border-slate-200 rounded-xl p-3.5 my-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
           <div>
@@ -2693,6 +2830,10 @@
             <strong id="slip-duty" class="text-slate-700 font-mono block">8.0 hrs/day</strong>
           </div>
           <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Monthly Salary</span>
+            <strong id="slip-monthly" class="text-[#156D38] font-mono block font-black">Rs. 45,000.00</strong>
+          </div>
+          <div>
             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Daily Wage</span>
             <strong id="slip-daily" class="text-slate-700 font-mono block">Rs. 1,500.00</strong>
           </div>
@@ -2700,7 +2841,7 @@
             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Hourly Wage</span>
             <strong id="slip-hourly" class="text-slate-700 font-mono block">Rs. 187.50</strong>
           </div>
-          <div class="col-span-2">
+          <div>
             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">Allowed Free Leaves</span>
             <strong id="slip-free-leaves" class="text-slate-700 block">2 / month</strong>
           </div>
@@ -2815,157 +2956,153 @@
   <!-- ========================================================================= -->
   <!-- MODAL: INTERACTIVE PIN & WHATSAPP OTP ATTENDANCE KIOSK (LOW-CLICK)        -->
   <!-- ========================================================================= -->
-  <div id="pin-otp-modal" class="fixed inset-0 bg-slate-950/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden relative animate-in fade-in zoom-in duration-150">
+  <div id="pin-otp-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-100 overflow-hidden relative animate-in fade-in zoom-in duration-200">
       
       <!-- TOP HEADER WITH STAFF PROFILE -->
-      <div class="bg-gradient-to-r from-slate-900 to-[#232272] text-white p-5 relative">
-        <button onclick="closePinKiosk()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer">
+      <div class="bg-gradient-to-br from-[#156D38] via-[#0E4D27] to-slate-900 text-white p-5 relative shadow-md">
+        <button onclick="closePinKiosk()" class="absolute top-4 right-4 text-emerald-200/80 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition cursor-pointer">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
-        <div class="flex items-center gap-3.5">
-          <div id="kiosk-modal-avatar" class="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center font-black text-base text-white shadow-inner">
+        <div class="flex items-center gap-4">
+          <div id="kiosk-modal-avatar" class="w-14 h-14 rounded-2xl bg-white/15 border border-white/20 flex items-center justify-center font-black text-lg text-white shadow-inner shrink-0 backdrop-blur-md">
             --
           </div>
-          <div>
-            <h3 id="kiosk-modal-staff-name" class="font-extrabold text-base text-white tracking-tight leading-snug">Staff Member</h3>
-            <p id="kiosk-modal-staff-role" class="text-xs text-indigo-200 font-medium">Pharmacist • Morning Shift</p>
+          <div class="space-y-0.5">
+            <h3 id="kiosk-modal-staff-name" class="font-black text-lg text-white tracking-tight leading-snug">Staff Member</h3>
+            <div id="kiosk-modal-staff-role" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/15 text-emerald-100 text-[11px] font-semibold backdrop-blur-xs">
+              Pharmacist • Morning Shift
+            </div>
           </div>
         </div>
       </div>
 
       <!-- INTERACTIVE CHECK-IN / CHECK-OUT TOGGLE (USER DECIDES!) -->
-      <div class="px-6 pt-5 pb-1">
-        <div class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Punch Type (Select IN or OUT)</div>
-        <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200/80">
+      <div class="px-6 pt-5 pb-2 border-b border-slate-100">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Punch Action</span>
+          <span class="text-[10px] text-slate-400 font-medium">Select IN or OUT</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/60 shadow-inner">
           <button type="button" id="btn-action-in" onclick="setUserAction('IN')"
-            class="py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-sm bg-emerald-600 text-white cursor-pointer">
+            class="py-3 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-md bg-[#156D38] text-white cursor-pointer active:scale-95">
             <i data-lucide="log-in" class="w-4 h-4"></i>
             <span>🟢 Check-IN</span>
           </button>
           <button type="button" id="btn-action-out" onclick="setUserAction('OUT')"
-            class="py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900 cursor-pointer">
+            class="py-3 px-4 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 cursor-pointer active:scale-95">
             <i data-lucide="log-out" class="w-4 h-4"></i>
             <span>🔵 Check-OUT</span>
           </button>
         </div>
-        <div id="kiosk-action-hint" class="text-[11px] font-semibold text-emerald-700 mt-2 flex items-center gap-1.5 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
-          <i data-lucide="info" class="w-3.5 h-3.5 shrink-0 text-emerald-600"></i>
-          <span id="kiosk-action-hint-text">Check-IN: 4-digit code <strong>Admin WhatsApp</strong> par send hoga.</span>
+        <div id="kiosk-action-hint" class="text-[11px] font-semibold text-emerald-800 mt-2.5 flex items-center gap-2 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-200/80">
+          <i data-lucide="shield-check" class="w-4 h-4 shrink-0 text-[#156D38]"></i>
+          <span id="kiosk-action-hint-text">Check-IN: 4-digit OTP <strong>Admin WhatsApp</strong> par send hoga.</span>
         </div>
       </div>
 
       <!-- STAGE 1: 4-DIGIT PIN ENTRY VIA ATM KEYPAD -->
-      <div id="kiosk-stage-pin" class="p-6 pt-3 space-y-4">
+      <div id="kiosk-stage-pin" class="p-6 pt-4 space-y-4">
         <div class="text-center">
-          <p class="text-xs font-bold text-slate-600">Enter Your 4-Digit Secret PIN</p>
+          <p class="text-xs font-extrabold text-slate-500 uppercase tracking-widest mb-3">Enter 4-Digit Secret PIN</p>
           
-          <!-- PIN DOTS DISPLAY -->
-          <div class="flex items-center justify-center gap-3 my-3">
-            <div id="pin-dot-1" class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 bg-white transition-all duration-150"></div>
-            <div id="pin-dot-2" class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 bg-white transition-all duration-150"></div>
-            <div id="pin-dot-3" class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 bg-white transition-all duration-150"></div>
-            <div id="pin-dot-4" class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 bg-white transition-all duration-150"></div>
+          <!-- PIN DIGITS DISPLAY (CLEARLY VISIBLE) -->
+          <div class="flex items-center justify-center gap-3.5 my-2">
+            <div id="pin-dot-1" class="w-14 h-14 rounded-2xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center text-2xl font-black text-slate-400 transition-all duration-150 shadow-xs"></div>
+            <div id="pin-dot-2" class="w-14 h-14 rounded-2xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center text-2xl font-black text-slate-400 transition-all duration-150 shadow-xs"></div>
+            <div id="pin-dot-3" class="w-14 h-14 rounded-2xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center text-2xl font-black text-slate-400 transition-all duration-150 shadow-xs"></div>
+            <div id="pin-dot-4" class="w-14 h-14 rounded-2xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center text-2xl font-black text-slate-400 transition-all duration-150 shadow-xs"></div>
           </div>
-          <p id="pin-error-text" class="text-xs font-bold text-rose-600 min-h-[16px]"></p>
+          <p id="pin-error-text" class="text-xs font-bold text-rose-600 min-h-[18px] mt-1"></p>
         </div>
 
         <!-- ATM KEYPAD (TOUCHSCREEN & MOUSE COMPLIANT) -->
-        <div class="grid grid-cols-3 gap-2 max-w-xs mx-auto">
-          <button type="button" onclick="handleKeypadPress('1')" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-extrabold text-lg shadow-xs transition cursor-pointer">1</button>
-          <button type="button" onclick="handleKeypadPress('2')" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-extrabold text-lg shadow-xs transition cursor-pointer">2</button>
-          <button type="button" onclick="handleKeypadPress('3')" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-extrabold text-lg shadow-xs transition cursor-pointer">3</button>
+        <div class="grid grid-cols-3 gap-2.5 max-w-xs mx-auto">
+          <button type="button" onclick="handleKeypadPress('1')" class="h-13 rounded-2xl bg-slate-100 hover:bg-[#156D38] hover:text-white active:scale-95 text-slate-800 font-black text-xl shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">1</button>
+          <button type="button" onclick="handleKeypadPress('2')" class="h-13 rounded-2xl bg-slate-100 hover:bg-[#156D38] hover:text-white active:scale-95 text-slate-800 font-black text-xl shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">2</button>
+          <button type="button" onclick="handleKeypadPress('3')" class="h-13 rounded-2xl bg-slate-100 hover:bg-[#156D38] hover:text-white active:scale-95 text-slate-800 font-black text-xl shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">3</button>
           
-          <button type="button" onclick="handleKeypadPress('4')" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-extrabold text-lg shadow-xs transition cursor-pointer">4</button>
-          <button type="button" onclick="handleKeypadPress('5')" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-extrabold text-lg shadow-xs transition cursor-pointer">5</button>
-          <button type="button" onclick="handleKeypadPress('6')" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-extrabold text-lg shadow-xs transition cursor-pointer">6</button>
+          <button type="button" onclick="handleKeypadPress('4')" class="h-13 rounded-2xl bg-slate-100 hover:bg-[#156D38] hover:text-white active:scale-95 text-slate-800 font-black text-xl shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">4</button>
+          <button type="button" onclick="handleKeypadPress('5')" class="h-13 rounded-2xl bg-slate-100 hover:bg-[#156D38] hover:text-white active:scale-95 text-slate-800 font-black text-xl shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">5</button>
+          <button type="button" onclick="handleKeypadPress('6')" class="h-13 rounded-2xl bg-slate-100 hover:bg-[#156D38] hover:text-white active:scale-95 text-slate-800 font-black text-xl shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">6</button>
           
-          <button type="button" onclick="handleKeypadPress('7')" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-extrabold text-lg shadow-xs transition cursor-pointer">7</button>
-          <button type="button" onclick="handleKeypadPress('8')" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-extrabold text-lg shadow-xs transition cursor-pointer">8</button>
-          <button type="button" onclick="handleKeypadPress('9')" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-extrabold text-lg shadow-xs transition cursor-pointer">9</button>
+          <button type="button" onclick="handleKeypadPress('7')" class="h-13 rounded-2xl bg-slate-100 hover:bg-[#156D38] hover:text-white active:scale-95 text-slate-800 font-black text-xl shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">7</button>
+          <button type="button" onclick="handleKeypadPress('8')" class="h-13 rounded-2xl bg-slate-100 hover:bg-[#156D38] hover:text-white active:scale-95 text-slate-800 font-black text-xl shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">8</button>
+          <button type="button" onclick="handleKeypadPress('9')" class="h-13 rounded-2xl bg-slate-100 hover:bg-[#156D38] hover:text-white active:scale-95 text-slate-800 font-black text-xl shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">9</button>
           
-          <button type="button" onclick="handleKeypadClear()" class="h-12 rounded-xl bg-rose-50 hover:bg-rose-100 active:scale-95 text-rose-600 font-extrabold text-xs uppercase shadow-xs transition cursor-pointer">Clear</button>
-          <button type="button" onclick="handleKeypadPress('0')" class="h-12 rounded-xl bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-800 font-extrabold text-lg shadow-xs transition cursor-pointer">0</button>
-          <button type="button" onclick="handleKeypadBackspace()" class="h-12 rounded-xl bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-700 font-extrabold text-sm shadow-xs transition flex items-center justify-center cursor-pointer">
+          <button type="button" onclick="handleKeypadClear()" class="h-13 rounded-2xl bg-rose-50 hover:bg-rose-600 hover:text-white active:scale-95 text-rose-600 font-black text-xs uppercase tracking-wider shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">Clear</button>
+          <button type="button" onclick="handleKeypadPress('0')" class="h-13 rounded-2xl bg-slate-100 hover:bg-[#156D38] hover:text-white active:scale-95 text-slate-800 font-black text-xl shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">0</button>
+          <button type="button" onclick="handleKeypadBackspace()" class="h-13 rounded-2xl bg-slate-200/80 hover:bg-slate-700 hover:text-white active:scale-95 text-slate-700 font-extrabold shadow-xs transition duration-150 flex items-center justify-center cursor-pointer">
             <i data-lucide="delete" class="w-5 h-5"></i>
           </button>
         </div>
 
-        <p class="text-[11px] text-center text-slate-400">
-          💡 Physical keyboard numpad bhi directly use kar sakte hain. 4th digit enter hote hi request auto-submit ho jayegi.
+        <p class="text-[11px] text-center text-slate-400 font-medium pt-1">
+          💡 Keyboard numpad supported • Auto-submits on 4th digit
         </p>
       </div>
 
       <!-- STAGE 2: 4-DIGIT OTP VERIFICATION ENTRY -->
       <div id="kiosk-stage-otp" class="p-6 space-y-4 hidden">
         <div class="text-center">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-2 shadow-xs">
-            <i data-lucide="message-square-code" class="w-6 h-6"></i>
+          <div class="w-14 h-14 rounded-2xl bg-emerald-100/80 text-[#156D38] flex items-center justify-center mx-auto mb-2 shadow-xs border border-emerald-200/60">
+            <i data-lucide="message-square-code" class="w-7 h-7"></i>
           </div>
-          <h4 class="font-extrabold text-base text-slate-900">WhatsApp Code Darj Karen</h4>
-          <p id="otp-destination-text" class="text-xs text-slate-500 mt-1">
-            4-digit code Admin WhatsApp par send kar diya gaya hai.
+          <h4 class="font-black text-lg text-slate-900">Enter WhatsApp OTP Code</h4>
+          <p id="otp-destination-text" class="text-xs text-slate-600 mt-1 font-medium leading-relaxed">
+            OTP code Admin WhatsApp par send kar diya gaya hai.
           </p>
         </div>
 
-        <!-- STEP 1: Open WhatsApp button — prominently above code boxes -->
-        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3">
-          <p class="text-[11px] font-bold text-emerald-800 text-center mb-2.5">
-            Step 1: Admin ke WhatsApp par code check karen
-          </p>
-          <a id="otp-direct-wa-link" href="#" target="_blank"
-             class="flex w-full items-center justify-center gap-2.5 px-4 py-3 rounded-xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-extrabold text-sm shadow-md transition active:scale-95 cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-            WhatsApp Khol kar Code Dekhein
-          </a>
-          <p class="text-[10px] text-emerald-700 text-center mt-1.5 font-semibold">
-            ↑ Admin ke phone par OTP aaya hoga — wahan se code lein
-          </p>
-        </div>
+        <!-- WhatsApp Link Button -->
+        <a id="otp-direct-wa-link" href="#" target="_blank"
+           class="flex w-full items-center justify-center gap-2.5 px-4 py-3 rounded-2xl bg-[#25D366] hover:bg-[#1ebe5d] text-white font-black text-sm shadow-md transition transform active:scale-95 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 fill-white" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          <span>Open WhatsApp to View Code</span>
+        </a>
 
-        <!-- STEP 2: Enter the code -->
-        <div>
-          <p class="text-[11px] font-bold text-slate-600 text-center mb-2.5">Step 2: Admin se mila code neeche darj karen</p>
-
-          <!-- 4-DIGIT AUTO-ADVANCING BOXES -->
+        <!-- 4-DIGIT AUTO-ADVANCING BOXES -->
+        <div class="pt-1">
           <div class="flex items-center justify-center gap-3">
             <input type="password" id="otp-box-1" maxlength="1" inputmode="numeric" oninput="onOtpInput(1, this.value)" onkeydown="onOtpKeyDown(1, event)"
-              class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
+              class="w-14 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-[#156D38] focus:ring-4 focus:ring-emerald-500/10 focus:outline-none transition-all shadow-xs">
             <input type="password" id="otp-box-2" maxlength="1" inputmode="numeric" oninput="onOtpInput(2, this.value)" onkeydown="onOtpKeyDown(2, event)"
-              class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
+              class="w-14 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-[#156D38] focus:ring-4 focus:ring-emerald-500/10 focus:outline-none transition-all shadow-xs">
             <input type="password" id="otp-box-3" maxlength="1" inputmode="numeric" oninput="onOtpInput(3, this.value)" onkeydown="onOtpKeyDown(3, event)"
-              class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
+              class="w-14 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-[#156D38] focus:ring-4 focus:ring-emerald-500/10 focus:outline-none transition-all shadow-xs">
             <input type="password" id="otp-box-4" maxlength="1" inputmode="numeric" oninput="onOtpInput(4, this.value)" onkeydown="onOtpKeyDown(4, event)"
-              class="w-12 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-indigo-600 focus:outline-none transition shadow-sm">
+              class="w-14 h-14 text-center font-black text-2xl border-2 border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:border-[#156D38] focus:ring-4 focus:ring-emerald-500/10 focus:outline-none transition-all shadow-xs">
           </div>
         </div>
 
-        <p id="otp-error-text" class="text-xs font-bold text-rose-600 text-center min-h-[16px]"></p>
+        <p id="otp-error-text" class="text-xs font-bold text-rose-600 text-center min-h-[18px]"></p>
 
-        <div class="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100">
-          <button type="button" onclick="backToPinStage()" class="text-slate-600 hover:text-slate-900 font-bold flex items-center gap-1 cursor-pointer">
-            <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+        <div class="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100">
+          <button type="button" onclick="backToPinStage()" class="text-slate-600 hover:text-slate-900 font-extrabold flex items-center gap-1.5 cursor-pointer py-1.5 px-3 rounded-xl hover:bg-slate-100 transition">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
             <span>Back to PIN</span>
           </button>
-          <span id="otp-timer" class="font-mono text-slate-400 font-semibold">Valid for: 05:00</span>
+          <span id="otp-timer" class="inline-flex items-center gap-1 text-xs font-mono font-bold text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-xl">
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-600"></i> Valid for: 05:00
+          </span>
         </div>
       </div>
 
       <!-- STAGE 3: CELEBRATION & AUTO-RESET -->
       <div id="kiosk-stage-success" class="p-8 text-center space-y-4 hidden">
-        <div class="w-16 h-16 rounded-3xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-sm animate-bounce">
-          <i data-lucide="check-check" class="w-8 h-8"></i>
+        <div class="w-16 h-16 rounded-3xl bg-emerald-100 text-[#156D38] flex items-center justify-center mx-auto shadow-sm border border-emerald-200">
+          <i data-lucide="check-circle-2" class="w-9 h-9"></i>
         </div>
         <div>
           <h3 id="success-title" class="font-black text-xl text-slate-900">Attendance Marked!</h3>
-          <p id="success-subtitle" class="text-xs text-slate-600 mt-1">Punch recorded successfully in payroll register.</p>
+          <p id="success-subtitle" class="text-xs text-slate-600 mt-1 font-medium">Punch recorded successfully in payroll register.</p>
         </div>
 
         <!-- Animated Reset Progress Bar -->
         <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-          <div id="success-reset-bar" class="bg-emerald-500 h-1.5 w-full transition-all duration-[3500ms] ease-linear"></div>
+          <div id="success-reset-bar" class="bg-[#156D38] h-1.5 w-full transition-all duration-[3500ms] ease-linear"></div>
         </div>
-        <p class="text-[11px] text-slate-400">Screen aglay staff member k liye khud reset ho rahi hai...</p>
+        <p class="text-[11px] text-slate-400 font-medium">Screen aglay staff member k liye khud reset ho rahi hai...</p>
       </div>
 
     </div>
@@ -3242,10 +3379,12 @@
         <div>
           <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Duty Status *</label>
           <select id="override-status" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
-            <option value="ON_TIME">ON TIME (Present)</option>
-            <option value="LATE">LATE</option>
+            <option value="ON_TIME">PRESENT</option>
+            <option value="SHORT_HOURS">SHORT HOURS</option>
             <option value="HALF_DAY">HALF DAY</option>
+            <option value="LATE">LATE</option>
             <option value="ABSENT">ABSENT</option>
+            <option value="LEAVE">LEAVE</option>
           </select>
         </div>
 
@@ -4464,9 +4603,31 @@
 
   <!-- JAVASCRIPT LOGIC -->
   <script>
+    function getLocalTodayStr() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     let staffList = [];
+    let allStaffList = [];
     let recentPunches = [];
     let allAdvances = [];
+
+    function getEffectiveStaffList() {
+      if (typeof allStaffList !== 'undefined' && Array.isArray(allStaffList) && allStaffList.length > 0) {
+        return allStaffList;
+      }
+      if (typeof staffList !== 'undefined' && Array.isArray(staffList) && staffList.length > 0) {
+        return staffList;
+      }
+      if (typeof MOCK_STAFF !== 'undefined' && Array.isArray(MOCK_STAFF) && MOCK_STAFF.length > 0) {
+        return MOCK_STAFF;
+      }
+      return [];
+    }
 
     // Initialize Page
     document.addEventListener("DOMContentLoaded", () => {
@@ -4742,7 +4903,7 @@
 
       if (!dateInput) return;
       if (!dateInput.value) {
-        dateInput.value = new Date().toISOString().split('T')[0];
+        dateInput.value = typeof getLocalTodayStr === 'function' ? getLocalTodayStr() : new Date().toISOString().split('T')[0];
       }
       const selectedDate = dateInput.value;
 
@@ -4943,12 +5104,14 @@
           titleEl.innerText = 'Admin Settings & WhatsApp Alerts';
           subtitleEl.innerText = 'Configure Admin alert phone number, notification templates, and WhatsApp connection';
         } else if (tabId === 'kiosk') {
-          titleEl.innerText = 'Staff Attendance Terminal';
+          titleEl.innerText = 'PIN & OTP Staff Attendance Terminal';
           subtitleEl.innerText = '100% Free digital attendance — select your name, enter PIN, and verify OTP';
+          if (typeof loadTodayAttendance === 'function') loadTodayAttendance();
+          if (typeof renderKioskStaffGrid === 'function') renderKioskStaffGrid();
         } else if (tabId === 'audit-log') {
           titleEl.innerText = 'PIN & OTP Verification Audit Log';
           subtitleEl.innerText = 'Admin timing audit to compare PIN keyed-in time against WhatsApp OTP verification time';
-          loadAuditLog();
+          if (typeof loadAuditLog === 'function') loadAuditLog();
         } else if (tabId === 'leaves') {
           titleEl.innerText = 'Leave Management & Quotas';
           subtitleEl.innerText = 'Official staff leave register, 2-day monthly quotas & automatic salary deduction audit';
@@ -4978,6 +5141,7 @@
         loadTodayAttendance();
         loadTodayActivities();
       } else if (tabId === 'kiosk') {
+        if (typeof loadTodayAttendance === 'function') loadTodayAttendance();
         renderKioskStaffGrid();
       } else if (tabId === 'payroll') {
         generatePayroll();
@@ -5172,7 +5336,7 @@
       const container = document.getElementById('kiosk-staff-grid');
       if (!container) return;
 
-      const staffList = list || allStaffList || (typeof MOCK_STAFF !== 'undefined' ? MOCK_STAFF : []);
+      const staffList = (list !== null && Array.isArray(list)) ? list : getEffectiveStaffList();
       if (!staffList || staffList.length === 0) {
         container.innerHTML = `<div class="col-span-full p-8 text-center text-slate-400 text-sm">No staff members found.</div>`;
         return;
@@ -5253,78 +5417,69 @@
 
         return `
           <div onclick="openPinKiosk(${s.id})" 
-            class="group p-4 rounded-2xl border ${borderClass} ${bgClass} shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between select-none">
-            <div class="flex items-start gap-3">
-              <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0 group-hover:scale-105 transition-transform">
-                ${initials}
+            class="group p-5 rounded-2xl border ${borderClass} ${bgClass} shadow-xs hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between select-none">
+            
+            <div class="space-y-3">
+              <!-- TOP: Avatar + Name + Staff ID -->
+              <div class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0F172A] to-slate-800 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+                  ${initials}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center justify-between gap-1">
+                    <h4 class="font-extrabold text-base text-slate-900 truncate group-hover:text-[#156D38] transition-colors">${s.name}</h4>
+                    <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">#${s.id}</span>
+                  </div>
+                  <p class="text-xs text-slate-500 font-medium truncate mt-0.5">${role}</p>
+                </div>
               </div>
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center justify-between gap-1">
-                  <h4 class="font-extrabold text-sm text-slate-900 truncate group-hover:text-emerald-700 transition-colors">${s.name}</h4>
-                  <span class="text-[10px] font-mono text-slate-400">#${s.id}</span>
-                </div>
-                <p class="text-xs text-slate-500 truncate mt-0.5">${role}</p>
-                <div class="mt-2">
-                  ${statusBadge}
-                </div>
+
+              <!-- MIDDLE: Status Pill -->
+              <div>
+                ${statusBadge}
               </div>
             </div>
-            
-            <!-- DYNAMIC 1-CLICK BUTTONS -->
-            <div class="mt-3.5 pt-2.5 border-t border-slate-100 grid grid-cols-2 gap-2" onclick="event.stopPropagation()">
-              <!-- Check-IN Button -->
-              ${isOnLeave ? `
-                <button type="button" disabled
-                  class="w-full py-2 px-2 rounded-xl font-bold text-xs bg-amber-100/70 text-amber-800 border border-amber-300/80 opacity-60 cursor-not-allowed flex items-center justify-center gap-1.5 select-none" 
-                  title="Staff is on approved leave today: ${leaveReason}">
-                  <i data-lucide="sun" class="w-3.5 h-3.5 text-amber-700"></i>
-                  <span>On Leave</span>
-                </button>
-              ` : isCheckedIn ? `
-                <button type="button" disabled
-                  class="w-full py-2 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200 opacity-35 cursor-not-allowed flex items-center justify-center gap-1.5 select-none" 
-                  title="Staff already Checked IN">
-                  <i data-lucide="check" class="w-3.5 h-3.5 text-slate-400"></i>
-                  <span>Already IN</span>
-                </button>
-              ` : isCompleted ? `
-                <button type="button" onclick="openPinKioskWithAction(${s.id}, 'IN')" 
-                  class="w-full py-2 px-2 rounded-xl font-bold text-xs bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center justify-center gap-1.5 transition-all cursor-pointer" 
-                  title="Re-punch Check-IN">
-                  <i data-lucide="log-in" class="w-3.5 h-3.5 text-emerald-600"></i>
-                  <span>Re-IN</span>
-                </button>
-              ` : `
-                <button type="button" onclick="openPinKioskWithAction(${s.id}, 'IN')" 
-                  class="w-full py-2 px-2 rounded-xl font-black text-xs bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer" 
-                  title="Check-IN">
-                  <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                  <span>Check-IN</span>
-                </button>
-              `}
 
-              <!-- Check-OUT Button -->
+            <!-- BOTTOM: 1-Click Action Buttons or Completed Status Banner -->
+            <div class="mt-4 pt-3 border-t border-slate-100" onclick="event.stopPropagation()">
               ${isOnLeave ? `
-                <button type="button" disabled
-                  class="w-full py-2 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200/80 opacity-35 cursor-not-allowed flex items-center justify-center gap-1.5 select-none" 
-                  title="Staff on leave">
-                  <i data-lucide="log-out" class="w-3.5 h-3.5 text-slate-400"></i>
-                  <span>Check-OUT</span>
-                </button>
-              ` : isCheckedIn ? `
-                <button type="button" onclick="openPinKioskWithAction(${s.id}, 'OUT')" 
-                  class="w-full py-2 px-2 rounded-xl font-black text-xs bg-blue-600 hover:bg-blue-700 active:scale-95 text-white ring-2 ring-blue-500/80 ring-offset-1 flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer" 
-                  title="Click to Check-OUT">
-                  <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
-                  <span>Check-OUT</span>
-                </button>
+                <div class="w-full py-2.5 px-3 rounded-xl font-bold text-xs bg-amber-50 text-amber-900 border border-amber-200 flex items-center justify-center gap-1.5 select-none">
+                  <span>🏖️ On Approved Leave</span>
+                </div>
+              ` : isCompleted ? `
+                <div class="w-full py-2.5 px-3 rounded-xl font-bold text-xs bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center gap-1.5 select-none shadow-2xs">
+                  <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                  <span>Shift Completed (Duty Finished)</span>
+                </div>
               ` : `
-                <button type="button" disabled
-                  class="w-full py-2 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200/80 opacity-35 cursor-not-allowed flex items-center justify-center gap-1.5 select-none" 
-                  title="Check-IN required before Check-OUT">
-                  <i data-lucide="log-out" class="w-3.5 h-3.5 text-slate-400"></i>
-                  <span>Check-OUT</span>
-                </button>
+                <div class="grid grid-cols-2 gap-2">
+                  <!-- Check-IN Button -->
+                  ${isCheckedIn ? `
+                    <button type="button" disabled
+                      class="w-full py-2.5 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200 opacity-40 cursor-not-allowed flex items-center justify-center gap-1 select-none">
+                      <span>Already IN</span>
+                    </button>
+                  ` : `
+                    <button type="button" onclick="openPinKioskWithAction(${s.id}, 'IN')" 
+                      class="w-full py-2.5 px-2 rounded-xl font-black text-xs bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer">
+                      <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                      <span>Check-IN</span>
+                    </button>
+                  `}
+
+                  <!-- Check-OUT Button -->
+                  ${isCheckedIn ? `
+                    <button type="button" onclick="openPinKioskWithAction(${s.id}, 'OUT')" 
+                      class="w-full py-2.5 px-2 rounded-xl font-black text-xs bg-sky-600 hover:bg-sky-700 active:scale-95 text-white ring-2 ring-sky-500/80 ring-offset-1 flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer">
+                      <span>Check-OUT</span>
+                    </button>
+                  ` : `
+                    <button type="button" disabled
+                      class="w-full py-2.5 px-2 rounded-xl font-bold text-xs bg-slate-100 text-slate-400 border border-slate-200/80 opacity-40 cursor-not-allowed flex items-center justify-center gap-1 select-none">
+                      <span>Check-OUT</span>
+                    </button>
+                  `}
+                </div>
               `}
             </div>
           </div>
@@ -5340,7 +5495,7 @@
         return;
       }
       const q = query.toLowerCase().trim();
-      const staffList = allStaffList || (typeof MOCK_STAFF !== 'undefined' ? MOCK_STAFF : []);
+      const staffList = getEffectiveStaffList();
       const filtered = staffList.filter(s => 
         (s.name && s.name.toLowerCase().includes(q)) ||
         (s.designation && s.designation.toLowerCase().includes(q)) ||
@@ -5355,26 +5510,33 @@
       const btnIn = document.getElementById('btn-action-in');
       const btnOut = document.getElementById('btn-action-out');
       const hintText = document.getElementById('kiosk-action-hint-text');
+      const hintBox = document.getElementById('kiosk-action-hint');
 
       if (action === 'IN') {
         if (btnIn) {
-          btnIn.className = "py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-sm bg-emerald-600 text-white cursor-pointer";
+          btnIn.className = "py-3 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-md bg-[#156D38] text-white cursor-pointer active:scale-95";
         }
         if (btnOut) {
-          btnOut.className = "py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900 cursor-pointer";
+          btnOut.className = "py-3 px-4 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 cursor-pointer active:scale-95";
         }
         if (hintText) {
-          hintText.innerHTML = "Check-IN: 4-digit code <strong>Admin WhatsApp</strong> par send hoga.";
+          hintText.innerHTML = "Check-IN: 4-digit OTP <strong>Admin WhatsApp</strong> par send hoga.";
+        }
+        if (hintBox) {
+          hintBox.className = "text-[11px] font-semibold text-emerald-800 mt-2.5 flex items-center gap-2 bg-emerald-50 px-3.5 py-2 rounded-xl border border-emerald-200/80";
         }
       } else {
         if (btnOut) {
-          btnOut.className = "py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-sm bg-blue-600 text-white cursor-pointer";
+          btnOut.className = "py-3 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all shadow-md bg-blue-600 text-white cursor-pointer active:scale-95";
         }
         if (btnIn) {
-          btnIn.className = "py-2.5 px-3 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900 cursor-pointer";
+          btnIn.className = "py-3 px-4 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 cursor-pointer active:scale-95";
         }
         if (hintText) {
-          hintText.innerHTML = "Check-OUT: 4-digit code <strong>Staff registered WhatsApp</strong> par send hoga.";
+          hintText.innerHTML = "Check-OUT: 4-digit OTP <strong>Staff registered WhatsApp</strong> par send hoga.";
+        }
+        if (hintBox) {
+          hintBox.className = "text-[11px] font-semibold text-blue-800 mt-2.5 flex items-center gap-2 bg-blue-50 px-3.5 py-2 rounded-xl border border-blue-200/80";
         }
       }
     }
@@ -5389,8 +5551,8 @@
     }
 
     function openPinKiosk(staffId) {
-      const staffList = allStaffList || (typeof MOCK_STAFF !== 'undefined' ? MOCK_STAFF : []);
-      const staff = staffList.find(s => s.id === staffId);
+      const staffList = getEffectiveStaffList();
+      const staff = staffList.find(s => Number(s.id) === Number(staffId));
       if (!staff) return;
 
       currentKioskStaff = staff;
@@ -5513,63 +5675,23 @@
         const dot = document.getElementById(`pin-dot-${i}`);
         if (!dot) continue;
         if (i <= pinInputBuffer.length) {
-          dot.className = "w-3.5 h-3.5 rounded-full border-2 border-indigo-600 bg-indigo-600 scale-110 transition-all duration-150";
+          dot.innerText = pinInputBuffer[i - 1];
+          dot.className = "w-14 h-14 rounded-2xl border-2 border-[#156D38] bg-emerald-50 flex items-center justify-center text-2xl font-black text-[#156D38] shadow-sm scale-105 transition-all duration-150";
         } else {
-          dot.className = "w-3.5 h-3.5 rounded-full border-2 border-slate-300 bg-white transition-all duration-150";
+          dot.innerText = "";
+          dot.className = "w-14 h-14 rounded-2xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center text-2xl font-black text-slate-400 transition-all duration-150 shadow-xs";
         }
       }
     }
 
-    // Submit PIN — for OUT: direct checkout (no OTP), for IN: request WhatsApp OTP
+    // Submit PIN — unified for both IN and OUT: requests WhatsApp OTP link to Admin
     async function submitPinForOtp() {
       if (!currentKioskStaff || pinInputBuffer.length !== 4) return;
 
       const errText = document.getElementById('pin-error-text');
       const action = currentKioskAction || 'IN';
 
-      // ── CHECK-OUT: Step 1 — verify PIN only, do NOT record punch yet ─────────
-      if (action === 'OUT') {
-        errText.innerText = 'PIN verify ho rahi hai...';
-        errText.className = 'text-xs font-bold text-sky-600 animate-pulse';
-
-        try {
-          const res = await fetch('/api/attendance/verify-checkout-pin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ staff_id: currentKioskStaff.id, pin: pinInputBuffer })
-          });
-          const data = await res.json();
-          if (res.ok && data.success) {
-            // PIN is correct — show mandatory WhatsApp notify screen, DON'T record yet
-            showCheckoutNotifyStage(data);
-            return;
-          } else {
-            errText.innerText = data.detail || 'Ghalat PIN! Barah-e-karam dobara enter karein.';
-            errText.className = 'text-xs font-bold text-rose-600';
-            pinInputBuffer = '';
-            updatePinDots();
-            return;
-          }
-        } catch (err) {
-          // Offline fallback: verify PIN locally
-          const savedPin = String(currentKioskStaff.pin || (1000 + currentKioskStaff.id));
-          if (pinInputBuffer !== savedPin && pinInputBuffer !== '1234') {
-            errText.innerText = 'Ghalat PIN! Barah-e-karam apni 4-digit secret PIN sahi darj karein.';
-            errText.className = 'text-xs font-bold text-rose-600';
-            pinInputBuffer = '';
-            updatePinDots();
-            return;
-          }
-          const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          const adminPhone = (localStorage.getItem('mumtaz_admin_whatsapp') || '0300-1234567').replace(/[^0-9]/g,'');
-          const waLink = `https://wa.me/${adminPhone}?text=MUMTAZ%20PHARMACY%0A%E2%9C%85%20${encodeURIComponent(currentKioskStaff.name)}%20ne%20${encodeURIComponent(timeNow)}%20par%20Check-OUT%20kiya%20hai.%0APIN%20verified%20%E2%80%94%20attendance%20update%20ho%20rahi%20hai.`;
-          showCheckoutNotifyStage({ success: true, pin_verified: true, staff_id: currentKioskStaff.id, staff_name: currentKioskStaff.name, time: timeNow, admin_wa_link: waLink, admin_phone_masked: '03**-****567' });
-          return;
-        }
-      }
-
-      // ── CHECK-IN: PIN verified → WhatsApp OTP dispatched to Admin ───────────
-      errText.innerText = 'Verifying PIN & dispatching WhatsApp code...';
+      errText.innerText = 'PIN verify ho rahi hai aur WhatsApp code bheja ja raha hai...';
       errText.className = 'text-xs font-bold text-indigo-600 animate-pulse';
 
       // Always call the real backend API to verify PIN against database and use saved Admin WhatsApp
@@ -5611,7 +5733,7 @@
         return;
       }
 
-      const adminPhone = (document.getElementById('setting-admin-phone')?.value || localStorage.getItem('mumtaz_admin_whatsapp') || '0300-1234567').trim();
+      const adminPhone = (document.getElementById('setting-admin-phone')?.value || localStorage.getItem('mumtaz_admin_whatsapp') || '03166868169').trim();
       const maskedAdmin = adminPhone.length >= 7 ? `${adminPhone.slice(0, 4)}-***-${adminPhone.slice(-4)}` : adminPhone;
 
       activeOtpData = {
@@ -5900,7 +6022,7 @@
           rosterEntry.status = statusNow;
         } else {
           rosterEntry.time_out = timeNow;
-          rosterEntry.status = 'COMPLETED';
+          rosterEntry.status = statusNow || 'SHORT_HOURS';
         }
       }
 
@@ -5914,7 +6036,7 @@
             mockItem.status = statusNow;
           } else {
             mockItem.time_out = timeNow;
-            mockItem.status = 'COMPLETED';
+            mockItem.status = statusNow || 'SHORT_HOURS';
           }
         }
       }
@@ -6058,8 +6180,10 @@
         title.innerHTML = `🟢 Checked IN Successfully!`;
         subtitle.innerHTML = `Welcome <strong>${data.staff_name}</strong> • Time: <strong>${data.time}</strong> • Status: <strong>${data.status}</strong>`;
       } else {
-        title.innerHTML = `🔵 Checked OUT Successfully!`;
-        subtitle.innerHTML = `Goodbye <strong>${data.staff_name}</strong> • Time: <strong>${data.time}</strong> • Full shift logged.`;
+        const isShort = data.status === 'SHORT_HOURS' || (data.short_minutes && data.short_minutes > 0);
+        const statusLabel = isShort ? '⚠️ Short Hours Logged' : '✅ Full Shift Completed';
+        title.innerHTML = `🔵 Checked OUT (${isShort ? 'Short Hours' : 'Completed'})!`;
+        subtitle.innerHTML = `Goodbye <strong>${data.staff_name}</strong> • Time: <strong>${data.time}</strong> • <strong>${statusLabel}</strong>`;
       }
 
       // Add to punches stream
@@ -6112,13 +6236,18 @@
         const localPhone = localStorage.getItem('mumtaz_admin_whatsapp');
         const localName = localStorage.getItem('mumtaz_admin_name');
         const localExpiry = localStorage.getItem('mumtaz_otp_expiry');
+        const localMasterPin = localStorage.getItem('mumtaz_admin_master_pin');
 
-        const finalPhone = s.admin_whatsapp_number || localPhone || '0300-1234567';
+        const finalPhone = s.admin_whatsapp_number || localPhone || '03166868169';
         const finalName = s.admin_name || localName || 'Pharmacy Owner / Manager';
         const finalExpiry = s.otp_expiry_minutes || localExpiry || '5';
+        const finalMasterPin = s.admin_master_pin || localMasterPin || '1370';
 
         const phoneEl = document.getElementById('setting-admin-phone');
         if (phoneEl) phoneEl.value = finalPhone;
+
+        const masterPinEl = document.getElementById('setting-admin-master-pin');
+        if (masterPinEl) masterPinEl.value = finalMasterPin;
 
         const nameEl = document.getElementById('setting-admin-name');
         if (nameEl) nameEl.value = finalName;
@@ -6136,6 +6265,7 @@
     async function saveAdminSettings(event) {
       if (event) event.preventDefault();
       const phone = document.getElementById('setting-admin-phone').value.trim();
+      const masterPin = document.getElementById('setting-admin-master-pin').value.trim();
       const name = document.getElementById('setting-admin-name').value.trim();
       const expiry = document.getElementById('setting-otp-expiry').value.trim();
 
@@ -6143,9 +6273,14 @@
         alert("Barah-e-karam Admin WhatsApp number enter karein.");
         return;
       }
+      if (!masterPin || masterPin.length < 4) {
+        alert("Barah-e-karam 4-digit Admin Master PIN enter karein.");
+        return;
+      }
 
       // Always save to localStorage immediately for 100% persistent frontend backup
       localStorage.setItem('mumtaz_admin_whatsapp', phone);
+      localStorage.setItem('mumtaz_admin_master_pin', masterPin);
       localStorage.setItem('mumtaz_admin_name', name);
       localStorage.setItem('mumtaz_otp_expiry', expiry);
 
@@ -6155,13 +6290,14 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             admin_whatsapp_number: phone,
+            admin_master_pin: masterPin,
             admin_name: name,
             otp_expiry_minutes: expiry
           })
         });
         const data = await res.json();
         if (data.success) {
-          alert("Mubarak! Admin WhatsApp number (" + phone + ") aur settings kamyabi se save ho gayi hain!");
+          alert("Mubarak! Admin Master PIN (" + masterPin + ") aur settings kamyabi se save ho gayi hain!");
           await loadSettingsView();
         } else {
           alert("Error saving settings: " + (data.detail || "Unknown error"));
@@ -6291,7 +6427,8 @@
         let data;
         let fetched = false;
         try {
-          const res = await fetch('/api/attendance/today');
+          const todayStr = getLocalTodayStr();
+          const res = await fetch(`/api/attendance/today?date=${todayStr}`);
           if (res.ok) {
             data = await res.json();
             fetched = true;
@@ -6452,73 +6589,123 @@
       if (!tbody) return;
 
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400 font-medium">No staff members found in this category.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400 font-medium">No staff members found in this category.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = filtered.map(item => {
-        let dutyBadge = '';
         const isCheckedIn = item.time_in && !item.time_out;
         const isCompleted = item.time_in && item.time_out;
+        const st = item.status || 'ON_TIME';
 
+        // 1. Time Column
+        const timeInFormatted = formatTimeAMPM(item.time_in);
+        const timeOutFormatted = formatTimeAMPM(item.time_out);
+        let timeLocHtml = '';
         if (isCheckedIn) {
-          dutyBadge = `
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-2xs">
-              <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
-              <span>🟢 ON DUTY</span>
-            </span>
+          timeLocHtml = `
+            <div class="flex flex-col gap-0.5">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 w-max">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                <span>IN: ${timeInFormatted || 'Checked In'}</span>
+              </span>
+            </div>
           `;
-        } else if (isCompleted || item.status === 'ON_TIME' || item.status === 'PRESENT') {
-          const workedH = Math.floor((item.worked_minutes || 0) / 60);
-          const workedM = (item.worked_minutes || 0) % 60;
-          dutyBadge = `
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
-              <i data-lucide="check" class="w-3.5 h-3.5 text-blue-600"></i>
-              <span>✅ Completed: ${workedH}h ${workedM}m</span>
-            </span>
+        } else if (isCompleted) {
+          timeLocHtml = `
+            <div class="text-xs font-mono font-medium text-slate-700 leading-tight">
+              <div><strong class="text-emerald-700 font-semibold">IN:</strong> ${timeInFormatted}</div>
+              <div><strong class="text-slate-500 font-semibold">OUT:</strong> ${timeOutFormatted}</div>
+            </div>
           `;
-        } else if (item.status === 'SHORT_HOURS') {
-          const workedH = Math.floor((item.worked_minutes || 0) / 60);
-          const workedM = (item.worked_minutes || 0) % 60;
-          const reqH = item.daily_hours || 8;
-          dutyBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">SHORT: ${workedH}h ${workedM}m / ${reqH}h</span>`;
-        } else if (item.status === 'HALF_DAY') {
-          dutyBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">HALF DAY</span>`;
-        } else if (item.status === 'LEAVE') {
-          dutyBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200" title="${item.leave_reason || 'Leave'}">🏖️ On Leave</span>`;
-        } else if (item.status === 'ABSENT') {
-          dutyBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-200">ABSENT</span>`;
+        } else if (st === 'LEAVE') {
+          timeLocHtml = `<span class="text-xs font-semibold text-blue-700 bg-blue-50/80 px-2 py-0.5 rounded border border-blue-200">🏖️ On Leave</span>`;
+        } else if (st === 'ABSENT') {
+          timeLocHtml = `<span class="text-xs font-semibold text-rose-700 bg-rose-50/80 px-2 py-0.5 rounded border border-rose-200">❌ Absent Today</span>`;
         } else {
-          dutyBadge = `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200">⏳ Not Arrived</span>`;
+          timeLocHtml = `<span class="text-xs text-slate-400 font-mono">—</span>`;
         }
 
-        // Quick 1-Click Action Buttons for Row
+        // 2. Worked Hours Column (Clean semibold text)
+        const workedMins = item.worked_minutes || 0;
+        const workedH = Math.floor(workedMins / 60);
+        const workedM = workedMins % 60;
+        const reqH = item.daily_hours || 8;
+        const reqMins = reqH * 60;
+
+        let hoursHtml = '';
+        if (isCompleted || (item.time_in && item.time_out)) {
+          if (workedMins >= reqMins) {
+            hoursHtml = `
+              <span class="inline-block font-semibold text-xs font-mono text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                🟢 ${workedH}h ${workedM}m
+              </span>
+            `;
+          } else {
+            hoursHtml = `
+              <span class="inline-block font-semibold text-xs font-mono text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200" title="Worked ${workedH}h ${workedM}m of ${reqH}h required">
+                🔴 ${workedH}h ${workedM}m
+              </span>
+            `;
+          }
+        } else if (isCheckedIn) {
+          hoursHtml = `
+            <span class="inline-block font-semibold text-xs font-mono text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+              ⏳ Running (${workedH}h ${workedM}m)
+            </span>
+          `;
+        } else {
+          hoursHtml = `<span class="text-xs font-mono text-slate-400">0h 0m</span>`;
+        }
+
+        // 3. Status Column with Clean Admin Decider Select
+        let statusSelectStyle = 'bg-slate-50 text-slate-700 border-slate-200 hover:border-slate-300';
+        if (st === 'ON_TIME' || st === 'PRESENT' || (isCompleted && workedMins >= reqMins)) {
+          statusSelectStyle = 'bg-emerald-50/80 text-emerald-800 border-emerald-300/80 font-semibold';
+        } else if (st === 'SHORT_HOURS') {
+          statusSelectStyle = 'bg-amber-50/80 text-amber-900 border-amber-300/80 font-semibold';
+        } else if (st === 'HALF_DAY') {
+          statusSelectStyle = 'bg-purple-50/80 text-purple-900 border-purple-300/80 font-semibold';
+        } else if (st === 'LATE') {
+          statusSelectStyle = 'bg-amber-50/80 text-amber-800 border-amber-300/80 font-semibold';
+        } else if (st === 'ABSENT') {
+          statusSelectStyle = 'bg-rose-50/80 text-rose-800 border-rose-300/80 font-semibold';
+        } else if (st === 'LEAVE') {
+          statusSelectStyle = 'bg-blue-50/80 text-blue-800 border-blue-300/80 font-semibold';
+        }
+
+        const statusDeciderHtml = `
+          <select onchange="quickChangeStatus(${item.id}, this.value, '${item.time_in || ''}', '${item.time_out || ''}')" 
+                  class="text-xs font-semibold rounded-lg px-2.5 py-1.5 border cursor-pointer outline-none transition shadow-2xs ${statusSelectStyle}"
+                  title="Admin Decider: Click to change attendance status">
+            <option value="ON_TIME" ${st === 'ON_TIME' || st === 'PRESENT' ? 'selected' : ''}>✅ PRESENT</option>
+            <option value="SHORT_HOURS" ${st === 'SHORT_HOURS' ? 'selected' : ''}>⚠️ SHORT HOURS</option>
+            <option value="HALF_DAY" ${st === 'HALF_DAY' ? 'selected' : ''}>🌗 HALF DAY</option>
+            <option value="LATE" ${st === 'LATE' ? 'selected' : ''}>⏰ LATE</option>
+            <option value="ABSENT" ${st === 'ABSENT' ? 'selected' : ''}>❌ ABSENT</option>
+            <option value="LEAVE" ${st === 'LEAVE' ? 'selected' : ''}>🏖️ LEAVE</option>
+          </select>
+        `;
+
+        // 4. Action Buttons (Clean & senza Leave button)
         let actionButtons = '';
         if (isCheckedIn) {
           actionButtons = `
             <button type="button" onclick="openPinKioskWithAction(${item.id}, 'OUT'); switchTab('kiosk');" 
-              class="text-xs bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-2.5 py-1 rounded-lg font-extrabold shadow-2xs transition cursor-pointer" title="Check-OUT">
+              class="text-xs bg-blue-600 hover:bg-blue-700 active:scale-95 text-white px-2.5 py-1 rounded-lg font-bold shadow-2xs transition cursor-pointer" title="Check-OUT">
               Check-OUT
             </button>
           `;
-        } else if (!item.time_in && item.status !== 'LEAVE') {
+        } else if (!item.time_in && st !== 'LEAVE') {
           actionButtons = `
             <button type="button" onclick="openPinKioskWithAction(${item.id}, 'IN'); switchTab('kiosk');" 
-              class="text-xs bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-2.5 py-1 rounded-lg font-extrabold shadow-2xs transition cursor-pointer" title="Check-IN">
+              class="text-xs bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white px-2.5 py-1 rounded-lg font-bold shadow-2xs transition cursor-pointer" title="Check-IN">
               Check-IN
             </button>
           `;
         }
 
-        const leaveActionBtn = item.status === 'LEAVE'
-          ? `<span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-bold border border-blue-200 inline-flex items-center gap-1" title="Leave approved for today"><i data-lucide="check" class="w-3.5 h-3.5 text-blue-600"></i> Leave</span>`
-          : `<button onclick="markApprovedLeave(${item.id})" class="text-xs bg-emerald-50 hover:bg-emerald-100 text-[#156D38] px-2.5 py-1 rounded-md font-bold transition-colors cursor-pointer">Leave</button>`;
-
         const initials = getInitials(item.name);
-        const timeInFormatted = formatTimeAMPM(item.time_in);
-        const timeOutFormatted = formatTimeAMPM(item.time_out);
-        const targetOutFormatted = formatTimeAMPM(item.target_out);
-        const dutyHours = item.daily_hours || 8;
 
         return `
           <tr class="hover:bg-slate-50/80 transition-colors">
@@ -6533,27 +6720,14 @@
                 </div>
               </div>
             </td>
-            <td class="py-3.5 px-4 text-slate-600">
-              <div class="font-bold text-slate-800 text-xs">${dutyHours} Hours Duty</div>
-            </td>
             <td class="py-3.5 px-4">
-              ${timeInFormatted ? `
-                <div class="font-mono font-bold text-emerald-700 text-xs">${timeInFormatted}</div>
-              ` : `<span class="text-xs text-slate-400 italic">Not Checked In</span>`}
-            </td>
-            <td class="py-3.5 px-4">
-              ${timeOutFormatted ? `
-                <div class="font-mono font-bold text-slate-700 text-xs">${timeOutFormatted}</div>
-              ` : (isCheckedIn ? `
-                <span class="text-[11px] font-extrabold text-emerald-700 flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                  <span>Currently On Duty</span>
-                </span>
-                ${targetOutFormatted ? `<div class="text-[10px] text-slate-500 font-mono">Target: ${targetOutFormatted}</div>` : ''}
-              ` : `<span class="text-xs text-slate-400">—</span>`)}
+              ${timeLocHtml}
             </td>
             <td class="py-3.5 px-4 text-center">
-              ${dutyBadge}
+              ${hoursHtml}
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              ${statusDeciderHtml}
             </td>
             <td class="py-3.5 px-4 text-right">
               <div class="flex items-center justify-end gap-1.5">
@@ -6562,7 +6736,6 @@
                   class="text-xs bg-slate-100 hover:bg-slate-200 text-[#0F172A] px-2.5 py-1 rounded-md font-bold transition-colors cursor-pointer">
                   Edit
                 </button>
-                ${leaveActionBtn}
               </div>
             </td>
           </tr>
@@ -6806,6 +6979,35 @@
       document.getElementById('attendance-override-modal').classList.add('hidden');
     }
 
+    async function quickChangeStatus(staffId, newStatus, timeIn, timeOut) {
+      const today = typeof getLocalTodayStr === 'function' ? getLocalTodayStr() : new Date().toISOString().split('T')[0];
+      try {
+        const res = await fetch('/api/attendance/override', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            staff_id: staffId,
+            date: today,
+            time_in: timeIn || null,
+            time_out: timeOut || null,
+            status: newStatus,
+            notes: `Admin decider set status to ${newStatus}`
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          await loadTodayAttendance();
+          if (typeof loadMonthlyReport === 'function') loadMonthlyReport();
+          if (typeof renderKioskStaffGrid === 'function') renderKioskStaffGrid();
+          if (typeof generatePayroll === 'function') generatePayroll();
+        } else {
+          alert(data.detail || "Status update failed");
+        }
+      } catch (err) {
+        console.error("Quick status update error:", err);
+      }
+    }
+
     async function submitAttendanceOverride(e) {
       e.preventDefault();
       const staffId = parseInt(document.getElementById('override-staff-id').value);
@@ -6831,9 +7033,11 @@
         const data = await res.json();
         if (data.success) {
           closeManualAttendanceModal();
-          loadTodayAttendance();
-          generatePayroll();
-          alert("Attendance record updated successfully!");
+          await loadTodayAttendance();
+          if (typeof loadMonthlyReport === 'function') loadMonthlyReport();
+          if (typeof renderKioskStaffGrid === 'function') renderKioskStaffGrid();
+          if (typeof generatePayroll === 'function') generatePayroll();
+          alert("Attendance record updated successfully across all views!");
         } else {
           alert(data.detail || "Error updating attendance");
         }
@@ -7181,43 +7385,62 @@
     }
     const loadPayroll = generatePayroll;
 
-    // 7. Payslip Modal
+    // 7. Payslip Modal with Integrated Date Range Calculator
     let currentOpenSlipStaffId = null;
-    function openSlipModal(staffId) {
+    let currentSlipCustomData = null;
+
+    async function openSlipModal(staffId) {
       try {
         currentOpenSlipStaffId = staffId;
-        const p = (currentPayrollData || []).find(x => x.staff_id === staffId);
-        if (!p) {
-          console.warn("Payroll record not found for staff ID:", staffId);
+        currentSlipCustomData = null;
+
+        const staff = (staffList || []).find(s => Number(s.id) === Number(staffId)) || (currentPayrollData || []).find(p => Number(p.staff_id) === Number(staffId));
+        if (!staff) {
+          console.warn("Staff record not found for ID:", staffId);
           return;
         }
 
         const monthSelect = document.getElementById('payroll-month');
-        const monthName = (monthSelect && monthSelect.selectedOptions && monthSelect.selectedOptions[0])
-          ? monthSelect.selectedOptions[0].text.split(' ')[0]
-          : 'Current Month';
+        const monthVal = monthSelect ? String(monthSelect.value).padStart(2, '0') : String(new Date().getMonth() + 1).padStart(2, '0');
         const yearVal = document.getElementById('payroll-year')?.value || new Date().getFullYear();
+
+        let defaultFrom = `${yearVal}-${monthVal}-01`;
+        if (staff.joining_date && staff.joining_date > defaultFrom) {
+          defaultFrom = staff.joining_date;
+        }
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        const fromInput = document.getElementById('slip-from-date');
+        const toInput = document.getElementById('slip-to-date');
+        if (fromInput) fromInput.value = defaultFrom;
+        if (toInput) toInput.value = todayStr;
 
         const setTxt = (id, val) => {
           const el = document.getElementById(id);
           if (el) el.innerText = val;
         };
 
-        setTxt('slip-month-label', `${monthName} ${yearVal}`);
-        setTxt('slip-name', p.staff_name || '');
-        setTxt('slip-role', p.designation || p.role || '');
-        setTxt('slip-daily', `Rs. ${p.daily_wage ? p.daily_wage.toFixed(2) : '0.00'}`);
-        setTxt('slip-duty', `${p.daily_hours || 8} hrs/day`);
-        setTxt('slip-hourly', `Rs. ${(p.hourly_wage || (p.daily_wage ? p.daily_wage / (p.daily_hours || 8) : 0)).toFixed(2)}`);
-        setTxt('slip-free-leaves', `${p.allowed_leaves !== undefined ? p.allowed_leaves : 2} / month`);
-        setTxt('slip-days', `${p.days_in_month || 30} Days`);
+        const staffName = staff.staff_name || staff.name || '';
+        const staffRole = staff.designation || staff.role || '';
+        const monthlySalary = staff.monthly_salary || 0;
+        const dailyWage = staff.daily_wage || (monthlySalary ? monthlySalary / 30 : 0);
+        const hourlyWage = staff.hourly_wage || (dailyWage ? dailyWage / (staff.daily_hours || 8) : 0);
 
+        setTxt('slip-name', staffName);
+        setTxt('slip-role', staffRole);
+        setTxt('slip-monthly', `Rs. ${monthlySalary.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+        setTxt('slip-daily', `Rs. ${dailyWage.toFixed(2)}`);
+        setTxt('slip-duty', `${staff.daily_hours || 8} hrs/day`);
+        setTxt('slip-hourly', `Rs. ${hourlyWage.toFixed(2)}`);
+        setTxt('slip-free-leaves', `${staff.allowed_leaves !== undefined ? staff.allowed_leaves : 2} / month`);
+
+        const p = (currentPayrollData || []).find(x => Number(x.staff_id) === Number(staffId));
         const badgeEl = document.getElementById('slip-payment-badge');
         const dateEl = document.getElementById('slip-payment-date-label');
         const payBtn = document.getElementById('slip-pay-btn');
 
         if (badgeEl) {
-          if (p.status === 'PAID') {
+          if (p && p.status === 'PAID') {
             badgeEl.className = 'inline-block text-[11px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200';
             badgeEl.innerText = 'PAID';
             if (dateEl) {
@@ -7236,101 +7459,114 @@
           }
         }
 
-        const grossSalary = parseFloat(p.basic_salary || 0);
-        const absentCut = parseFloat(p.absent_cut || 0);
-        const extraLeaveCut = parseFloat(p.extra_leave_cut || 0);
-        const extraHalfDayCut = parseFloat(p.extra_half_day_cut || 0);
-        const totalLeavesCut = absentCut + extraLeaveCut + extraHalfDayCut;
-        const advancesTotal = parseFloat(p.advances_deducted || 0);
-        const netPayable = parseFloat(p.net_payable || 0);
-
-        // 1. Gross Salary
-        setTxt('slip-basic', `Rs. ${grossSalary.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
-        if (document.getElementById('slip-gross-desc')) {
-          setTxt('slip-gross-desc', `Full Monthly Pay (${p.days_in_month || 30} Days @ Rs. ${p.daily_wage ? p.daily_wage.toFixed(2) : '0.00'}/day)`);
-        }
-
-        // 2. Leaves Deduction
-        let leaveParts = [];
-        if (p.absent_days && p.absent_days > 0) {
-          leaveParts.push(`${p.absent_days} Absent Day${p.absent_days > 1 ? 's' : ''}`);
-        }
-        if (p.extra_leaves && p.extra_leaves > 0) {
-          leaveParts.push(`${p.extra_leaves} Extra Leave${p.extra_leaves > 1 ? 's' : ''}`);
-        }
-        if (p.extra_half_days && p.extra_half_days > 0) {
-          leaveParts.push(`${p.extra_half_days} Extra Half Day${p.extra_half_days > 1 ? 's' : ''}`);
-        }
-
-        const leavesDetailText = totalLeavesCut > 0
-          ? `${leaveParts.join(' • ')} (Cut beyond ${p.allowed_leaves !== undefined ? p.allowed_leaves : 2} free leaves)`
-          : `No deduction (All within ${p.allowed_leaves !== undefined ? p.allowed_leaves : 2} allowed free quota)`;
-
-        setTxt('slip-leave-desc', leavesDetailText);
-        setTxt('slip-leave', totalLeavesCut > 0
-          ? `- Rs. ${totalLeavesCut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
-          : `- Rs. 0.00`);
-
-        // Backward compatibility
-        setTxt('slip-absent-desc', `Absent Deduction (${p.absent_days || 0} days)`);
-        setTxt('slip-absent', `- Rs. ${absentCut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
-
-        // 3. Short Hours Cut (Only if short hours deficit exists)
-        const shRow = document.getElementById('slip-shorthour-row');
-        const shortMins = p.total_short_minutes || 0;
-        const shHours = Math.floor(shortMins / 60);
-        const shRemMins = shortMins % 60;
-        if (shRow) {
-          if (p.short_hours_cut && p.short_hours_cut > 0) {
-            shRow.classList.remove('hidden');
-            setTxt('slip-shorthour-desc', `Short Hours Cut (${shHours}h ${shRemMins}m short @ Rs. ${p.hourly_wage || 0}/hr)`);
-            setTxt('slip-shorthour', `- Rs. ${parseFloat(p.short_hours_cut).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
-          } else {
-            shRow.classList.add('hidden');
-          }
-        }
-
-        // 4. Khata Deduction
-        setTxt('slip-advance', advancesTotal > 0
-          ? `- Rs. ${advancesTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
-          : `- Rs. 0.00`);
-        if (document.getElementById('slip-khata-desc')) {
-          setTxt('slip-khata-desc', advancesTotal > 0
-            ? `${(p.advances_list || []).length} Item(s) — Cash Advances & Medicine Khata`
-            : 'No advances or khata deducted this month');
-        }
-
-        // 5. Net Payable
-        setTxt('slip-net', `Rs. ${netPayable.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
-
-        const advRow = document.getElementById('slip-advances-details-row');
-        const advItems = document.getElementById('slip-advances-items');
-        if (advRow && advItems) {
-          if (p.advances_list && p.advances_list.length > 0) {
-            advRow.classList.remove('hidden');
-            advItems.innerHTML = p.advances_list.map(a => {
-              const typeLabel = a.entry_type === 'MEDICINE_CREDIT' ? 'Medicine Credit' : 'Cash Advance';
-              const reasonText = a.reason ? ` — ${a.reason}` : '';
-              return `
-                <div class="flex justify-between text-slate-700 text-[11px] py-0.5 border-b border-slate-100 last:border-none">
-                  <span>• <strong class="text-slate-800">${a.date} (${typeLabel})</strong>${reasonText}</span>
-                  <span class="font-bold text-rose-600 font-mono">Rs. ${parseFloat(a.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                </div>
-              `;
-            }).join('');
-          } else {
-            advRow.classList.add('hidden');
-            advItems.innerHTML = '';
-          }
-        }
-
         const slipModal = document.getElementById('slip-modal');
         if (slipModal) {
           slipModal.classList.remove('hidden');
         }
+
+        // Dynamically calculate salary for selected date range
+        await recalculateSlipCustomDates();
+
         if (window.lucide) lucide.createIcons();
       } catch (err) {
         console.error("Error opening payslip modal", err);
+      }
+    }
+
+    async function recalculateSlipCustomDates() {
+      if (!currentOpenSlipStaffId) return;
+      const fromDate = document.getElementById('slip-from-date')?.value;
+      const toDate = document.getElementById('slip-to-date')?.value;
+
+      if (!fromDate || !toDate) return;
+
+      try {
+        const res = await fetch(`/api/payroll/calculate-range?staff_id=${currentOpenSlipStaffId}&from_date=${fromDate}&to_date=${toDate}`);
+        const data = await res.json();
+
+        if (res.ok && data.sheet && data.sheet.length > 0) {
+          const p = data.sheet[0];
+          currentSlipCustomData = p;
+
+          const setTxt = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+          };
+
+          setTxt('slip-month-label', `Period: ${p.from_date} to ${p.to_date}`);
+          setTxt('slip-days', `${p.evaluated_working_days || p.days_in_month || 30} Days Evaluated`);
+          setTxt('slip-daily', `Rs. ${p.daily_wage ? p.daily_wage.toFixed(2) : '0.00'}`);
+          setTxt('slip-duty', `${p.daily_hours || 8} hrs/day`);
+          setTxt('slip-hourly', `Rs. ${(p.hourly_wage || 0).toFixed(2)}`);
+
+          const grossSalary = parseFloat(p.earned_base_salary !== undefined ? p.earned_base_salary : p.basic_salary || 0);
+          const absentCut = parseFloat(p.absent_cut || 0);
+          const advancesTotal = parseFloat(p.advances_deducted || 0);
+          const shortCut = parseFloat(p.short_hours_cut || 0);
+          const netPayable = parseFloat(p.net_payable || 0);
+
+          setTxt('slip-basic', `Rs. ${grossSalary.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+          if (document.getElementById('slip-gross-desc')) {
+            setTxt('slip-gross-desc', `Earned Base Pay (${p.evaluated_working_days} Days @ Rs. ${p.daily_wage ? p.daily_wage.toFixed(2) : '0.00'}/day)`);
+          }
+
+          const leavesDetailText = absentCut > 0
+            ? `${p.absent_days || 0} Absent Day${(p.absent_days || 0) > 1 ? 's' : ''} (- Rs. ${absentCut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})})`
+            : `No absent deduction`;
+
+          setTxt('slip-leave-desc', leavesDetailText);
+          setTxt('slip-leave', absentCut > 0
+            ? `- Rs. ${absentCut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+            : `- Rs. 0.00`);
+
+          const shRow = document.getElementById('slip-shorthour-row');
+          const shortMins = p.total_short_minutes || 0;
+          const shHours = Math.floor(shortMins / 60);
+          const shRemMins = shortMins % 60;
+          if (shRow) {
+            if (shortCut > 0) {
+              shRow.classList.remove('hidden');
+              setTxt('slip-shorthour-desc', `Short Hours Cut (${shHours}h ${shRemMins}m short @ Rs. ${(p.hourly_wage || 0).toFixed(2)}/hr)`);
+              setTxt('slip-shorthour', `- Rs. ${shortCut.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+            } else {
+              shRow.classList.add('hidden');
+            }
+          }
+
+          setTxt('slip-advance', advancesTotal > 0
+            ? `- Rs. ${advancesTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+            : `- Rs. 0.00`);
+          if (document.getElementById('slip-khata-desc')) {
+            setTxt('slip-khata-desc', advancesTotal > 0
+              ? `${(p.advances_list || []).length} Item(s) — Cash Advances & Medicine Khata`
+              : 'No advances or khata deducted for selected dates');
+          }
+
+          setTxt('slip-net', `Rs. ${netPayable.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+
+          const advRow = document.getElementById('slip-advances-details-row');
+          const advItems = document.getElementById('slip-advances-items');
+          if (advRow && advItems) {
+            if (p.advances_list && p.advances_list.length > 0) {
+              advRow.classList.remove('hidden');
+              advItems.innerHTML = p.advances_list.map(a => {
+                const typeLabel = a.entry_type === 'MEDICINE_CREDIT' ? 'Medicine Credit' : 'Cash Advance';
+                const reasonText = a.reason ? ` — ${a.reason}` : '';
+                return `
+                  <div class="flex justify-between text-slate-700 text-[11px] py-0.5 border-b border-slate-100 last:border-none">
+                    <span>• <strong class="text-slate-800">${a.date} (${typeLabel})</strong>${reasonText}</span>
+                    <span class="font-bold text-rose-600 font-mono">Rs. ${parseFloat(a.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                  </div>
+                `;
+              }).join('');
+            } else {
+              advRow.classList.add('hidden');
+              advItems.innerHTML = '';
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error recalculating slip custom dates:", err);
       }
     }
 
@@ -7341,25 +7577,29 @@
 
     // 7B. Disburse Salary Modal & Automatic Khata Settlement
     function openDisburseModal(staffId) {
-      const p = currentPayrollData.find(x => x.staff_id === staffId);
+      const p = currentSlipCustomData && currentSlipCustomData.staff_id === staffId 
+        ? currentSlipCustomData 
+        : (currentPayrollData || []).find(x => x.staff_id === staffId);
       if (!p) return;
 
       const monthSelect = document.getElementById('payroll-month');
-      const monthVal = parseInt(monthSelect.value);
-      const yearVal = parseInt(document.getElementById('payroll-year').value);
-      const monthName = monthSelect.selectedOptions[0].text.split(' ')[0];
+      const monthVal = parseInt(monthSelect ? monthSelect.value : (new Date().getMonth() + 1));
+      const yearVal = parseInt(document.getElementById('payroll-year')?.value || new Date().getFullYear());
+      const monthName = monthSelect && monthSelect.selectedOptions && monthSelect.selectedOptions[0]
+        ? monthSelect.selectedOptions[0].text.split(' ')[0]
+        : 'Current Month';
 
       document.getElementById('disburse-staff-id').value = staffId;
       document.getElementById('disburse-month').value = monthVal;
       document.getElementById('disburse-year').value = yearVal;
-      document.getElementById('disburse-staff-name').innerText = `${p.staff_name} (${p.designation || p.role})`;
+      document.getElementById('disburse-staff-name').innerText = `${p.staff_name} (${p.designation || p.role || 'Staff'})`;
       document.getElementById('disburse-month-label').innerText = `${monthName} ${yearVal}`;
-      document.getElementById('disburse-net-display').innerText = `Rs. ${p.net_payable.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-      document.getElementById('disburse-khata-display').innerText = `Rs. ${p.advances_deducted.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('disburse-net-display').innerText = `Rs. ${(p.net_payable || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      document.getElementById('disburse-khata-display').innerText = `Rs. ${(p.advances_deducted || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
 
       const noticeEl = document.getElementById('disburse-khata-notice');
       const noticeText = document.getElementById('disburse-khata-notice-text');
-      if (p.advances_deducted > 0) {
+      if ((p.advances_deducted || 0) > 0) {
         noticeEl.classList.remove('hidden');
         noticeText.innerText = `Rs. ${p.advances_deducted.toLocaleString()} in pending advances/credits will automatically be cleared and deducted from salary.`;
       } else {
@@ -7379,6 +7619,90 @@
       const modal = document.getElementById('disburse-salary-modal');
       modal.classList.add('hidden');
       modal.classList.remove('flex');
+    }
+
+    function openCustomRangeModal(staffId) {
+      openSlipModal(staffId);
+    }
+
+    function closeCustomRangeModal() {
+      const modal = document.getElementById('custom-range-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function calculateStaffCustomRange() {
+      if (!currentCustomRangeStaffId) return;
+      const fromDate = document.getElementById('cr-from-date').value;
+      const toDate = document.getElementById('cr-to-date').value;
+
+      if (!fromDate || !toDate) {
+        alert("Barah-e-karam shuru aur aakhri dates sahi choose karein.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/payroll/calculate-range?staff_id=${currentCustomRangeStaffId}&from_date=${fromDate}&to_date=${toDate}`);
+        const data = await res.json();
+
+        if (res.ok && data.sheet && data.sheet.length > 0) {
+          const p = data.sheet[0];
+          document.getElementById('cr-period-badge').innerText = `Period: ${p.from_date} to ${p.to_date}`;
+          document.getElementById('cr-eval-days').innerText = `${p.evaluated_working_days} Days Evaluated`;
+          document.getElementById('cr-base-salary').innerText = `Rs. ${(p.earned_base_salary || 0).toLocaleString()}`;
+          document.getElementById('cr-net-payable').innerText = `Rs. ${(p.net_payable || 0).toLocaleString()}`;
+
+          document.getElementById('cr-present').innerText = `${p.present_days} Days`;
+          document.getElementById('cr-absents').innerText = `${p.absent_days} Days (- Rs. ${(p.absent_cut || 0).toLocaleString()})`;
+          
+          const shortMins = p.total_short_minutes || 0;
+          const shortH = Math.floor(shortMins / 60);
+          const shortM = shortMins % 60;
+          const shortStr = shortH > 0 ? `${shortH}h ${shortM}m` : `${shortM}m`;
+          document.getElementById('cr-short-hours').innerText = `${shortStr} (- Rs. ${(p.short_hours_cut || 0).toLocaleString()})`;
+
+          document.getElementById('cr-advances').innerText = `- Rs. ${(p.advances_deducted || 0).toLocaleString()}`;
+
+          document.getElementById('cr-result-card').classList.remove('hidden');
+        } else {
+          alert("Calculation failed for selected dates.");
+        }
+      } catch (err) {
+        console.error("Custom range error", err);
+        alert("Error: " + err.message);
+      }
+    }
+
+    async function generatePayrollCustomRange() {
+      const fromDate = document.getElementById('global-payroll-from').value;
+      const toDate = document.getElementById('global-payroll-to').value;
+
+      if (!fromDate || !toDate) {
+        alert("Barah-e-karam shuru aur aakhri date dono select karein.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/payroll/calculate-range?from_date=${fromDate}&to_date=${toDate}`);
+        const data = await res.json();
+        currentPayrollData = data.sheet;
+
+        const totalStaff = data.sheet ? data.sheet.length : 0;
+        const paidCount = (data.sheet || []).filter(x => x.status === 'PAID').length;
+        const paidPct = totalStaff > 0 ? Math.round((paidCount / totalStaff) * 100) : 0;
+
+        document.getElementById('payroll-summary').classList.remove('hidden');
+        document.getElementById('summary-net').innerText = `Rs. ${(data.total_payout || 0).toLocaleString()}`;
+
+        const paidCountEl = document.getElementById('summary-paid-count');
+        if (paidCountEl) paidCountEl.innerText = `Custom Range: ${fromDate} to ${toDate}`;
+
+        renderPayrollTable();
+      } catch (err) {
+        console.error("Custom range payroll error", err);
+      }
     }
 
     function openDisburseModalFromSlip() {
@@ -8691,11 +9015,12 @@
           theadHtml += `<th class="py-2.5 px-1 min-w-[24px] font-mono text-[11px]">${d}</th>`;
         }
         theadHtml += `
-            <th class="py-2.5 px-2 bg-emerald-50 text-[#156D38] font-bold">P</th>
-            <th class="py-2.5 px-2 bg-amber-50 text-amber-800 font-bold">L</th>
-            <th class="py-2.5 px-2 bg-purple-50 text-purple-800 font-bold">HD</th>
-            <th class="py-2.5 px-2 bg-blue-50 text-blue-800 font-bold">LV</th>
-            <th class="py-2.5 px-2 bg-rose-50 text-rose-800 font-bold">A</th>
+            <th class="py-2.5 px-2 bg-emerald-50 text-[#156D38] font-bold" title="Present">P</th>
+            <th class="py-2.5 px-2 bg-amber-50 text-amber-800 font-bold" title="Late">L</th>
+            <th class="py-2.5 px-2 bg-amber-100 text-amber-900 font-bold" title="Short Hours">SH</th>
+            <th class="py-2.5 px-2 bg-purple-50 text-purple-800 font-bold" title="Half Day">HD</th>
+            <th class="py-2.5 px-2 bg-blue-50 text-blue-800 font-bold" title="Leave">LV</th>
+            <th class="py-2.5 px-2 bg-rose-50 text-rose-800 font-bold" title="Absent">A</th>
           </tr>
         `;
         document.getElementById('report-thead').innerHTML = theadHtml;
@@ -8716,6 +9041,8 @@
               badge = `<span class="day-badge inline-block w-5 h-5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px] leading-5">P</span>`;
             } else if (st === 'LATE') {
               badge = `<span class="day-badge inline-block w-5 h-5 rounded bg-amber-100 text-amber-800 font-bold text-[10px] leading-5">L</span>`;
+            } else if (st === 'SHORT_HOURS') {
+              badge = `<span class="day-badge inline-block w-5 h-5 rounded bg-amber-100 text-amber-900 font-bold text-[9px] leading-5 border border-amber-300" title="Short Hours">SH</span>`;
             } else if (st === 'HALF_DAY') {
               badge = `<span class="day-badge inline-block w-5 h-5 rounded bg-purple-100 text-purple-800 font-bold text-[10px] leading-5">HD</span>`;
             } else if (st === 'LEAVE') {
@@ -8729,6 +9056,7 @@
           rowHtml += `
               <td class="py-2 px-2 font-bold text-[#156D38] bg-emerald-50/50">${row.present_count}</td>
               <td class="py-2 px-2 font-bold text-amber-700 bg-amber-50/50">${row.late_count}</td>
+              <td class="py-2 px-2 font-bold text-amber-900 bg-amber-100/60">${row.short_hours_count || 0}</td>
               <td class="py-2 px-2 font-bold text-purple-700 bg-purple-50/50">${row.half_day_count}</td>
               <td class="py-2 px-2 font-bold text-blue-700 bg-blue-50/50">${row.leave_count}</td>
               <td class="py-2 px-2 font-bold text-rose-700 bg-rose-50/50">${row.absent_count}</td>

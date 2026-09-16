@@ -30,6 +30,7 @@ class TestPayrollEngine(unittest.TestCase):
         conn.execute("DELETE FROM attendance_logs WHERE staff_id = 1 AND date LIKE '2026-09-%'")
         conn.execute("DELETE FROM leaves WHERE staff_id = 1 AND date LIKE '2026-09-%'")
         conn.execute("DELETE FROM advance_salaries WHERE staff_id = 1")
+        conn.execute("UPDATE staff SET joining_date = '2026-09-01' WHERE id = 1")
         conn.commit()
         conn.close()
 
@@ -154,5 +155,56 @@ class TestPayrollEngine(unittest.TestCase):
         # Net payable remains full basic salary: 45000
         self.assertEqual(payroll["net_payable"], 45000.0)
 
+    def test_custom_date_range_payroll(self):
+        from payroll_engine import calculate_custom_range_payroll
+        conn = get_db_connection()
+        # Ali (Monthly 45,000 => Daily 1500)
+        # Worked from 2026-09-04 to 2026-09-17 (14 days)
+        for d in range(4, 18):
+            dt_str = f"2026-09-{d:02d}"
+            conn.execute("""
+                INSERT INTO attendance_logs (staff_id, date, time_in, time_out, status, worked_minutes)
+                VALUES (1, ?, '09:00:00', '17:00:00', 'ON_TIME', 480)
+            """, (dt_str,))
+        conn.commit()
+        conn.close()
+
+        # Calculate payroll for 4th to 17th Sept (14 evaluated days)
+        res = calculate_custom_range_payroll(staff_id=1, from_date_str='2026-09-04', to_date_str='2026-09-17')
+        self.assertEqual(res["total_days_in_period"], 14)
+        self.assertEqual(res["evaluated_working_days"], 14)
+        self.assertEqual(res["present_days"], 14)
+        self.assertEqual(res["absent_days"], 0)
+        # Earned base salary = 14 * 1500 = 21000
+        self.assertEqual(res["earned_base_salary"], 21000.0)
+        self.assertEqual(res["net_payable"], 21000.0)
+
+    def test_new_employee_joining_date_payroll(self):
+        from payroll_engine import calculate_custom_range_payroll
+        conn = get_db_connection()
+        # Set Ali's joining date to 2026-09-10
+        conn.execute("UPDATE staff SET joining_date = '2026-09-10' WHERE id = 1")
+        # Ali worked from 10th to 17th (8 days)
+        for d in range(10, 18):
+            dt_str = f"2026-09-{d:02d}"
+            conn.execute("""
+                INSERT INTO attendance_logs (staff_id, date, time_in, time_out, status, worked_minutes)
+                VALUES (1, ?, '09:00:00', '17:00:00', 'ON_TIME', 480)
+            """, (dt_str,))
+        conn.commit()
+        conn.close()
+
+        # Calculate payroll from 2026-09-01 to 2026-09-17
+        # Since joining date is 2026-09-10, evaluation starts from 10th Sept (8 days)!
+        # Days 1 to 9 are ignored and NOT marked absent.
+        res = calculate_custom_range_payroll(staff_id=1, from_date_str='2026-09-01', to_date_str='2026-09-17')
+        self.assertEqual(res["evaluated_working_days"], 8)
+        self.assertEqual(res["present_days"], 8)
+        self.assertEqual(res["absent_days"], 0)
+        # Earned base salary = 8 * 1500 = 12000
+        self.assertEqual(res["earned_base_salary"], 12000.0)
+        self.assertEqual(res["net_payable"], 12000.0)
+
 if __name__ == "__main__":
     unittest.main()
+

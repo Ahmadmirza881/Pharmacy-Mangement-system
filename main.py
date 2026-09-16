@@ -5,6 +5,7 @@ shift scheduling, staff advance khata, and 1-click month-end payroll.
 """
 
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -20,9 +21,10 @@ from database import (
     init_db, get_db_connection, log_activity, get_today_activities,
     get_setting, set_setting, get_all_settings, create_otp_record,
     verify_and_consume_otp, get_active_otps, get_pin_otp_audit_logs,
-    mark_otp_notified
+    mark_otp_notified, get_admin_master_pin, set_admin_master_pin,
+    verify_and_reveal_otp_by_token, get_otp_by_token
 )
-from payroll_engine import process_punch, calculate_monthly_payroll
+from payroll_engine import process_punch, calculate_monthly_payroll, calculate_custom_range_payroll
 from biometric_service import biometric_service
 from whatsapp_service import whatsapp_service
 
@@ -68,11 +70,16 @@ class ConfirmCheckoutRequest(BaseModel):
     otp_id: Optional[int] = None  # OTP record ID from verify-checkout-pin (for notify time tracking)
     custom_time: Optional[str] = None  # Optional override for exact punch time
 
+class OtpRevealRequest(BaseModel):
+    token: str
+    master_pin: str
+
 class SettingsUpdate(BaseModel):
     admin_whatsapp_number: Optional[str] = None
     admin_name: Optional[str] = None
     pharmacy_name: Optional[str] = None
     otp_expiry_minutes: Optional[str] = None
+    admin_master_pin: Optional[str] = None
 
 class WhatsAppTestRequest(BaseModel):
     phone: Optional[str] = None
@@ -279,28 +286,27 @@ def request_pin_otp(req: PinOtpRequest):
         else:
             action = "OUT" # Update/overwrite checkout if punched again
 
-    # 3. Determine Target Destination Phone
-    if action == "IN":
-        target_phone = get_setting("admin_whatsapp_number", "0300-1234567")
-        target_type = "ADMIN"
-        target_label = "Admin WhatsApp"
-    else:
-        target_phone = staff["phone"] or get_setting("admin_whatsapp_number", "0300-1234567")
-        target_type = "STAFF"
-        target_label = f"{staff['name']} ka Phone"
+    # 3. Determine Target Destination Phone (Admin receives WhatsApp link for both Check-IN & Check-OUT)
+    target_phone = get_setting("admin_whatsapp_number", "03166868169")
+    target_type = "ADMIN"
+    target_label = "Admin WhatsApp"
 
-    # 4. Generate 4-digit OTP & record in DB
+    # 4. Generate 4-digit OTP, unique token & record in DB
     otp_code = f"{random.randint(1000, 9999)}"
     expiry_mins = int(get_setting("otp_expiry_minutes", "5") or "5")
-    create_otp_record(req.staff_id, otp_code, action, target_phone, expiry_minutes=expiry_mins)
+    otp_id, token = create_otp_record(req.staff_id, otp_code, action, target_phone, expiry_minutes=expiry_mins)
 
-    # 5. Dispatch WhatsApp Message
+    # 5. Build Local Wi-Fi Reveal Link & Dispatch WhatsApp Message
+    local_ip = whatsapp_service.get_local_ip()
+    reveal_link = f"http://{local_ip}:8000/otp-verify?token={token}"
+
     dispatch_info = whatsapp_service.send_otp(
         target_phone=target_phone,
         staff_name=staff["name"],
         designation=staff["designation"],
         otp_code=otp_code,
-        action=action
+        action=action,
+        reveal_link=reveal_link
     )
 
     # 6. Audit activity log
@@ -308,7 +314,7 @@ def request_pin_otp(req: PinOtpRequest):
         category="ATTENDANCE",
         action_type=f"OTP_REQUEST_{action}",
         title=f"OTP Requested ({action}): {staff['name']}",
-        description=f"Sent to {target_label} ({whatsapp_service.mask_phone(target_phone)}) • Action: {action}",
+        description=f"Sent to {target_label} ({whatsapp_service.mask_phone(target_phone)}) • Link Token: {token[:10]}...",
         staff_name=staff["name"]
     )
 
@@ -322,9 +328,11 @@ def request_pin_otp(req: PinOtpRequest):
         "target_label": target_label,
         "target_masked_phone": whatsapp_service.mask_phone(target_phone),
         "direct_link": dispatch_info.get("direct_link", ""),
+        "reveal_link": reveal_link,
+        "token": token,
         "expiry_minutes": expiry_mins,
         "otp_code": otp_code, # Sent for immediate simulation / offline testing fallback
-        "message": f"Confirmation code has been sent to {target_label} ({whatsapp_service.mask_phone(target_phone)})."
+        "message": f"Confirmation link has been sent to {target_label} ({whatsapp_service.mask_phone(target_phone)})."
     }
 
 @app.post("/api/attendance/verify-pin-otp")
@@ -412,8 +420,8 @@ def verify_checkout_pin(req: CheckoutPinRequest):
         raise HTTPException(status_code=400, detail="Ghalat PIN! Barah-e-karam apni 4-digit secret PIN sahi darj karein.")
 
     # ✅ Record PIN entry time in audit log (created_at = now, verified_at = empty until notify)
-    admin_phone = get_setting("admin_whatsapp_number", "0300-1234567")
-    otp_id = create_otp_record(
+    admin_phone = get_setting("admin_whatsapp_number", "03166868169")
+    otp_id, token = create_otp_record(
         req.staff_id, "OUT_PIN", "OUT",
         staff["phone"] or admin_phone,
         expiry_minutes=30  # 30 min window to send notification
@@ -523,13 +531,16 @@ def update_system_settings(data: SettingsUpdate):
     if data.otp_expiry_minutes is not None:
         set_setting("otp_expiry_minutes", data.otp_expiry_minutes.strip())
         updated["otp_expiry_minutes"] = data.otp_expiry_minutes.strip()
+    if data.admin_master_pin is not None:
+        set_admin_master_pin(data.admin_master_pin.strip())
+        updated["admin_master_pin"] = data.admin_master_pin.strip()
 
-    admin_phone = get_setting("admin_whatsapp_number", "0300-1234567")
+    admin_phone = get_setting("admin_whatsapp_number", "03166868169")
     log_activity(
         category="SETTINGS",
         action_type="SETTINGS_UPDATED",
         title="Admin Alert Settings Updated",
-        description=f"Admin WhatsApp alert number saved: {admin_phone}",
+        description=f"Admin WhatsApp alert settings saved.",
         staff_name="Admin"
     )
 
@@ -539,10 +550,209 @@ def update_system_settings(data: SettingsUpdate):
         "settings": get_all_settings()
     }
 
+# =====================================================================
+# MOBILE OTP REVEAL VIA ADMIN MASTER PIN ENDPOINTS & WEB VIEW
+# =====================================================================
+
+@app.get("/otp-verify", response_class=HTMLResponse)
+def get_otp_verify_page(token: Optional[str] = Query(None)):
+    """Serves minimal mobile page for Admin Master PIN OTP reveal."""
+    staff_name = "Staff Member"
+    designation = "Staff"
+    action_label = "Check-IN"
+    time_str = datetime.now().strftime("%I:%M %p")
+
+    if token:
+        record = get_otp_by_token(token)
+        if record:
+            staff_name = record.get("staff_name") or "Staff Member"
+            designation = record.get("designation") or record.get("role") or "Staff"
+            action_label = "Duty Check-IN" if record.get("action") == "IN" else "Duty Check-OUT"
+            if record.get("created_at"):
+                try:
+                    dt = datetime.strptime(record["created_at"].split(".")[0], "%Y-%m-%d %H:%M:%S")
+                    time_str = dt.strftime("%I:%M %p")
+                except Exception:
+                    pass
+
+    html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mumtaz Pharmacy — Admin OTP Verification</title>
+    <style>
+        * {{ box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }}
+        body {{ background: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 16px; }}
+        .card {{ background: #1e293b; border: 1px solid #334155; border-radius: 20px; width: 100%; max-width: 420px; padding: 28px 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); text-align: center; }}
+        .logo-badge {{ width: 56px; height: 56px; background: #059669; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; font-weight: 900; font-size: 24px; color: #ffffff; }}
+        .title {{ font-size: 20px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; }}
+        .subtitle {{ font-size: 13px; color: #94a3b8; margin-top: 4px; margin-bottom: 20px; }}
+        .staff-card {{ background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; text-align: left; }}
+        .pin-box {{ margin-bottom: 20px; }}
+        .pin-input {{ width: 180px; height: 54px; background: #0f172a; border: 2px solid #334155; border-radius: 14px; font-size: 28px; font-weight: 700; text-align: center; letter-spacing: 12px; color: #10b981; outline: none; transition: all 0.2s; }}
+        .pin-input:focus {{ border-color: #10b981; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2); }}
+        .btn {{ width: 100%; padding: 14px; background: #10b981; color: #ffffff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s, transform 0.1s; }}
+        .btn:hover {{ background: #059669; }}
+        .btn:active {{ transform: scale(0.98); }}
+        .btn:disabled {{ background: #475569; cursor: not-allowed; }}
+        .error-banner {{ background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; font-size: 13px; font-weight: 600; padding: 10px 14px; border-radius: 10px; margin-top: 14px; display: none; }}
+        .reveal-box {{ background: #0f172a; border: 2px dashed #10b981; border-radius: 16px; padding: 24px; margin-top: 16px; }}
+        .otp-code {{ font-size: 42px; font-weight: 900; letter-spacing: 16px; color: #34d399; font-family: monospace; text-indent: 16px; margin: 12px 0; }}
+        .timer {{ font-size: 13px; font-weight: 700; color: #fbbf24; margin-top: 8px; }}
+        .hidden {{ display: none !important; }}
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo-badge">MP</div>
+        <div class="title">Mumtaz Pharmacy</div>
+        <div class="subtitle">Secure Admin OTP Gateway</div>
+
+        <!-- STAFF DETAILS CARD -->
+        <div class="staff-card">
+            <div style="font-size: 11px; font-weight: 700; color: #10b981; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">Staff Check-IN Request</div>
+            <div id="staff-name-hdr" style="font-size: 16px; font-weight: 800; color: #ffffff;">👤 {staff_name}</div>
+            <div id="staff-sub-hdr" style="font-size: 12px; font-weight: 600; color: #94a3b8; margin-top: 2px;">{designation} • <span style="color: #38bdf8;">{action_label}</span> • <span style="color: #cbd5e1;">{time_str}</span></div>
+        </div>
+
+        <div id="pin-section">
+            <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 16px; font-weight: 600;">Enter Admin Master PIN to reveal OTP:</p>
+            <div class="pin-box">
+                <input type="tel" id="master-pin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="1370" autofocus autocomplete="off">
+            </div>
+            <button id="reveal-btn" onclick="submitMasterPin()" class="btn">Show OTP Code</button>
+            <div id="error-alert" class="error-banner"></div>
+        </div>
+
+        <div id="otp-section" class="hidden">
+            <div class="reveal-box">
+                <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">4-DIGIT CONFIRMATION OTP</div>
+                <div id="otp-display" class="otp-code">----</div>
+                <div id="timer-display" class="timer">⏱️ Valid for 05:00</div>
+            </div>
+
+            <p style="font-size: 12px; color: #94a3b8; margin-top: 16px;">Staff ko yeh 4-digit code batayein taake Kiosk par attendance mark ho sake.</p>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        let countdownInterval = null;
+
+        if (!token) {{
+            showError("Ghair-mootabar (invalid) link! URL mein token nahi mila.");
+            document.getElementById('reveal-btn').disabled = true;
+        }}
+
+        async function submitMasterPin() {{
+            const pin = document.getElementById('master-pin').value.trim();
+            const errBox = document.getElementById('error-alert');
+            const btn = document.getElementById('reveal-btn');
+            errBox.style.display = 'none';
+
+            if (!pin || pin.length < 4) {{
+                showError("Barah-e-karam 4-digit Admin Master PIN darj karein.");
+                return;
+            }}
+
+            btn.disabled = true;
+            btn.innerText = "Verifying...";
+
+            try {{
+                const res = await fetch('/api/otp/reveal', {{
+                    method: 'POST',
+                    headers: {{ 'Content-Type': 'application/json' }},
+                    body: JSON.stringify({{ token: token, master_pin: pin }})
+                }});
+
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {{
+                    showError(data.detail || data.message || "Ghalat Admin Master PIN!");
+                    btn.disabled = false;
+                    btn.innerText = "Show OTP Code";
+                    return;
+                }}
+
+                // Success! Reveal OTP
+                document.getElementById('pin-section').classList.add('hidden');
+                document.getElementById('otp-section').classList.remove('hidden');
+                document.getElementById('otp-display').innerText = data.otp_code;
+                if (data.staff_name) {{
+                    document.getElementById('staff-name-hdr').innerText = "👤 " + data.staff_name;
+                }}
+
+                startCountdown(data.expires_in_seconds || 300);
+            }} catch (err) {{
+                showError("Network error. Connect to Pharmacy Wi-Fi and try again.");
+                btn.disabled = false;
+                btn.innerText = "Show OTP Code";
+            }}
+        }}
+
+        function showError(msg) {{
+            const errBox = document.getElementById('error-alert');
+            errBox.innerText = msg;
+            errBox.style.display = 'block';
+        }}
+
+        function startCountdown(seconds) {{
+            let rem = seconds;
+            updateTimerDisplay(rem);
+            countdownInterval = setInterval(() => {{
+                rem--;
+                if (rem <= 0) {{
+                    clearInterval(countdownInterval);
+                    document.getElementById('timer-display').innerText = "❌ EXPIRED (Naya code mangwayein)";
+                    document.getElementById('timer-display').style.color = "#ef4444";
+                    document.getElementById('otp-display').style.opacity = "0.3";
+                }} else {{
+                    updateTimerDisplay(rem);
+                }}
+            }}, 1000);
+        }}
+
+        function updateTimerDisplay(sec) {{
+            const m = Math.floor(sec / 60);
+            const s = sec % 60;
+            const mStr = String(m).padStart(2, '0');
+            const sStr = String(s).padStart(2, '0');
+            document.getElementById('timer-display').innerText = `⏱️ Valid for ${{mStr}}:${{sStr}}`;
+        }}
+
+        document.getElementById('master-pin').addEventListener('keypress', (e) => {{
+            if (e.key === 'Enter') submitMasterPin();
+        }});
+    </script>
+</body>
+</html>"""
+    return HTMLResponse(content=html_content, status_code=200)
+
+@app.post("/api/otp/reveal")
+def reveal_otp(req: OtpRevealRequest):
+    """Reveals the 4-digit OTP code if token and Admin Master PIN are valid."""
+    is_valid, otp_code, record, message = verify_and_reveal_otp_by_token(req.token, req.master_pin)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=message)
+
+    expires_at_dt = datetime.strptime(record["expires_at"], "%Y-%m-%d %H:%M:%S")
+    remaining_secs = max(0, int((expires_at_dt - datetime.now()).total_seconds()))
+
+    return {
+        "success": True,
+        "otp_code": otp_code,
+        "staff_name": record.get("staff_name", "Staff"),
+        "action": record.get("action", "IN"),
+        "expires_in_seconds": remaining_secs,
+        "message": message
+    }
+
 @app.post("/api/settings/test-whatsapp")
 def test_whatsapp(req: WhatsAppTestRequest):
     """Sends a test WhatsApp message to the admin or specified phone number."""
-    phone = req.phone or get_setting("admin_whatsapp_number", "0300-1234567")
+    phone = req.phone or get_setting("admin_whatsapp_number", "03166868169")
     result = whatsapp_service.send_test_message(phone, custom_text=req.message)
     return {
         "success": True,
@@ -556,9 +766,9 @@ def get_recent_whatsapp_dispatches():
     return whatsapp_service.get_recent_messages()
 
 @app.get("/api/attendance/today")
-def get_today_attendance():
+def get_today_attendance(target_date: Optional[str] = Query(None, alias="date")):
     """Returns today's live roster and statistics for the Owner Dashboard."""
-    today_str = date.today().strftime("%Y-%m-%d")
+    today_str = target_date if (target_date and len(target_date) == 10) else date.today().strftime("%Y-%m-%d")
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -719,6 +929,7 @@ def get_monthly_attendance(month: int = Query(..., ge=1, le=12), year: int = Que
     for s in staff:
         sid = s["id"]
         days_data = {}
+        short_hours_count = 0
         present_count = 0
         late_count = 0
         half_day_count = 0
@@ -738,6 +949,9 @@ def get_monthly_attendance(month: int = Query(..., ge=1, le=12), year: int = Que
                     late_count += 1
                 elif st == "HALF_DAY":
                     half_day_count += 1
+                elif st == "SHORT_HOURS":
+                    short_hours_count += 1
+                    present_count += 1
                 elif st == "ABSENT":
                     absent_count += 1
             else:
@@ -756,6 +970,7 @@ def get_monthly_attendance(month: int = Query(..., ge=1, le=12), year: int = Que
             "days": days_data,
             "present_count": present_count,
             "late_count": late_count,
+            "short_hours_count": short_hours_count,
             "half_day_count": half_day_count,
             "absent_count": absent_count,
             "leave_count": leave_count
@@ -1323,6 +1538,46 @@ def get_payroll(month: int = Query(..., ge=1, le=12), year: int = Query(..., ge=
         "total_staff": len(results),
         "total_payout": round(total_payout, 2),
         "total_deductions": round(total_deductions, 2),
+        "sheet": results
+    }
+
+@app.get("/api/payroll/calculate-range")
+def get_range_payroll(
+    staff_id: Optional[int] = None,
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None
+):
+    """
+    Computes custom rolling date-range payroll for individual or all staff members.
+    Supports calculating salary from last paid date (e.g. 3rd to 17th) or joining date.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if staff_id:
+        cursor.execute("SELECT id FROM staff WHERE id = ? AND is_active = 1", (staff_id,))
+    else:
+        cursor.execute("SELECT id FROM staff WHERE is_active = 1")
+
+    staff_ids = [row["id"] for row in cursor.fetchall()]
+    conn.close()
+
+    if not staff_ids:
+        raise HTTPException(status_code=404, detail="No active staff found.")
+
+    results = []
+    total_payout = 0.0
+
+    for sid in staff_ids:
+        payroll = calculate_custom_range_payroll(sid, from_date_str=from_date, to_date_str=to_date)
+        results.append(payroll)
+        total_payout += payroll["net_payable"]
+
+    return {
+        "from_date": from_date,
+        "to_date": to_date,
+        "total_staff": len(results),
+        "total_payout": round(total_payout, 2),
         "sheet": results
     }
 

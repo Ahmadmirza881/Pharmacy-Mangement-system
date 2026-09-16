@@ -109,7 +109,7 @@ def process_punch(staff_id: int, punch_dt: datetime = None, method: str = "FINGE
         if worked_minutes >= required_minutes:
             status = "ON_TIME"
         else:
-            status = "SHORT_HOURS" if worked_minutes >= (required_minutes // 2) else "HALF_DAY"
+            status = "SHORT_HOURS"
 
         cursor.execute("""
             UPDATE attendance_logs
@@ -232,8 +232,20 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
     if year == today.year and month == today.month:
         eval_end_day = today.day # only evaluate up to today if calculating current month
 
+    # Respect staff joining_date if registered mid-month
+    j_dt = None
+    if staff["joining_date"]:
+        try:
+            j_dt = datetime.strptime(staff["joining_date"], "%Y-%m-%d").date()
+        except Exception:
+            pass
+
+    eval_start_day = 1
+    if j_dt and j_dt.year == year and j_dt.month == month:
+        eval_start_day = max(1, j_dt.day)
+
     absent_days = 0
-    for day_num in range(1, eval_end_day + 1):
+    for day_num in range(eval_start_day, eval_end_day + 1):
         cur_date_str = f"{year}-{month:02d}-{day_num:02d}"
         if cur_date_str not in logged_dates and cur_date_str not in leave_dates:
             absent_days += 1
@@ -374,4 +386,201 @@ def calculate_monthly_payroll(staff_id: int, month: int, year: int) -> dict:
         "paid_at": pr_paid_at,
         "payment_method": pr_payment_method,
         "notes": pr_notes
+    }
+
+
+def calculate_custom_range_payroll(staff_id: int, from_date_str: str = None, to_date_str: str = None) -> dict:
+    """
+    Calculates flexible rolling date-range payroll for an employee.
+    Handles:
+    - Custom pay dates (e.g. 4th Sept to 17th Sept for employee paid on 3rd Sept).
+    - New employees starting from their joining_date (ignoring days prior to joining).
+    - Deduction of unsettled advances and medicine credits up to to_date.
+    """
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM staff WHERE id = ?", (staff_id,))
+    staff = cursor.fetchone()
+    if not staff:
+        conn.close()
+        raise ValueError(f"Staff #{staff_id} not found.")
+
+    today_dt = date.today()
+    if not to_date_str:
+        to_date_str = today_dt.strftime("%Y-%m-%d")
+
+    to_dt = datetime.strptime(to_date_str, "%Y-%m-%d").date()
+
+    if not from_date_str:
+        # Check if staff has a previous paid payroll record
+        cursor.execute("""
+            SELECT paid_at, year, month FROM payroll_records 
+            WHERE staff_id = ? AND status = 'PAID' 
+            ORDER BY year DESC, month DESC LIMIT 1
+        """, (staff_id,))
+        last_paid = cursor.fetchone()
+
+        if last_paid and last_paid["paid_at"]:
+            try:
+                l_paid_dt = datetime.strptime(last_paid["paid_at"].split()[0], "%Y-%m-%d").date()
+                from_dt = l_paid_dt + timedelta(days=1)
+            except Exception:
+                from_dt = date(to_dt.year, to_dt.month, 1)
+        else:
+            # Check joining_date
+            j_date_str = staff["joining_date"] or ""
+            if j_date_str:
+                try:
+                    from_dt = datetime.strptime(j_date_str, "%Y-%m-%d").date()
+                except Exception:
+                    from_dt = date(to_dt.year, to_dt.month, 1)
+            else:
+                from_dt = date(to_dt.year, to_dt.month, 1)
+    else:
+        from_dt = datetime.strptime(from_date_str, "%Y-%m-%d").date()
+
+    if from_dt > to_dt:
+        from_dt = to_dt
+
+    from_date_str = from_dt.strftime("%Y-%m-%d")
+    to_date_str = to_dt.strftime("%Y-%m-%d")
+
+    # Calendar math
+    _, days_in_month = calendar.monthrange(to_dt.year, to_dt.month)
+    basic_salary = float(staff["monthly_salary"])
+    daily_wage = round(basic_salary / days_in_month, 2)
+
+    allowed_leaves = staff["allowed_leaves"] if ("allowed_leaves" in staff.keys() and staff["allowed_leaves"] is not None) else 2
+    daily_hours = float(staff["daily_hours"]) if ("daily_hours" in staff.keys() and staff["daily_hours"]) else 8.0
+    hourly_wage = round(daily_wage / daily_hours, 2)
+    minute_wage = hourly_wage / 60.0
+    req_minutes = int(daily_hours * 60)
+
+    # 1. Fetch attendance logs for range
+    cursor.execute("""
+        SELECT * FROM attendance_logs
+        WHERE staff_id = ? AND date BETWEEN ? AND ?
+    """, (staff_id, from_date_str, to_date_str))
+    logs = cursor.fetchall()
+
+    present_days = 0
+    late_count = 0
+    half_days = 0
+    total_short_minutes = 0
+    short_days_count = 0
+    total_overtime_mins = 0
+    logged_dates = set()
+
+    for log in logs:
+        logged_dates.add(log["date"])
+        status = log["status"]
+        worked = log["worked_minutes"] or 0
+
+        if status in ("ON_TIME", "LATE", "PRESENT"):
+            present_days += 1
+            if status == "LATE":
+                late_count += 1
+        elif status == "HALF_DAY":
+            half_days += 1
+            present_days += 1
+        elif status == "SHORT_HOURS":
+            present_days += 1
+            if worked < req_minutes:
+                deficit = req_minutes - worked
+                total_short_minutes += deficit
+                short_days_count += 1
+        elif log["time_in"]:
+            present_days += 1
+            if log["time_out"] and worked < req_minutes:
+                deficit = req_minutes - worked
+                total_short_minutes += deficit
+                short_days_count += 1
+
+        total_overtime_mins += log["overtime_minutes"] or 0
+
+    # 2. Fetch approved leaves for range
+    cursor.execute("""
+        SELECT date, coalesce(leave_type, 'FULL_DAY') as leave_type FROM leaves
+        WHERE staff_id = ? AND date BETWEEN ? AND ?
+    """, (staff_id, from_date_str, to_date_str))
+    leave_rows = cursor.fetchall()
+    leave_dates = {row["date"] for row in leave_rows}
+
+    # 3. Calculate Absent days (evaluating only days from max(from_dt, joining_date) to to_dt)
+    j_dt = None
+    if staff["joining_date"]:
+        try:
+            j_dt = datetime.strptime(staff["joining_date"], "%Y-%m-%d").date()
+        except Exception:
+            pass
+
+    eval_start_dt = max(from_dt, j_dt) if j_dt else from_dt
+
+    absent_days = 0
+    curr_dt = eval_start_dt
+    total_days_in_period = (to_dt - from_dt).days + 1
+    total_evaluated_days = (to_dt - eval_start_dt).days + 1 if eval_start_dt <= to_dt else 0
+
+    while curr_dt <= to_dt:
+        c_str = curr_dt.strftime("%Y-%m-%d")
+        if c_str not in logged_dates and c_str not in leave_dates:
+            absent_days += 1
+        curr_dt += timedelta(days=1)
+
+    # Base earned salary for this period
+    earned_base_salary = round(total_evaluated_days * daily_wage, 2)
+    absent_cut = round(absent_days * daily_wage, 2)
+
+    # Leave quota
+    leaves_count = 0.0
+    for row in leave_rows:
+        leaves_count += 0.5 if row["leave_type"] == "HALF_DAY" else 1.0
+
+    prop_allowed_leaves = round(allowed_leaves * (total_evaluated_days / days_in_month), 1)
+    extra_leaves = max(0.0, leaves_count - prop_allowed_leaves)
+    extra_leave_cut = round(extra_leaves * daily_wage, 2)
+
+    short_hours_cut = round(total_short_minutes * minute_wage, 2)
+
+    # 4. Fetch unsettled advances
+    cursor.execute("""
+        SELECT id, amount, date, reason, entry_type FROM advance_salaries
+        WHERE staff_id = ? AND is_settled = 0 AND date <= ?
+    """, (staff_id, to_date_str))
+    advances = cursor.fetchall()
+    advances_total = sum(adv["amount"] for adv in advances)
+
+    net_payable = max(0.0, round(
+        earned_base_salary - absent_cut - extra_leave_cut - short_hours_cut - advances_total,
+        2
+    ))
+
+    conn.close()
+
+    return {
+        "staff_id": staff_id,
+        "staff_name": staff["name"],
+        "phone": staff["phone"] if "phone" in staff.keys() else "",
+        "role": staff["role"],
+        "designation": staff["designation"] if ("designation" in staff.keys() and staff["designation"]) else staff["role"],
+        "joining_date": staff["joining_date"],
+        "from_date": from_date_str,
+        "to_date": to_date_str,
+        "total_days_in_period": total_days_in_period,
+        "evaluated_working_days": total_evaluated_days,
+        "basic_salary": basic_salary,
+        "daily_wage": daily_wage,
+        "earned_base_salary": earned_base_salary,
+        "present_days": present_days,
+        "absent_days": absent_days,
+        "absent_cut": absent_cut,
+        "short_hours_cut": short_hours_cut,
+        "total_short_minutes": total_short_minutes,
+        "leaves_count": leaves_count,
+        "extra_leaves": extra_leaves,
+        "extra_leave_cut": extra_leave_cut,
+        "advances_deducted": advances_total,
+        "advances_list": [dict(a) for a in advances],
+        "net_payable": net_payable
     }

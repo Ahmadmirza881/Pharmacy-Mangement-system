@@ -6,6 +6,7 @@ advance salary records, and month-end payroll sheets.
 
 import sqlite3
 import os
+import uuid
 from datetime import datetime, date, timedelta
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "mumtaz_attendance.db")
@@ -278,10 +279,11 @@ def init_db():
     """)
 
     default_settings = {
-        "admin_whatsapp_number": "0300-1234567",
+        "admin_whatsapp_number": "03166868169",
         "admin_name": "Pharmacy Owner / Manager",
         "pharmacy_name": "Mumtaz Pharmacy",
         "otp_expiry_minutes": "5",
+        "admin_master_pin": "1370",
         "whatsapp_service_status": "READY"
     }
     for k, v in default_settings.items():
@@ -307,6 +309,11 @@ def init_db():
     existing_otp_cols = {row[1] for row in cursor.fetchall()}
     if "verified_at" not in existing_otp_cols:
         cursor.execute("ALTER TABLE otp_verifications ADD COLUMN verified_at TEXT DEFAULT ''")
+    if "token" not in existing_otp_cols:
+        cursor.execute("ALTER TABLE otp_verifications ADD COLUMN token TEXT DEFAULT ''")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_otp_token ON otp_verifications(token)")
+    if "master_pin_attempts" not in existing_otp_cols:
+        cursor.execute("ALTER TABLE otp_verifications ADD COLUMN master_pin_attempts INTEGER DEFAULT 0")
 
 
     # Populate Default Shifts if empty
@@ -578,25 +585,114 @@ def get_all_settings() -> dict:
     conn.close()
     return {r["key"]: r["value"] for r in rows}
 
-def create_otp_record(staff_id: int, otp_code: str, action: str, target_phone: str, expiry_minutes: int = 5) -> int:
-    """Invalidates old pending OTPs and creates a new OTP record. Returns new record ID."""
+def get_admin_master_pin() -> str:
+    """Retrieves current Admin Master PIN, defaulting to 1370."""
+    return get_setting("admin_master_pin", "1370") or "1370"
+
+def set_admin_master_pin(new_pin: str):
+    """Saves or updates Admin Master PIN."""
+    set_setting("admin_master_pin", str(new_pin).strip())
+
+def create_otp_record(staff_id: int, otp_code: str, action: str, target_phone: str, expiry_minutes: int = 5, token: str = None):
+    """Invalidates old pending OTPs and creates a new OTP record with secure token. Returns (new record ID, token)."""
     conn = get_db_connection()
     cursor = conn.cursor()
     now = datetime.now()
+    now_str = now.strftime("%Y-%m-%d %H:%M:%S")
     expires_at = now + timedelta(minutes=expiry_minutes)
+    if not token:
+        token = f"tok_{uuid.uuid4().hex[:12]}"
     cursor.execute("""
         UPDATE otp_verifications 
         SET is_used = 1 
         WHERE staff_id = ? AND action = ? AND is_used = 0
     """, (staff_id, action))
     cursor.execute("""
-        INSERT INTO otp_verifications (staff_id, otp_code, action, target_phone, is_used, attempts, expires_at)
-        VALUES (?, ?, ?, ?, 0, 0, ?)
-    """, (staff_id, otp_code, action, target_phone, expires_at.strftime("%Y-%m-%d %H:%M:%S")))
+        INSERT INTO otp_verifications (staff_id, otp_code, action, target_phone, token, is_used, attempts, master_pin_attempts, expires_at, created_at)
+        VALUES (?, ?, ?, ?, ?, 0, 0, 0, ?, ?)
+    """, (staff_id, otp_code, action, target_phone, token, expires_at.strftime("%Y-%m-%d %H:%M:%S"), now_str))
     otp_id = cursor.lastrowid
     conn.commit()
     conn.close()
-    return otp_id
+    return otp_id, token
+
+def get_otp_by_token(token: str):
+    """Retrieves OTP verification record by unique link token."""
+    if not token:
+        return None
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT o.*, s.name as staff_name, coalesce(nullif(s.designation, ''), s.role) as designation
+        FROM otp_verifications o
+        JOIN staff s ON o.staff_id = s.id
+        WHERE o.token = ?
+    """, (token,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+def verify_and_reveal_otp_by_token(token: str, master_pin: str):
+    """
+    Validates token and Admin Master PIN to reveal OTP code.
+    Returns (success: bool, otp_code: str|None, record_info: dict|None, message: str).
+    """
+    if not token:
+        return False, None, None, "Invalid link token."
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    cursor.execute("""
+        SELECT o.*, s.name as staff_name, coalesce(nullif(s.designation, ''), s.role) as designation
+        FROM otp_verifications o
+        JOIN staff s ON o.staff_id = s.id
+        WHERE o.token = ?
+    """, (token,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return False, None, None, "Yeh link ghair-mootabar (invalid) hai ya nahi mila."
+
+    record = dict(row)
+
+    if record["is_used"] == 1:
+        conn.close()
+        return False, None, record, "Yeh link pehle hi istemal ho chuka hai."
+
+    if record["expires_at"] < now_str:
+        cursor.execute("UPDATE otp_verifications SET is_used = 1 WHERE id = ?", (record["id"],))
+        conn.commit()
+        conn.close()
+        return False, None, record, "Yeh link expire ho chuka hai (5 min limit)."
+
+    current_attempts = record.get("master_pin_attempts") or 0
+    if current_attempts >= 3:
+        cursor.execute("UPDATE otp_verifications SET is_used = 1 WHERE id = ?", (record["id"],))
+        conn.commit()
+        conn.close()
+        return False, None, record, "Bohat zyada ghalat Admin Master PIN enter kiye gaye hain. Link disabled."
+
+    admin_pin = get_admin_master_pin()
+    if str(master_pin).strip() != str(admin_pin).strip():
+        new_attempts = current_attempts + 1
+        if new_attempts >= 3:
+            cursor.execute("UPDATE otp_verifications SET master_pin_attempts = ?, is_used = 1 WHERE id = ?", (new_attempts, record["id"]))
+            conn.commit()
+            conn.close()
+            return False, None, record, "Ghalat Admin Master PIN! Max 3 attempts poori ho gayi hain. Link disabled."
+        else:
+            cursor.execute("UPDATE otp_verifications SET master_pin_attempts = ? WHERE id = ?", (new_attempts, record["id"]))
+            conn.commit()
+            conn.close()
+            remaining = 3 - new_attempts
+            return False, None, record, f"Ghalat Admin Master PIN! Dobara koshish karein ({remaining} attempts baqi)."
+
+    # Success: Admin Master PIN matches!
+    conn.close()
+    return True, record["otp_code"], record, "Admin Master PIN verified successfully."
 
 
 def mark_otp_notified(otp_id: int) -> bool:

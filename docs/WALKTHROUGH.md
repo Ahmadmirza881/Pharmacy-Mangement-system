@@ -13,6 +13,11 @@ The system has been engineered in `C:\Users\M.Husnain\.gemini\antigravity\scratc
 1. **Brand Identity & UI Design:**
    * Styled exclusively in official **Mumtaz Pharmacy** brand colors: `#232272` (Mumtaz Indigo) & `#156D38` (Forest Medical Green).
    * Clean responsive interface optimized for both desktop counters and mobile touchscreens.
+   * **Redesigned PIN & WhatsApp OTP Modal (`#pin-otp-modal`):**
+     - Premium brand header with deep green/slate gradient (`from-[#156D38] via-[#0E4D27] to-slate-900`), large staff avatar circle, and designation badge.
+     - Clean segmented punch action toggle (Check-IN vs Check-OUT) with active state highlights.
+     - High-contrast, spacious 4-digit PIN dot displays (`14x14 rounded-2xl`) and modern tactile keypad buttons.
+     - Step-by-step WhatsApp OTP stage featuring a prominent, styled **"WhatsApp Par OTP Dekhein"** button (replacing messy raw URL text dumps) and clean auto-advancing OTP input boxes.
 
 2. **Core System Architecture:**
    * **Database Layer (`database.py`):** SQLite database in WAL mode storing staff profiles, multiple shift rules, attendance logs, cash advances, and monthly payroll records.
@@ -22,7 +27,7 @@ The system has been engineered in `C:\Users\M.Husnain\.gemini\antigravity\scratc
    * **Interactive Web Application (`static/index.html`):** 5-tab interface:
      - **Tab 1: Biometric Punch Terminal:** Live digital clock, thumb scanner trigger, audio-visual feedback, and live punch activity stream.
      - **Tab 2: Today's Live Roster:** Real-time pulse cards (Total Staff, Present, Late, Absent) and duty progress table.
-     - **Tab 3: 1-Click Month-End Payroll & Digital Payslips:** Instant payroll generation with transparent deduction breakdowns and branded printable PDF pay slips.
+     - **Tab 3: 1-Click Month-End Payroll & Digital Payslips:** Instant payroll generation with transparent deduction breakdowns, interactive pay-period custom date calculator, monthly base salary indicator (`slip-monthly`), and branded printable PDF pay slips.
      - **Tab 4: Staff Advance Khata:** Instant counter drawer cash advance logging and settlement tracking.
      - **Tab 5: Staff Directory:** Staff management, shift assignments, and fingerprint enrollment status.
 

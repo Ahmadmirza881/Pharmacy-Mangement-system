@@ -44,52 +44,75 @@ class WhatsAppService:
             return f"{clean[:4]}-***-{clean[-4:]}"
         return phone
 
-    def build_in_otp_message(self, staff_name: str, designation: str, otp_code: str, time_str: str) -> str:
-        """Creates formal WhatsApp message template for Admin Check-IN authorization."""
+    def get_local_ip(self) -> str:
+        """Auto-detects local Wi-Fi / LAN IP address of the pharmacy machine."""
+        try:
+            import socket
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except Exception:
+            return "127.0.0.1"
+
+    def build_in_otp_message(self, staff_name: str, designation: str, time_str: str, reveal_link: str = "") -> str:
+        """Creates formal WhatsApp message template for Admin Check-IN authorization via secure link."""
+        if reveal_link:
+            link_block = (
+                f"🔑 *Admin:* OTP dekhne ke liye is link par click karein:\n\n"
+                f"{reveal_link}\n"
+            )
+        else:
+            link_block = "🔑 *Admin:* OTP link generate nahi ho saka."
+
         return (
             f"🔔 *MUMTAZ PHARMACY — STAFF CHECK-IN REQUEST*\n"
             f"━━━━━━━━━━━━━━━━━━\n"
             f"👤 Staff: *{staff_name}* ({designation or 'Staff'})\n"
             f"⏰ Request Time: *{time_str}*\n"
             f"📍 Action: *Duty Check-IN*\n\n"
-            f"🔑 *CONFIRMATION OTP:* \n"
-            f"👉 *{otp_code}* 👈\n\n"
-            f"⏱️ _Yeh code 5 minute ke liye valid hai._\n"
-            f"Staff ko yeh code batayein taake attendance mark ho sake.\n"
+            f"{link_block}\n\n"
+            f"⏱️ _Yeh link 5 minute ke liye valid hai._\n"
             f"━━━━━━━━━━━━━━━━━━"
         )
 
-    def build_out_otp_message(self, staff_name: str, otp_code: str, time_str: str) -> str:
-        """Creates formal WhatsApp message template for Staff Check-OUT verification."""
+    def build_out_otp_message(self, staff_name: str, designation: str, time_str: str, reveal_link: str = "") -> str:
+        """Creates formal WhatsApp message template for Admin Check-OUT authorization via secure link."""
+        if reveal_link:
+            link_block = (
+                f"🔑 *Admin:* OTP dekhne ke liye is link par click karein:\n\n"
+                f"{reveal_link}\n"
+            )
+        else:
+            link_block = "🔑 *Admin:* OTP link generate nahi ho saka."
+
         return (
-            f"🚪 *MUMTAZ PHARMACY — SHIFT CHECK-OUT*\n"
+            f"🔔 *MUMTAZ PHARMACY — STAFF CHECK-OUT REQUEST*\n"
             f"━━━━━━━━━━━━━━━━━━\n"
-            f"👤 Assalam-o-Alaikum *{staff_name}*,\n"
-            f"⏰ Duty Out Time: *{time_str}*\n"
+            f"👤 Staff: *{staff_name}* ({designation or 'Staff'})\n"
+            f"⏰ Request Time: *{time_str}*\n"
             f"📍 Action: *Duty Check-OUT*\n\n"
-            f"🔑 *CONFIRMATION OTP:*\n"
-            f"👉 *{otp_code}* 👈\n\n"
-            f"⏱️ _Yeh code 5 minute ke liye valid hai._\n"
-            f"Screen par yeh 4-digit code darj karein aur apni shift complete karein.\n"
+            f"{link_block}\n\n"
+            f"⏱️ _Yeh link 5 minute ke liye valid hai._\n"
             f"━━━━━━━━━━━━━━━━━━"
         )
 
-    def send_otp(self, target_phone: str, staff_name: str, designation: str, otp_code: str, action: str) -> Dict[str, Any]:
+    def send_otp(self, target_phone: str, staff_name: str, designation: str, otp_code: str, action: str, reveal_link: str = "") -> Dict[str, Any]:
         """
-        Dispatches OTP message to target WhatsApp number.
-        - If action == 'IN': Dispatched to Admin
-        - If action == 'OUT': Dispatched to Staff
+        Dispatches OTP message to Admin's WhatsApp number with secure reveal link.
+        Supports both Check-IN and Check-OUT requests.
         """
         now = datetime.now()
         time_str = now.strftime("%I:%M %p")
         wa_number = self.normalize_phone(target_phone)
 
         if action.upper() == "IN":
-            message_text = self.build_in_otp_message(staff_name, designation, otp_code, time_str)
-            recipient_label = f"Admin ({self.mask_phone(target_phone)})"
+            message_text = self.build_in_otp_message(staff_name, designation, time_str, reveal_link=reveal_link)
         else:
-            message_text = self.build_out_otp_message(staff_name, otp_code, time_str)
-            recipient_label = f"Staff: {staff_name} ({self.mask_phone(target_phone)})"
+            message_text = self.build_out_otp_message(staff_name, designation, time_str, reveal_link=reveal_link)
+
+        recipient_label = f"Admin ({self.mask_phone(target_phone)})"
 
         encoded_text = urllib.parse.quote(message_text)
         direct_link = f"https://api.whatsapp.com/send?phone={wa_number}&text={encoded_text}" if wa_number else ""
@@ -105,6 +128,7 @@ class WhatsAppService:
             "masked_phone": self.mask_phone(target_phone),
             "recipient_label": recipient_label,
             "otp_code": otp_code,
+            "reveal_link": reveal_link,
             "message_text": message_text,
             "direct_link": direct_link,
             "status": "SENT"
