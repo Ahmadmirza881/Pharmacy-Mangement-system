@@ -4901,21 +4901,34 @@
       const statDelayed = document.getElementById('audit-stat-delayed');
       const statPending = document.getElementById('audit-stat-pending');
 
-      if (!dateInput) return;
-      if (!dateInput.value) {
+      if (dateInput && !dateInput.value) {
         dateInput.value = typeof getLocalTodayStr === 'function' ? getLocalTodayStr() : new Date().toISOString().split('T')[0];
       }
-      const selectedDate = dateInput.value;
+      const selectedDate = dateInput ? dateInput.value : '';
 
       try {
         let logs = [];
         try {
-          const res = await fetch(`/api/attendance/audit-log?date=${selectedDate}`);
+          const url = selectedDate ? `/api/attendance/audit-log?date=${selectedDate}` : `/api/attendance/audit-log`;
+          const res = await fetch(url);
           if (res.ok) {
             logs = await res.json();
           }
         } catch (e) {
           console.warn("Backend audit-log fallback:", e);
+        }
+
+        // If no records for selected date, fallback to all recent logs so table is never blank!
+        if (!logs || logs.length === 0) {
+          try {
+            const fallbackRes = await fetch(`/api/attendance/audit-log`);
+            if (fallbackRes.ok) {
+              const allLogs = await fallbackRes.json();
+              if (Array.isArray(allLogs) && allLogs.length > 0) {
+                logs = allLogs;
+              }
+            }
+          } catch (e) {}
         }
 
         _auditLogs = logs; // Store for filtering
