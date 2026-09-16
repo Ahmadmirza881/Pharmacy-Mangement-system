@@ -2585,7 +2585,7 @@
           <div class="text-[11px] text-emerald-600 mt-0.5">Click to filter</div>
         </div>
         <div id="audit-card-delayed" onclick="filterAuditTable('delayed')" class="bg-white p-4 rounded-2xl border border-amber-200 bg-amber-50/20 shadow-xs cursor-pointer hover:shadow-md hover:border-amber-300 transition select-none">
-          <div class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">⏱️ Delayed Punches (&gt;2 min)</div>
+          <div class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">⏱️ Delayed Punches (&gt;5 min)</div>
           <div id="audit-stat-delayed" class="text-2xl font-black text-amber-700 mt-1">0</div>
           <div class="text-[11px] text-amber-600 mt-0.5">Click to filter</div>
         </div>
@@ -4766,7 +4766,7 @@
 
         logs.forEach(l => {
           if (l.audit_status === 'VERIFIED') {
-            if (l.diff_seconds !== null && l.diff_seconds > 120) {
+            if (l.diff_seconds !== null && l.diff_seconds > 300) {
               delayed++;
             } else {
               instant++;
@@ -4812,9 +4812,9 @@
       // Apply filter
       let filtered = logs;
       if (filter === 'instant') {
-        filtered = logs.filter(l => l.audit_status === 'VERIFIED' && (l.diff_seconds === null || l.diff_seconds <= 120));
+        filtered = logs.filter(l => l.audit_status === 'VERIFIED' && (l.diff_seconds === null || l.diff_seconds <= 300));
       } else if (filter === 'delayed') {
-        filtered = logs.filter(l => l.audit_status === 'VERIFIED' && l.diff_seconds !== null && l.diff_seconds > 120);
+        filtered = logs.filter(l => l.audit_status === 'VERIFIED' && l.diff_seconds !== null && l.diff_seconds > 300);
       } else if (filter === 'pending') {
         filtered = logs.filter(l => l.audit_status !== 'VERIFIED');
       }

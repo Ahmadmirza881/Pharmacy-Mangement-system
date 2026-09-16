@@ -730,7 +730,7 @@ def get_pin_otp_audit_logs(date_str: str = None, limit: int = 100):
                 diff_seconds = max(0, int((v_dt - c_dt).total_seconds()))
                 if diff_seconds < 60:
                     diff_str = f"⚡ {diff_seconds}s (Same-Time)"
-                elif diff_seconds < 120:
+                elif diff_seconds < 300:
                     m = diff_seconds // 60
                     s = diff_seconds % 60
                     diff_str = f"✅ {m}m {s}s"
