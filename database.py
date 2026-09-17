@@ -1043,6 +1043,17 @@ def register_or_get_delivery_staff(name: str, phone: str) -> dict:
         "is_temp": True
     }
 
+def get_staff_by_id(staff_id: int) -> dict:
+    """Returns single staff record dictionary by staff ID."""
+    if not staff_id:
+        return None
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM staff WHERE id = ?", (staff_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
 def verify_rider_pin(staff_id: int = None, phone: str = None, pin: str = "") -> tuple:
     """Verifies 4-digit PIN against the staff record."""
     conn = get_db_connection()
@@ -1072,7 +1083,7 @@ def verify_rider_pin(staff_id: int = None, phone: str = None, pin: str = "") -> 
     return False, "Invalid 4-digit PIN for selected rider"
 
 def get_delivery_by_id(delivery_id: int) -> dict:
-    """Returns single delivery with joined staff details."""
+    """Returns single delivery with joined staff details and rider aliases."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
@@ -1087,7 +1098,22 @@ def get_delivery_by_id(delivery_id: int) -> dict:
     """, (delivery_id,))
     row = cursor.fetchone()
     conn.close()
-    return dict(row) if row else None
+    if not row:
+        return None
+    d = dict(row)
+    if not d.get("rider_name"):
+        d["rider_name"] = d.get("delivery_person_name") or d.get("staff_name") or "Rider"
+    if not d.get("rider_phone"):
+        d["rider_phone"] = d.get("delivery_person_phone") or ""
+    if not d.get("delivery_address"):
+        d["delivery_address"] = d.get("customer_address") or ""
+    if not d.get("customer_address"):
+        d["customer_address"] = d.get("delivery_address") or ""
+    if d.get("total_amount") is None and d.get("bill_amount") is not None:
+        d["total_amount"] = d.get("bill_amount")
+    if d.get("bill_amount") is None and d.get("total_amount") is not None:
+        d["bill_amount"] = d.get("total_amount")
+    return d
 
 def create_delivery(
     staff_id: int,
@@ -1103,9 +1129,10 @@ def create_delivery(
     is_guest_delivery: int = 0,
     dispatch_pin_verified: int = 1,
     admin_wa_sent: int = 1,
-    customer_wa_sent: int = 1
+    customer_wa_sent: int = 1,
+    initial_status: str = "OUT_FOR_DELIVERY"
 ) -> dict:
-    """Inserts a new delivery order. Dispatched immediately with status OUT_FOR_DELIVERY and approval_status PENDING."""
+    """Inserts a new delivery order. Dispatched with initial_status (default OUT_FOR_DELIVERY) and approval_status PENDING."""
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -1119,14 +1146,14 @@ def create_delivery(
         ) VALUES (
             ?, ?, ?, ?,
             ?, ?, ?, ?, ?,
-            ?, ?, 'OUT_FOR_DELIVERY', 'PENDING', ?,
+            ?, ?, ?, 'PENDING', ?,
             ?, ?, 0, 0,
             ?, ''
         )
     """, (
         staff_id, delivery_person_name, delivery_person_phone, is_guest_delivery,
         customer_name, customer_phone, customer_address, invoice_no, float(bill_amount or 0.0),
-        payment_method, notes, dispatch_pin_verified,
+        payment_method, notes, initial_status, dispatch_pin_verified,
         admin_wa_sent, customer_wa_sent,
         now_str
     ))
@@ -1145,8 +1172,29 @@ def create_delivery(
 
     return get_delivery_by_id(new_id)
 
+def confirm_delivery_dispatch(delivery_id: int) -> dict:
+    """Confirms WhatsApp alerts sent and transitions delivery status to OUT_FOR_DELIVERY."""
+    deliv = get_delivery_by_id(delivery_id)
+    if not deliv:
+        raise ValueError("Delivery record not found")
+    
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE deliveries
+        SET status = 'OUT_FOR_DELIVERY',
+            dispatched_at = CASE WHEN dispatched_at IS NULL OR dispatched_at = '' THEN ? ELSE dispatched_at END,
+            admin_wa_sent = 1,
+            customer_wa_sent = 1
+        WHERE id = ?
+    """, (now_str, delivery_id))
+    conn.commit()
+    conn.close()
+    return get_delivery_by_id(delivery_id)
+
 def complete_delivery_return(delivery_id: int, rider_pin: str, return_wa_sent: int = 1) -> dict:
-    """Verifies rider PIN and marks delivery as DELIVERED while leaving financial approval_status as PENDING."""
+    """Verifies rider PIN and marks delivery as PENDING_RETURN (or DELIVERED) while leaving financial approval_status as PENDING."""
     deliv = get_delivery_by_id(delivery_id)
     if not deliv:
         raise ValueError("Delivery record not found")
@@ -1165,12 +1213,34 @@ def complete_delivery_return(delivery_id: int, rider_pin: str, return_wa_sent: i
     cursor = conn.cursor()
     cursor.execute("""
         UPDATE deliveries
-        SET status = 'DELIVERED',
+        SET status = 'PENDING_RETURN',
             delivered_at = ?,
             return_pin_verified = 1,
             return_wa_sent = ?
         WHERE id = ?
     """, (now_str, return_wa_sent, delivery_id))
+    conn.commit()
+    conn.close()
+
+    return get_delivery_by_id(delivery_id)
+
+def confirm_delivery_return(delivery_id: int) -> dict:
+    """Confirms return alert sent and updates status to DELIVERED."""
+    deliv = get_delivery_by_id(delivery_id)
+    if not deliv:
+        raise ValueError("Delivery record not found")
+    
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE deliveries
+        SET status = 'DELIVERED',
+            delivered_at = CASE WHEN delivered_at IS NULL OR delivered_at = '' THEN ? ELSE delivered_at END,
+            return_pin_verified = 1,
+            return_wa_sent = 1
+        WHERE id = ?
+    """, (now_str, delivery_id))
     conn.commit()
     conn.close()
 
@@ -1233,6 +1303,30 @@ def reconcile_delivery(delivery_id: int, action: str, approved_by: str = "Admin"
 
     return get_delivery_by_id(delivery_id)
 
+DEFAULT_WA_TEMPLATES = {
+    "admin_dispatch": "🚀 *MUMTAZ PHARMACY — ORDER DISPATCHED*\n━━━━━━━━━━━━━━━━━━━━\n🧾 *Invoice:* #{invoice}\n💰 *Bill Amount:* Rs. {amount} ({payment_method})\n👤 *Customer:* {customer_name} ({customer_phone})\n📍 *Address:* {address}\n🛵 *Rider:* {rider_name} ({rider_phone})\n⏰ *Dispatched At:* {time}\n{notes}\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *Admin Audit:* Operational OUT_FOR_DELIVERY • Pending End-of-Day cash reconciliation.",
+    "customer_dispatch": "📦 *MUMTAZ PHARMACY — YOUR ORDER IS ON THE WAY!*\n━━━━━━━━━━━━━━━━━━━━\nDear *{customer_name}*,\nYour medicine / pharmacy order has been dispatched.\n\n🧾 *Invoice:* #{invoice}\n💰 *Amount Payable:* Rs. {amount} ({payment_method})\n🛵 *Delivery Rider:* {rider_name}\n📞 *Rider Contact:* {rider_phone}\n\nOur rider will arrive shortly. Please have the exact cash ready if paying on delivery.\nThank you for choosing Mumtaz Pharmacy! 🏥\n📍 Model Town, Lahore",
+    "admin_return": "✅ *MUMTAZ PHARMACY — RIDER RETURN CONFIRMATION*\n━━━━━━━━━━━━━━━━━━━━\n🛵 *Rider:* {rider_name} has returned to the pharmacy.\n🧾 *Invoice:* #{invoice}\n👤 *Customer:* {customer_name}\n💵 *Cash Collected:* Rs. {amount}\n⏰ *Return Time:* {time}\n━━━━━━━━━━━━━━━━━━━━\n📋 *Status:* Operational DELIVERED • Please verify hisaab & click Approve in Admin Portal."
+}
+
+def get_delivery_wa_templates() -> dict:
+    """Returns dict of WhatsApp message templates from settings table or defaults."""
+    return {
+        "admin_dispatch": get_setting("wa_template_admin_dispatch", DEFAULT_WA_TEMPLATES["admin_dispatch"]),
+        "customer_dispatch": get_setting("wa_template_customer_dispatch", DEFAULT_WA_TEMPLATES["customer_dispatch"]),
+        "admin_return": get_setting("wa_template_admin_return", DEFAULT_WA_TEMPLATES["admin_return"])
+    }
+
+def save_delivery_wa_templates(templates: dict) -> dict:
+    """Saves custom WhatsApp message templates into settings table."""
+    if "admin_dispatch" in templates and templates["admin_dispatch"] is not None:
+        set_setting("wa_template_admin_dispatch", str(templates["admin_dispatch"]).strip())
+    if "customer_dispatch" in templates and templates["customer_dispatch"] is not None:
+        set_setting("wa_template_customer_dispatch", str(templates["customer_dispatch"]).strip())
+    if "admin_return" in templates and templates["admin_return"] is not None:
+        set_setting("wa_template_admin_return", str(templates["admin_return"]).strip())
+    return get_delivery_wa_templates()
+
 def get_deliveries_list(
     status: str = None, 
     approval_status: str = None,
@@ -1279,7 +1373,24 @@ def get_deliveries_list(
     cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    
+    res = []
+    for r in rows:
+        d = dict(r)
+        if not d.get("rider_name"):
+            d["rider_name"] = d.get("delivery_person_name") or d.get("staff_name") or "Rider"
+        if not d.get("rider_phone"):
+            d["rider_phone"] = d.get("delivery_person_phone") or ""
+        if not d.get("delivery_address"):
+            d["delivery_address"] = d.get("customer_address") or ""
+        if not d.get("customer_address"):
+            d["customer_address"] = d.get("delivery_address") or ""
+        if d.get("total_amount") is None and d.get("bill_amount") is not None:
+            d["total_amount"] = d.get("bill_amount")
+        if d.get("bill_amount") is None and d.get("total_amount") is not None:
+            d["bill_amount"] = d.get("total_amount")
+        res.append(d)
+    return res
 
 def get_active_deliveries_for_return() -> list:
     """Returns all deliveries currently OUT_FOR_DELIVERY waiting for rider return."""

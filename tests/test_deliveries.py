@@ -51,10 +51,15 @@ def test_dispatch_delivery_success_and_invalid_pin():
     assert res_data["success"] is True
     deliv = res_data["delivery"]
     assert deliv["invoice_no"] == "INV-DEL-101"
-    assert deliv["status"] == "OUT_FOR_DELIVERY"
+    assert deliv["status"] == "PENDING_DISPATCH"
     assert deliv["approval_status"] == "PENDING"
-    assert deliv["dispatched_at"] != ""
-    assert deliv["delivered_at"] == ""
+    
+    # Confirm dispatch -> OUT_FOR_DELIVERY
+    conf_disp = client.post(f"/api/deliveries/{deliv['id']}/confirm-dispatch")
+    assert conf_disp.status_code == 200
+    confirmed_deliv = conf_disp.json()["delivery"]
+    assert confirmed_deliv["status"] == "OUT_FOR_DELIVERY"
+    assert confirmed_deliv["dispatched_at"] != ""
 
     # Verify WhatsApp payloads
     wa = res_data["whatsapp"]
@@ -65,7 +70,7 @@ def test_dispatch_delivery_success_and_invalid_pin():
     assert "INV-DEL-101" in wa["customer_message"]
 
 def test_active_deliveries_and_rider_return():
-    # Dispatch an order
+    # Dispatch an order with auto_confirm True
     dispatch_payload = {
         "rider_type": "NEW",
         "rider_name": "Usman Rider",
@@ -76,7 +81,8 @@ def test_active_deliveries_and_rider_return():
         "customer_address": "Gulberg 3, Lahore",
         "invoice_no": "INV-DEL-202",
         "bill_amount": 1500.0,
-        "payment_method": "Cash on Delivery"
+        "payment_method": "Cash on Delivery",
+        "auto_confirm": True
     }
     disp_resp = client.post("/api/deliveries/dispatch", json=dispatch_payload)
     assert disp_resp.status_code == 200
@@ -92,8 +98,8 @@ def test_active_deliveries_and_rider_return():
     ret_fail = client.post(f"/api/deliveries/{deliv_id}/return", json={"rider_pin": "9999"})
     assert ret_fail.status_code == 400
 
-    # Return with correct PIN
-    ret_ok = client.post(f"/api/deliveries/{deliv_id}/return", json={"rider_pin": "1234"})
+    # Return with correct PIN & auto_confirm
+    ret_ok = client.post(f"/api/deliveries/{deliv_id}/return", json={"rider_pin": "1234", "auto_confirm": True})
     assert ret_ok.status_code == 200
     ret_data = ret_ok.json()
     assert ret_data["success"] is True
@@ -108,6 +114,24 @@ def test_active_deliveries_and_rider_return():
     assert "Usman Rider" in wa_ret["admin_message"]
     assert "INV-DEL-202" in wa_ret["admin_message"]
     assert "1,500" in wa_ret["admin_message"]
+
+def test_whatsapp_templates_get_and_save():
+    # 1. GET templates
+    r_get = client.get("/api/deliveries/templates")
+    assert r_get.status_code == 200
+    tmpl_data = r_get.json()
+    assert "admin_dispatch" in tmpl_data
+    assert "customer_dispatch" in tmpl_data
+    assert "admin_return" in tmpl_data
+
+    # 2. POST update templates
+    custom_admin = "CUSTOM ADMIN DISPATCH #{invoice} to {customer_name}"
+    r_post = client.post("/api/deliveries/templates", json={
+        "admin_dispatch": custom_admin
+    })
+    assert r_post.status_code == 200
+    assert r_post.json()["success"] is True
+    assert r_post.json()["templates"]["admin_dispatch"] == custom_admin
 
 def test_admin_end_of_day_reconciliation_approve_and_reject():
     # Create two deliveries and return them
@@ -189,3 +213,29 @@ def test_convert_temporary_rider_to_permanent():
     assert updated_staff["is_temp_delivery_staff"] == 0
     assert updated_staff["designation"] == "Senior Delivery Specialist"
     assert updated_staff["monthly_salary"] == 38000.0
+
+def test_dispatch_existing_staff():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, pin FROM staff WHERE pin IS NOT NULL AND pin != '' LIMIT 1")
+    row = cursor.fetchone()
+    conn.close()
+
+    if row:
+        staff_id = row["id"]
+        pin = str(row["pin"])
+        payload = {
+            "rider_type": "EXISTING",
+            "staff_id": staff_id,
+            "rider_pin": pin,
+            "customer_name": "Test Existing Customer",
+            "customer_phone": "03001112233",
+            "customer_address": "Test Street 10",
+            "bill_amount": 950.0,
+            "payment_method": "Cash on Delivery"
+        }
+        resp = client.post("/api/deliveries/dispatch", json=payload)
+        assert resp.status_code == 200
+        assert resp.json()["success"] is True
+        assert resp.json()["delivery"]["staff_id"] == staff_id
+

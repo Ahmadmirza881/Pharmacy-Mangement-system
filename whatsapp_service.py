@@ -206,6 +206,12 @@ class WhatsAppService:
         self.message_history.insert(0, entry)
         return entry
 
+    def _safe_format(self, template_str: str, values: Dict[str, Any]) -> str:
+        res = template_str
+        for k, v in values.items():
+            res = res.replace(f"{{{k}}}", str(v))
+        return res
+
     def build_delivery_dispatch_admin_message(self, delivery: Dict[str, Any]) -> str:
         """Formal WhatsApp message for Admin when order is dispatched."""
         now = datetime.now()
@@ -213,13 +219,34 @@ class WhatsAppService:
         invoice = delivery.get("invoice_no", "N/A")
         cust_name = delivery.get("customer_name", "Customer")
         cust_phone = delivery.get("customer_phone", "")
-        address = delivery.get("customer_address", "")
-        amount = float(delivery.get("bill_amount", 0.0))
+        address = delivery.get("customer_address") or delivery.get("delivery_address") or ""
+        raw_amt = delivery.get("bill_amount") if delivery.get("bill_amount") is not None else delivery.get("total_amount", 0.0)
+        amount = float(raw_amt or 0.0)
         payment_method = delivery.get("payment_method", "Cash on Delivery")
-        rider = delivery.get("delivery_person_name", "Rider")
-        rider_phone = delivery.get("delivery_person_phone", "")
+        rider = delivery.get("delivery_person_name") or delivery.get("rider_name") or "Rider"
+        rider_phone = delivery.get("delivery_person_phone") or delivery.get("rider_phone") or ""
         notes = (delivery.get("notes") or "").strip()
         notes_str = f"📝 *Notes:* {notes}\n" if notes else ""
+
+        try:
+            from database import get_delivery_wa_templates
+            tmpl = get_delivery_wa_templates().get("admin_dispatch")
+        except Exception:
+            tmpl = None
+
+        if tmpl:
+            return self._safe_format(tmpl, {
+                "invoice": invoice,
+                "customer_name": cust_name,
+                "customer_phone": cust_phone,
+                "address": address,
+                "amount": f"{amount:,.0f}",
+                "payment_method": payment_method,
+                "rider_name": rider,
+                "rider_phone": rider_phone,
+                "time": time_str,
+                "notes": notes_str
+            })
 
         return (
             f"🚀 *MUMTAZ PHARMACY — ORDER DISPATCHED*\n"
@@ -237,12 +264,39 @@ class WhatsAppService:
 
     def build_delivery_dispatch_customer_message(self, delivery: Dict[str, Any]) -> str:
         """Formal WhatsApp message for Customer when order is on the way."""
+        now = datetime.now()
+        time_str = now.strftime("%I:%M %p")
         cust_name = delivery.get("customer_name", "Valued Customer")
         invoice = delivery.get("invoice_no", "N/A")
-        amount = float(delivery.get("bill_amount", 0.0))
+        cust_phone = delivery.get("customer_phone", "")
+        address = delivery.get("customer_address") or delivery.get("delivery_address") or ""
+        raw_amt = delivery.get("bill_amount") if delivery.get("bill_amount") is not None else delivery.get("total_amount", 0.0)
+        amount = float(raw_amt or 0.0)
         payment_method = delivery.get("payment_method", "Cash on Delivery")
-        rider = delivery.get("delivery_person_name", "Rider")
-        rider_phone = delivery.get("delivery_person_phone", "")
+        rider = delivery.get("delivery_person_name") or delivery.get("rider_name") or "Rider"
+        rider_phone = delivery.get("delivery_person_phone") or delivery.get("rider_phone") or ""
+        notes = (delivery.get("notes") or "").strip()
+        notes_str = f"📝 *Notes:* {notes}\n" if notes else ""
+
+        try:
+            from database import get_delivery_wa_templates
+            tmpl = get_delivery_wa_templates().get("customer_dispatch")
+        except Exception:
+            tmpl = None
+
+        if tmpl:
+            return self._safe_format(tmpl, {
+                "invoice": invoice,
+                "customer_name": cust_name,
+                "customer_phone": cust_phone,
+                "address": address,
+                "amount": f"{amount:,.0f}",
+                "payment_method": payment_method,
+                "rider_name": rider,
+                "rider_phone": rider_phone,
+                "time": time_str,
+                "notes": notes_str
+            })
 
         return (
             f"📦 *MUMTAZ PHARMACY — YOUR ORDER IS ON THE WAY!*\n"
@@ -264,8 +318,32 @@ class WhatsAppService:
         time_str = now.strftime("%I:%M %p")
         invoice = delivery.get("invoice_no", "N/A")
         cust_name = delivery.get("customer_name", "Customer")
-        amount = float(delivery.get("bill_amount", 0.0))
-        rider = delivery.get("delivery_person_name", "Rider")
+        cust_phone = delivery.get("customer_phone", "")
+        address = delivery.get("customer_address") or delivery.get("delivery_address") or ""
+        raw_amt = delivery.get("bill_amount") if delivery.get("bill_amount") is not None else delivery.get("total_amount", 0.0)
+        amount = float(raw_amt or 0.0)
+        payment_method = delivery.get("payment_method", "Cash on Delivery")
+        rider = delivery.get("delivery_person_name") or delivery.get("rider_name") or "Rider"
+        rider_phone = delivery.get("delivery_person_phone") or delivery.get("rider_phone") or ""
+
+        try:
+            from database import get_delivery_wa_templates
+            tmpl = get_delivery_wa_templates().get("admin_return")
+        except Exception:
+            tmpl = None
+
+        if tmpl:
+            return self._safe_format(tmpl, {
+                "invoice": invoice,
+                "customer_name": cust_name,
+                "customer_phone": cust_phone,
+                "address": address,
+                "amount": f"{amount:,.0f}",
+                "payment_method": payment_method,
+                "rider_name": rider,
+                "rider_phone": rider_phone,
+                "time": time_str
+            })
 
         return (
             f"✅ *MUMTAZ PHARMACY — RIDER RETURN CONFIRMATION*\n"

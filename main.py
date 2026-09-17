@@ -24,10 +24,11 @@ from database import (
     verify_and_consume_otp, get_active_otps, get_pin_otp_audit_logs,
     mark_otp_notified, get_admin_master_pin, set_admin_master_pin,
     verify_and_reveal_otp_by_token, get_otp_by_token,
-    register_or_get_delivery_staff, verify_rider_pin, get_delivery_by_id,
-    create_delivery, complete_delivery_return, reconcile_delivery,
-    get_deliveries_list, get_active_deliveries_for_return,
-    get_delivery_stats_today, convert_temp_rider_to_permanent
+    register_or_get_delivery_staff, verify_rider_pin, get_delivery_by_id, get_staff_by_id,
+    create_delivery, confirm_delivery_dispatch, complete_delivery_return, confirm_delivery_return,
+    reconcile_delivery, get_deliveries_list, get_active_deliveries_for_return,
+    get_delivery_stats_today, convert_temp_rider_to_permanent,
+    get_delivery_wa_templates, save_delivery_wa_templates
 )
 from payroll_engine import process_punch, calculate_monthly_payroll, calculate_custom_range_payroll
 from biometric_service import biometric_service
@@ -2662,9 +2663,16 @@ class DeliveryDispatchRequest(BaseModel):
     payment_method: Optional[str] = "Cash on Delivery"
     notes: Optional[str] = ""
     is_new_rider: Optional[bool] = False
+    auto_confirm: Optional[bool] = False
 
 class DeliveryReturnRequest(BaseModel):
     rider_pin: str
+    auto_confirm: Optional[bool] = False
+
+class DeliveryWATemplatesRequest(BaseModel):
+    admin_dispatch: Optional[str] = None
+    customer_dispatch: Optional[str] = None
+    admin_return: Optional[str] = None
 
 class DeliveryReconcileRequest(BaseModel):
     action: str  # "APPROVE" or "REJECT" or "REOPEN"
@@ -2700,15 +2708,25 @@ def check_or_preview_rider(data: DeliveryCheckRiderRequest):
         "is_temp": res.get("is_temp", False)
     }
 
+@app.get("/api/deliveries/templates")
+def get_wa_templates_endpoint():
+    """Returns custom or default WhatsApp message templates."""
+    return get_delivery_wa_templates()
+
+@app.post("/api/deliveries/templates")
+def save_wa_templates_endpoint(data: DeliveryWATemplatesRequest):
+    """Saves custom WhatsApp message templates (Admin only)."""
+    updated = save_delivery_wa_templates(data.dict(exclude_none=True))
+    return {"success": True, "templates": updated, "message": "WhatsApp templates updated successfully."}
+
 @app.post("/api/deliveries/dispatch")
 def dispatch_delivery(data: DeliveryDispatchRequest):
     """
     Real-time dispatch:
     - Auto-registers rider if new (or missing staff_id)
     - Verifies 4-digit rider PIN
-    - Dispatches WhatsApp alerts for Admin & Customer
-    - Marks status OUT_FOR_DELIVERY, financial approval_status PENDING
-    - Returns delivery details + direct WhatsApp links
+    - Prepares WhatsApp alert links for Admin & Customer
+    - Marks status PENDING_DISPATCH (or OUT_FOR_DELIVERY if auto_confirm is True)
     """
     staff_id = data.staff_id
     rider_name = (data.rider_name or "").strip()
@@ -2737,6 +2755,7 @@ def dispatch_delivery(data: DeliveryDispatchRequest):
 
     # Determine address
     clean_address = (data.customer_address or data.delivery_address or "").strip()
+    initial_st = "OUT_FOR_DELIVERY" if data.auto_confirm else "PENDING_DISPATCH"
 
     # Create delivery
     delivery = create_delivery(
@@ -2751,8 +2770,9 @@ def dispatch_delivery(data: DeliveryDispatchRequest):
         payment_method=data.payment_method or "Cash on Delivery",
         notes=data.notes or "",
         dispatch_pin_verified=1,
-        admin_wa_sent=1,
-        customer_wa_sent=1
+        admin_wa_sent=0 if not data.auto_confirm else 1,
+        customer_wa_sent=0 if not data.auto_confirm else 1,
+        initial_status=initial_st
     )
 
     admin_phone = get_setting("admin_whatsapp_number") or "03001234567"
@@ -2764,25 +2784,46 @@ def dispatch_delivery(data: DeliveryDispatchRequest):
         "whatsapp": wa_alerts,
         "admin_wa_link": wa_alerts.get("admin_link", ""),
         "customer_wa_link": wa_alerts.get("customer_link", ""),
-        "message": f"Delivery for invoice #{clean_invoice} dispatched successfully."
+        "message": f"Delivery for invoice #{clean_invoice} prepared. Send WhatsApp alerts to confirm Out for Delivery."
     }
+
+@app.post("/api/deliveries/{delivery_id}/confirm-dispatch")
+def confirm_dispatch_endpoint(delivery_id: int):
+    """Confirms WhatsApp alerts sent and marks status as OUT_FOR_DELIVERY."""
+    try:
+        updated = confirm_delivery_dispatch(delivery_id)
+        return {
+            "success": True,
+            "delivery": updated,
+            "message": f"Delivery #{updated['invoice_no']} status updated to OUT_FOR_DELIVERY."
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/api/deliveries/active")
 def list_active_deliveries():
-    """Returns deliveries currently OUT_FOR_DELIVERY for Staff Portal return selection."""
-    return get_active_deliveries_for_return()
+    """Returns deliveries currently OUT_FOR_DELIVERY or PENDING_RETURN for Staff Portal return selection."""
+    active = get_deliveries_list(status="OUT_FOR_DELIVERY", limit=100)
+    pending_ret = get_deliveries_list(status="PENDING_RETURN", limit=100)
+    # Combine lists
+    existing_ids = {d["id"] for d in active}
+    for d in pending_ret:
+        if d["id"] not in existing_ids:
+            active.append(d)
+    return active
 
 @app.post("/api/deliveries/{delivery_id}/return")
-def confirm_delivery_return(delivery_id: int, data: DeliveryReturnRequest):
+def return_delivery(delivery_id: int, data: DeliveryReturnRequest):
     """
-    Rider Return confirmation:
+    Rider Return confirmation step 1:
     - Verifies 4-digit PIN against rider
-    - Marks operational status DELIVERED
-    - Keeps financial approval_status PENDING
-    - Sends Return WhatsApp alert to Admin with cash collected
+    - Prepares return WhatsApp alert for Admin
+    - Marks status PENDING_RETURN (or DELIVERED if auto_confirm is True)
     """
     try:
         updated = complete_delivery_return(delivery_id=delivery_id, rider_pin=data.rider_pin, return_wa_sent=1)
+        if data.auto_confirm:
+            updated = confirm_delivery_return(delivery_id=delivery_id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -2793,8 +2834,22 @@ def confirm_delivery_return(delivery_id: int, data: DeliveryReturnRequest):
         "success": True,
         "delivery": updated,
         "whatsapp": wa_return,
-        "message": f"Rider returned for invoice #{updated['invoice_no']}. Status updated to DELIVERED."
+        "admin_wa_link": wa_return.get("admin_link", ""),
+        "message": f"Rider PIN verified for invoice #{updated['invoice_no']}. Send WhatsApp alert to Admin to mark as Delivered."
     }
+
+@app.post("/api/deliveries/{delivery_id}/confirm-return")
+def confirm_return_endpoint(delivery_id: int):
+    """Confirms return alert sent and marks status as DELIVERED."""
+    try:
+        updated = confirm_delivery_return(delivery_id)
+        return {
+            "success": True,
+            "delivery": updated,
+            "message": f"Delivery #{updated['invoice_no']} status updated to DELIVERED."
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/api/deliveries")
 def list_deliveries(

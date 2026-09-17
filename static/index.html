@@ -1142,12 +1142,9 @@
               <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                 Admin Password / PIN
               </label>
-              <span
-                class="text-[11px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Default:
-                1370</span>
             </div>
             <div class="relative">
-              <input type="password" id="admin-login-password" value="1370" placeholder="••••••••"
+              <input type="password" id="admin-login-password" value="" placeholder="••••••••"
                 class="w-full bg-slate-50 border border-slate-300 focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/15 rounded-xl py-3 pl-3.5 pr-11 text-sm font-semibold text-slate-900 outline-none transition"
                 required>
               <button type="button" onclick="togglePasswordVisibility('admin-login-password', 'admin-eye-icon')"
@@ -1172,81 +1169,24 @@
         </form>
 
         <!-- ========================================== -->
-        <!-- 2. STAFF LOGIN FORM (RIGHT TAB)            -->
+        <!-- 2. STAFF LOGIN FORM (RIGHT TAB - 1 CLICK)  -->
         <!-- ========================================== -->
-        <form id="form-staff-tab" onsubmit="event.preventDefault(); handleStaffLoginSubmit();" class="space-y-4 hidden">
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Staff Username / Email / ID
-            </label>
-            <div class="relative">
-              <input type="text" id="staff-login-username" value="staff" placeholder="staff or ali.raza"
-                class="w-full bg-slate-50 border border-slate-300 focus:bg-white focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/15 rounded-xl py-3 px-3.5 text-sm font-semibold text-slate-900 outline-none transition"
-                required>
+        <div id="form-staff-tab" class="space-y-4 hidden">
+          <div class="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl text-center space-y-2">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto font-bold">
+              <i data-lucide="shield-check" class="w-5 h-5"></i>
             </div>
+            <h4 class="text-sm font-black text-emerald-950 uppercase tracking-wide">1-Click Staff Portal Access</h4>
+            <p class="text-xs text-emerald-800/90 font-medium">
+              Counter staff can directly access Attendance, Customer Khata, and Delivery Dispatch without typing any password.
+            </p>
           </div>
 
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Staff Password / PIN
-              </label>
-              <span
-                class="text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Default:
-                1234</span>
-            </div>
-            <div class="relative">
-              <input type="password" id="staff-login-password" value="1234" placeholder="••••••••"
-                class="w-full bg-slate-50 border border-slate-300 focus:bg-white focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/15 rounded-xl py-3 pl-3.5 pr-11 text-sm font-semibold text-slate-900 outline-none transition"
-                required>
-              <button type="button" onclick="togglePasswordVisibility('staff-login-password', 'staff-eye-icon')"
-                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 rounded-lg transition cursor-pointer"
-                title="Show / Hide Password">
-                <i id="staff-eye-icon" data-lucide="eye" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-
-          <div id="staff-login-error"
-            class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
-            <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
-            <span id="staff-login-error-text">Ghalat credentials</span>
-          </div>
-
-          <button type="submit"
-            class="w-full py-3.5 px-4 bg-[#156D38] hover:bg-[#0E4D27] active:scale-98 text-white font-black text-sm rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/20 transition cursor-pointer mt-2">
-            <i data-lucide="shield-check" class="w-4 h-4 text-white"></i>
-            <span>Sign In as Staff</span>
+          <button type="button" onclick="enterStaffPortal(true)"
+            class="w-full py-4 px-4 bg-[#156D38] hover:bg-[#0E4D27] active:scale-98 text-white font-black text-sm sm:text-base rounded-2xl flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-950/20 transition cursor-pointer mt-2">
+            <i data-lucide="zap" class="w-5 h-5 text-amber-300"></i>
+            <span>Enter Staff & Counter Portal (1-Click Access)</span>
           </button>
-        </form>
-
-        <!-- ========================================== -->
-        <!-- 3. INSTANT DEMO 1-CLICK LOGIN BAR (BOTTOM) -->
-        <!-- ========================================== -->
-        <div class="border-t border-dashed border-slate-200 pt-5 mt-6">
-          <div class="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-700 mb-3">
-            <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-600"></i>
-            <span>⚡ INSTANT DEMO 1-CLICK LOGIN:</span>
-          </div>
-
-          <div class="flex flex-wrap gap-2">
-            <button onclick="quickFillLogin('admin')" type="button"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 shadow-2xs transition cursor-pointer">
-              <span>👑 Super Admin</span>
-            </button>
-            <button onclick="quickFillLogin('owner')" type="button"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 shadow-2xs transition cursor-pointer">
-              <span>🏢 Pharmacy Owner</span>
-            </button>
-            <button onclick="quickFillLogin('staff')" type="button"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 shadow-2xs transition cursor-pointer">
-              <span>🟢 Counter Staff</span>
-            </button>
-            <button onclick="quickFillLogin('ali')" type="button"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 shadow-2xs transition cursor-pointer">
-              <span>👨‍⚕️ Pharmacist (Ali)</span>
-            </button>
-          </div>
         </div>
 
       </div>
@@ -1737,7 +1677,16 @@
             </div>
 
             <!-- Page Action Buttons -->
-            <div class="flex items-center gap-2.5 self-start sm:self-auto">
+            <div class="flex items-center gap-2.5 self-start sm:self-auto flex-wrap">
+              <!-- Temp Staff Quick Filter Button -->
+              <button onclick="filterStaffByTemp()" id="staff-btn-temp-filter"
+                class="bg-amber-50 hover:bg-amber-100 active:scale-95 text-amber-900 font-bold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1.5 border border-amber-300 shadow-2xs transition cursor-pointer"
+                title="Filter and view all temporary staff & delivery riders">
+                <i data-lucide="bike" class="w-3.5 h-3.5 text-amber-600"></i>
+                <span>🛵 Temp Staff</span>
+                <span id="temp-staff-count-badge" class="bg-amber-200 text-amber-950 px-1.5 py-0.2 rounded-full text-[10px] font-black">0</span>
+              </button>
+
               <!-- Secondary: Export Excel (High Visibility Solid Button) -->
               <button onclick="exportStaffExcel()"
                 class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold text-xs px-3.5 py-2 rounded-lg flex items-center gap-1.5 shadow-xs transition cursor-pointer"
@@ -1773,6 +1722,7 @@
               <select id="staff-filter-designation" onchange="handleStaffFilter()"
                 class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition cursor-pointer">
                 <option value="ALL">All Designations</option>
+                <option value="TEMP_RIDER">🛵 Temporary Staff / Riders</option>
                 <option value="Pharmacist">Pharmacist</option>
                 <option value="Senior Pharmacist">Senior Pharmacist</option>
                 <option value="Cashier">Cashier</option>
@@ -2722,66 +2672,76 @@
 
           <!-- 2. ADMIN PORTAL VIEW (EXECUTIVE KPI, AUDIT TABLE & RECONCILIATION) -->
           <div id="delivery-admin-container" class="space-y-6 hidden">
-            <!-- Top 5 KPI Cards -->
+            <!-- Top 5 KPI Cards (Clickable for Instant Filtering) -->
             <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               <!-- KPI 1: Today's Deliveries -->
-              <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
+              <div onclick="filterAdminDeliveriesByKpi('ALL', 'ALL', true)"
+                class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs hover:border-emerald-500 hover:shadow-md transition-all cursor-pointer group active:scale-[0.98]"
+                title="Click to view all today's dispatched orders">
                 <div class="flex items-center justify-between text-slate-500 text-xs font-semibold mb-1">
-                  <span>Today's Total</span>
-                  <div class="w-7 h-7 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600">
+                  <span class="group-hover:text-emerald-700 transition font-bold">Today's Total</span>
+                  <div class="w-7 h-7 rounded-xl bg-slate-100 group-hover:bg-emerald-100 flex items-center justify-center text-slate-600 group-hover:text-emerald-700 transition">
                     <i data-lucide="package" class="w-4 h-4"></i>
                   </div>
                 </div>
                 <div id="deliv-kpi-total" class="text-2xl font-black text-slate-900 font-mono">0</div>
-                <p class="text-[10px] text-slate-400 mt-0.5">Dispatched today</p>
+                <p class="text-[10px] text-slate-400 group-hover:text-emerald-600 font-medium mt-0.5 transition">Dispatched today • Click to view</p>
               </div>
 
               <!-- KPI 2: Out for Delivery -->
-              <div class="bg-white rounded-2xl p-4 border border-amber-200/80 bg-amber-50/20 shadow-2xs">
+              <div onclick="filterAdminDeliveriesByKpi('OUT_FOR_DELIVERY', 'ALL', true)"
+                class="bg-white rounded-2xl p-4 border border-amber-200/80 bg-amber-50/20 shadow-2xs hover:border-amber-400 hover:shadow-md transition-all cursor-pointer group active:scale-[0.98]"
+                title="Click to filter orders currently on the road">
                 <div class="flex items-center justify-between text-amber-700 text-xs font-semibold mb-1">
-                  <span>Out for Delivery</span>
-                  <div class="w-7 h-7 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700">
+                  <span class="group-hover:text-amber-900 transition font-bold">Out for Delivery</span>
+                  <div class="w-7 h-7 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 transition">
                     <i data-lucide="bike" class="w-4 h-4"></i>
                   </div>
                 </div>
                 <div id="deliv-kpi-out" class="text-2xl font-black text-amber-800 font-mono">0</div>
-                <p class="text-[10px] text-amber-600 mt-0.5">Currently on the road</p>
+                <p class="text-[10px] text-amber-600 group-hover:text-amber-800 font-medium mt-0.5 transition">Currently on the road • Click to view</p>
               </div>
 
               <!-- KPI 3: Delivered Today -->
-              <div class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs">
+              <div onclick="filterAdminDeliveriesByKpi('DELIVERED', 'ALL', true)"
+                class="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs hover:border-emerald-500 hover:shadow-md transition-all cursor-pointer group active:scale-[0.98]"
+                title="Click to view all delivered orders today">
                 <div class="flex items-center justify-between text-slate-500 text-xs font-semibold mb-1">
-                  <span>Delivered Today</span>
-                  <div class="w-7 h-7 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700">
+                  <span class="group-hover:text-emerald-700 transition font-bold">Delivered Today</span>
+                  <div class="w-7 h-7 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 transition">
                     <i data-lucide="check-circle-2" class="w-4 h-4"></i>
                   </div>
                 </div>
                 <div id="deliv-kpi-delivered" class="text-2xl font-black text-slate-900 font-mono">0</div>
-                <p class="text-[10px] text-slate-400 mt-0.5">Operational completed</p>
+                <p class="text-[10px] text-slate-400 group-hover:text-emerald-600 font-medium mt-0.5 transition">Operational completed • Click to view</p>
               </div>
 
               <!-- KPI 4: Pending Admin Approval -->
-              <div class="bg-white rounded-2xl p-4 border border-amber-300 bg-amber-50/50 shadow-2xs">
+              <div onclick="filterAdminDeliveriesByKpi('ALL', 'PENDING', false)"
+                class="bg-white rounded-2xl p-4 border border-amber-300 bg-amber-50/50 shadow-2xs hover:border-amber-500 hover:shadow-md transition-all cursor-pointer group active:scale-[0.98]"
+                title="Click to view pending audit items needing approval">
                 <div class="flex items-center justify-between text-amber-900 text-xs font-black mb-1">
-                  <span>Pending Hisaab</span>
-                  <div class="w-7 h-7 rounded-xl bg-amber-200/70 flex items-center justify-center text-amber-900">
+                  <span class="group-hover:text-amber-950 transition">Pending Hisaab</span>
+                  <div class="w-7 h-7 rounded-xl bg-amber-200/70 flex items-center justify-center text-amber-900 transition">
                     <i data-lucide="alert-circle" class="w-4 h-4"></i>
                   </div>
                 </div>
                 <div id="deliv-kpi-pending-approval" class="text-2xl font-black text-amber-950 font-mono">0</div>
-                <p class="text-[10px] text-amber-800 font-medium mt-0.5">Needs End-of-Day audit</p>
+                <p class="text-[10px] text-amber-800 font-medium mt-0.5">Needs End-of-Day audit • Click to view</p>
               </div>
 
               <!-- KPI 5: Total Cash Reconciled -->
-              <div class="bg-white rounded-2xl p-4 border border-emerald-300 bg-emerald-50/40 shadow-2xs col-span-2 sm:col-span-1">
+              <div onclick="filterAdminDeliveriesByKpi('ALL', 'APPROVED', true)"
+                class="bg-white rounded-2xl p-4 border border-emerald-300 bg-emerald-50/40 shadow-2xs col-span-2 sm:col-span-1 hover:border-emerald-500 hover:shadow-md transition-all cursor-pointer group active:scale-[0.98]"
+                title="Click to view approved cash reconciled deliveries">
                 <div class="flex items-center justify-between text-emerald-900 text-xs font-black mb-1">
-                  <span>Cash Reconciled</span>
-                  <div class="w-7 h-7 rounded-xl bg-emerald-200/70 flex items-center justify-center text-emerald-900">
+                  <span class="group-hover:text-emerald-950 transition">Cash Reconciled</span>
+                  <div class="w-7 h-7 rounded-xl bg-emerald-200/70 flex items-center justify-center text-emerald-900 transition">
                     <i data-lucide="banknote" class="w-4 h-4"></i>
                   </div>
                 </div>
                 <div id="deliv-kpi-reconciled-cash" class="text-2xl font-black text-emerald-950 font-mono">Rs. 0</div>
-                <p class="text-[10px] text-emerald-800 font-medium mt-0.5">Approved revenue</p>
+                <p class="text-[10px] text-emerald-800 font-medium mt-0.5">Approved revenue • Click to view</p>
               </div>
             </div>
 
@@ -2826,6 +2786,10 @@
               </div>
 
               <div class="flex items-center gap-2">
+                <button type="button" onclick="openWATemplatesModal()" class="px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition" title="Edit WhatsApp Message Templates (Admin Only)">
+                  <i data-lucide="settings" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span>WhatsApp Templates</span>
+                </button>
                 <button type="button" onclick="loadDeliveriesView()" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 cursor-pointer transition" title="Refresh list">
                   <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                 </button>
@@ -3731,20 +3695,32 @@
                       link is number par WhatsApp hoga.</p>
                   </div>
 
-                  <div>
-                    <label class="block text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
-                      Admin Master PIN (Mobile OTP Security) *
-                    </label>
-                    <div class="relative">
-                      <div
-                        class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-emerald-600 font-bold text-xs">
+                  <!-- Admin Portal Password / PIN Change Card -->
+                  <div class="bg-gradient-to-r from-amber-50/80 to-orange-50/80 p-4 rounded-2xl border border-amber-200/90 space-y-2.5">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold shadow-2xs">
                         <i data-lucide="key-round" class="w-4 h-4"></i>
                       </div>
-                      <input type="text" id="setting-admin-master-pin" placeholder="e.g. 1370" maxlength="4" required
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent">
+                      <div>
+                        <h4 class="text-xs font-black uppercase text-amber-950 tracking-wider">Admin Portal Password & Master PIN</h4>
+                        <p class="text-[11px] text-amber-800 font-medium">Jab chahy apny Admin Portal ka password ya PIN Tabdeeli (Change) karein</p>
+                      </div>
                     </div>
-                    <p class="text-[11px] text-slate-400 mt-1">Jab Admin mobile par WhatsApp link kholega, OTP reveal
-                      karne ke liye yeh 4-digit PIN enter karni hogi.</p>
+                    <div>
+                      <label class="block text-xs font-extrabold text-amber-950 uppercase tracking-wider mb-1">
+                        Admin Portal Password / PIN *
+                      </label>
+                      <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-amber-600 font-bold text-xs">
+                          <i data-lucide="lock" class="w-4 h-4"></i>
+                        </div>
+                        <input type="text" id="setting-admin-master-pin" placeholder="e.g. 1370 or mySecretPin123" required
+                          class="w-full bg-white border border-amber-300 rounded-xl pl-10 pr-4 py-2 text-sm font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                      </div>
+                      <p class="text-[11px] text-amber-900/80 mt-1 font-medium">
+                        Yeh password Admin Portal login aur mobile WhatsApp OTP unlock karne ke liye istemal hoga.
+                      </p>
+                    </div>
                   </div>
 
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -6193,12 +6169,12 @@
   <div id="delivery-dispatch-success-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 text-slate-800 space-y-4">
       <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-        <i data-lucide="check-circle" class="w-7 h-7 text-emerald-600"></i>
+        <i data-lucide="send" class="w-7 h-7 text-emerald-600"></i>
       </div>
       
       <div class="text-center space-y-1">
-        <h3 class="text-lg font-black text-slate-900 tracking-tight">Order Dispatched Successfully!</h3>
-        <p class="text-xs text-slate-500">Order is marked <strong class="text-amber-700 font-bold">OUT_FOR_DELIVERY</strong>. Send real-time WhatsApp alerts below:</p>
+        <h3 class="text-lg font-black text-slate-900 tracking-tight">Dispatch Prepared &amp; Alerts Ready</h3>
+        <p class="text-xs text-slate-500">Click below to send WhatsApp messages, then confirm to mark <strong class="text-emerald-700 font-bold">OUT_FOR_DELIVERY</strong>:</p>
       </div>
 
       <!-- Order Summary Pill -->
@@ -6224,24 +6200,25 @@
       <!-- WhatsApp Trigger Buttons -->
       <div class="space-y-2">
         <!-- 1. Send Admin Alert -->
-        <a id="disp-modal-admin-link" href="#" target="_blank"
+        <a id="disp-modal-admin-link" href="#" target="_blank" onclick="onDispatchWaBtnClicked('admin')"
           class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.99]">
           <i data-lucide="message-square" class="w-4 h-4"></i>
-          <span>Send Admin WhatsApp Alert</span>
+          <span>1. Send Admin WhatsApp Alert</span>
         </a>
 
         <!-- 2. Send Customer Alert -->
-        <a id="disp-modal-cust-link" href="#" target="_blank"
+        <a id="disp-modal-cust-link" href="#" target="_blank" onclick="onDispatchWaBtnClicked('customer')"
           class="w-full py-2.5 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.99]">
           <i data-lucide="phone-forwarded" class="w-4 h-4 text-emerald-400"></i>
-          <span>Send Customer "On The Way" Alert</span>
+          <span>2. Send Customer "On The Way" Alert</span>
         </a>
       </div>
 
-      <!-- Close / Next Order -->
-      <button type="button" onclick="closeDispatchSuccessModal()"
-        class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition cursor-pointer">
-        Done &amp; Start New Dispatch
+      <!-- Primary Confirmation Button -->
+      <button type="button" id="btn-confirm-dispatch-sent" onclick="confirmDispatchAlertsSent()"
+        class="w-full py-3 px-4 bg-[#156D38] hover:bg-[#0E4D27] text-white font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition active:scale-[0.99] cursor-pointer">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        <span>Confirm Both WhatsApp Alerts Sent &amp; Mark Out For Delivery</span>
       </button>
     </div>
   </div>
@@ -6306,8 +6283,134 @@
         </button>
         <button type="button" id="btn-confirm-rider-return" onclick="submitRiderReturn()" class="flex-2 py-2.5 bg-[#156D38] hover:bg-[#0E4D27] text-white rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow cursor-pointer active:scale-95">
           <i data-lucide="check-check" class="w-4 h-4"></i>
-          <span>Confirm Return &amp; Complete</span>
+          <span>Verify Rider PIN &amp; Proceed</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: RIDER RETURN WHATSAPP CONFIRMATION MODAL -->
+  <div id="delivery-return-success-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 text-slate-800 space-y-4">
+      <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mx-auto">
+        <i data-lucide="corner-down-left" class="w-7 h-7 text-amber-700"></i>
+      </div>
+      
+      <div class="text-center space-y-1">
+        <h3 class="text-lg font-black text-slate-900 tracking-tight">Rider PIN Verified!</h3>
+        <p class="text-xs text-slate-500">Send WhatsApp return alert to Admin, then confirm to mark <strong class="text-emerald-700 font-bold">DELIVERED</strong>:</p>
+      </div>
+
+      <!-- Summary Pill -->
+      <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500 font-medium">Invoice Number:</span>
+          <span id="return-succ-inv" class="font-mono font-black text-slate-900">INV-0000</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500 font-medium">Rider:</span>
+          <span id="return-succ-rider" class="font-bold text-slate-800">Rider Name</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-slate-500 font-medium">Customer:</span>
+          <span id="return-succ-cust" class="font-medium text-slate-700">Customer Name</span>
+        </div>
+        <div class="flex justify-between items-center pt-2 border-t border-slate-200">
+          <span class="text-slate-900 font-bold">Handed Over Cash:</span>
+          <span id="return-succ-amount" class="font-mono font-black text-emerald-800 text-base">Rs. 0</span>
+        </div>
+      </div>
+
+      <!-- Send Return WA Alert to Admin -->
+      <div>
+        <a id="return-succ-admin-link" href="#" target="_blank"
+          class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition active:scale-[0.99]">
+          <i data-lucide="message-square" class="w-4 h-4"></i>
+          <span>Send Rider Return Alert to Admin on WhatsApp</span>
+        </a>
+      </div>
+
+      <!-- Primary Confirmation Button -->
+      <button type="button" id="btn-confirm-return-sent" onclick="confirmReturnAlertSent()"
+        class="w-full py-3 px-4 bg-[#156D38] hover:bg-[#0E4D27] text-white font-black rounded-xl text-xs flex items-center justify-center gap-2 shadow-md transition active:scale-[0.99] cursor-pointer">
+        <i data-lucide="check-check" class="w-4 h-4"></i>
+        <span>Confirm Return Alert Sent &amp; Mark Delivered</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL 4: EDIT WHATSAPP MESSAGE TEMPLATES (ADMIN ONLY) -->
+  <div id="delivery-wa-templates-modal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 text-slate-800 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+            <i data-lucide="settings" class="w-5 h-5 text-emerald-700"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-black text-slate-900">Edit WhatsApp Alert Templates</h3>
+            <p class="text-xs text-slate-400">Configure text messages sent to Admin &amp; Customers (Admin Only)</p>
+          </div>
+        </div>
+        <button onclick="closeWATemplatesModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-3 bg-amber-50 rounded-xl border border-amber-200/80 text-amber-900 text-xs space-y-1">
+        <div class="font-bold flex items-center gap-1.5">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-600"></i>
+          <span>Available Dynamic Placeholders:</span>
+        </div>
+        <p class="font-mono text-[11px] text-amber-800">
+          {invoice}, {customer_name}, {customer_phone}, {address}, {amount}, {payment_method}, {rider_name}, {rider_phone}, {time}, {notes}
+        </p>
+      </div>
+
+      <!-- Template 1: Admin Dispatch Alert -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-slate-900 flex items-center justify-between">
+          <span>1. Admin Outgoing Dispatch Alert Template</span>
+          <span class="text-[10px] text-slate-400">Sent to Admin on Dispatch</span>
+        </label>
+        <textarea id="wa-tmpl-admin-dispatch" rows="4"
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y"></textarea>
+      </div>
+
+      <!-- Template 2: Customer Dispatch Alert -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-slate-900 flex items-center justify-between">
+          <span>2. Customer "On The Way" Alert Template</span>
+          <span class="text-[10px] text-slate-400">Sent to Customer on Dispatch</span>
+        </label>
+        <textarea id="wa-tmpl-customer-dispatch" rows="4"
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y"></textarea>
+      </div>
+
+      <!-- Template 3: Admin Return Alert -->
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-slate-900 flex items-center justify-between">
+          <span>3. Admin Rider Return Confirmation Template</span>
+          <span class="text-[10px] text-slate-400">Sent to Admin when Rider Returns</span>
+        </label>
+        <textarea id="wa-tmpl-admin-return" rows="4"
+          class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-y"></textarea>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+        <button type="button" onclick="resetWATemplatesToDefault()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer">
+          Restore Default Templates
+        </button>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeWATemplatesModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition cursor-pointer">
+            Cancel
+          </button>
+          <button type="button" id="btn-save-wa-templates" onclick="saveWATemplates()" class="px-5 py-2 bg-[#156D38] hover:bg-[#0E4D27] text-white rounded-xl text-xs font-bold shadow transition flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            <span>Save Templates</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -6486,6 +6589,9 @@
       currentPortalMode = 'GATEWAY';
       sessionStorage.removeItem('mumtaz_portal_mode');
 
+      const passInput = document.getElementById('admin-login-password');
+      if (passInput) passInput.value = '';
+
       const loginScreen = document.getElementById('screen-portal-login');
       const app = document.getElementById('app-layout');
       if (loginScreen) loginScreen.classList.remove('hidden');
@@ -6507,6 +6613,9 @@
       if (adminErr) adminErr.classList.add('hidden');
       if (staffErr) staffErr.classList.add('hidden');
 
+      const passInput = document.getElementById('admin-login-password');
+      if (passInput) passInput.value = '';
+
       if (tab === 'admin') {
         if (adminBtn) {
           adminBtn.className = "py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer bg-white text-amber-900 shadow-sm border border-amber-300";
@@ -6517,8 +6626,7 @@
         if (adminForm) adminForm.classList.remove('hidden');
         if (staffForm) staffForm.classList.add('hidden');
 
-        const pinInput = document.getElementById('admin-login-password');
-        if (pinInput) setTimeout(() => pinInput.focus(), 100);
+        if (passInput) setTimeout(() => passInput.focus(), 100);
       } else {
         if (adminBtn) {
           adminBtn.className = "py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer text-slate-600 hover:text-slate-900 hover:bg-white/60";
@@ -6567,23 +6675,24 @@
         return;
       }
 
-      // Check Master PIN from server settings
-      let savedMasterPin = '1370';
+      // Check Master PIN from server settings first, fallback to localStorage
+      let savedMasterPin = localStorage.getItem('mumtaz_admin_master_pin') || '1370';
       try {
         const res = await fetch('/api/settings');
         if (res.ok) {
           const data = await res.json();
           if (data && data.admin_master_pin) {
-            savedMasterPin = String(data.admin_master_pin);
+            savedMasterPin = String(data.admin_master_pin).trim();
+            localStorage.setItem('mumtaz_admin_master_pin', savedMasterPin);
           }
         }
       } catch (e) { }
 
-      if (password === savedMasterPin || password === '1370' || password.toLowerCase() === 'admin123') {
+      if (password === savedMasterPin) {
         enterAdminPortal(true);
       } else {
         if (errBox && errText) {
-          errText.innerText = "❌ Ghalat Admin Password! Sahi Master PIN (1370) darj karein.";
+          errText.innerText = "❌ Ghalat Admin Password! Barah-e-karam sahi Admin Password / Master PIN darj karein.";
           errBox.classList.remove('hidden');
         }
         if (pInput) {
@@ -6694,23 +6803,9 @@
       const notifWrapper = document.getElementById('notif-dropdown-wrapper');
       if (notifWrapper) notifWrapper.classList.add('hidden');
 
-      // Update Unified Portal Bar in Header (Clean Single Pill)
+      // Clear Header Portal Pills
       const unifiedBar = document.getElementById('unified-portal-bar');
-      if (unifiedBar) {
-        unifiedBar.innerHTML = `
-          <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-xl shadow-2xs">
-            <span class="flex items-center gap-1.5">
-              <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-600"></i>
-              <span>Staff / Counter Mode</span>
-            </span>
-            <span class="text-emerald-300">|</span>
-            <button onclick="showLoginScreen('admin')" class="text-amber-800 hover:text-amber-950 font-black flex items-center gap-1 hover:underline cursor-pointer" title="Switch to Admin Portal">
-              <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-600"></i>
-              <span>Admin Login</span>
-            </button>
-          </div>
-        `;
-      }
+      if (unifiedBar) unifiedBar.innerHTML = '';
 
       // Update Profile text
       const av = document.getElementById('header-user-avatar');
@@ -6734,6 +6829,10 @@
       const app = document.getElementById('app-layout');
       if (loginScreen) loginScreen.classList.add('hidden');
       if (app) app.classList.remove('hidden');
+
+      // Clear Admin Login Password input
+      const passInput = document.getElementById('admin-login-password');
+      if (passInput) passInput.value = '';
 
       // In Admin Mode: Show all tabs (admin tabs + kiosk + customer-khata)
       document.querySelectorAll('.admin-only-tab').forEach(el => el.classList.remove('hidden'));
@@ -6760,23 +6859,9 @@
       // Start pending staff requests auto-polling in Admin mode
       startPendingRequestsPolling();
 
-      // Update Unified Portal Bar in Header (Clean Single Pill)
+      // Clear Header Portal Pills
       const unifiedBar = document.getElementById('unified-portal-bar');
-      if (unifiedBar) {
-        unifiedBar.innerHTML = `
-          <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-xl shadow-2xs">
-            <span class="flex items-center gap-1.5">
-              <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-600"></i>
-              <span>Executive Admin</span>
-            </span>
-            <span class="text-amber-300">|</span>
-            <button onclick="enterStaffPortal(false)" class="text-emerald-700 hover:text-emerald-950 font-black flex items-center gap-1 hover:underline cursor-pointer" title="Quick Switch to Counter / Staff Portal">
-              <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-600"></i>
-              <span>Open Staff Portal</span>
-            </button>
-          </div>
-        `;
-      }
+      if (unifiedBar) unifiedBar.innerHTML = '';
 
       // Update Profile text
       const av = document.getElementById('header-user-avatar');
@@ -6799,7 +6884,11 @@
     document.addEventListener("DOMContentLoaded", () => {
       initPortalMode();
       lucide.createIcons();
-      switchTab('live');
+      if (currentPortalMode === 'STAFF') {
+        switchTab('kiosk');
+      } else if (currentPortalMode === 'ADMIN') {
+        switchTab('live');
+      }
       startLiveClock();
       loadStaff();
       loadTodayAttendance();
@@ -6869,77 +6958,109 @@
       renderNotificationDropdown();
     }
 
+    // Persistent Cleared Notifications Helper Functions
+    function getClearedNotifIds() {
+      try {
+        const stored = localStorage.getItem('mumtaz_cleared_notif_ids');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function addClearedNotifIds(ids) {
+      if (!Array.isArray(ids) || ids.length === 0) return;
+      try {
+        const current = getClearedNotifIds();
+        const combined = new Set([...current, ...ids]);
+        localStorage.setItem('mumtaz_cleared_notif_ids', JSON.stringify(Array.from(combined)));
+      } catch (e) { }
+    }
+
     function buildNotificationList() {
       const items = [];
+      const clearedIds = new Set(getClearedNotifIds());
 
       // 1. Punches from rawTodayRoster
       if (typeof rawTodayRoster !== 'undefined' && Array.isArray(rawTodayRoster)) {
         rawTodayRoster.forEach(s => {
           if (s.time_in) {
-            items.push({
-              id: `punch-in-${s.id}`,
-              type: 'PUNCH',
-              title: `${s.name}`,
-              subtitle: s.status === 'LATE' ? `⚠️ Late Clock-In (${s.late_minutes || '—'}m delay)` : `🟢 Clocked IN on-time (${s.shift_name || 'Duty'})`,
-              time: s.time_in,
-              tab: 'live',
-              badge: s.status === 'LATE' ? 'Late' : 'Clock IN',
-              badgeClass: s.status === 'LATE' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-[#156D38]',
-              icon: 'log-in',
-              iconBg: s.status === 'LATE' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-[#156D38]'
-            });
+            const notifId = `punch-in-${s.id}-${s.date || getLocalTodayStr()}`;
+            if (!clearedIds.has(notifId) && !clearedIds.has(`punch-in-${s.id}`)) {
+              items.push({
+                id: notifId,
+                type: 'PUNCH',
+                title: `${s.name}`,
+                subtitle: s.status === 'LATE' ? `⚠️ Late Clock-In (${s.late_minutes || '—'}m delay)` : `🟢 Clocked IN on-time (${s.shift_name || 'Duty'})`,
+                time: s.time_in,
+                tab: 'live',
+                badge: s.status === 'LATE' ? 'Late' : 'Clock IN',
+                badgeClass: s.status === 'LATE' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-[#156D38]',
+                icon: 'log-in',
+                iconBg: s.status === 'LATE' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-[#156D38]'
+              });
+            }
           }
           if (s.time_out) {
-            items.push({
-              id: `punch-out-${s.id}`,
-              type: 'PUNCH',
-              title: `${s.name}`,
-              subtitle: `Shift Completed (${s.time_out})`,
-              time: s.time_out,
-              tab: 'live',
-              badge: 'Clock OUT',
-              badgeClass: 'bg-sky-100 text-sky-800',
-              icon: 'log-out',
-              iconBg: 'bg-sky-100 text-sky-700'
-            });
+            const notifId = `punch-out-${s.id}-${s.date || getLocalTodayStr()}`;
+            if (!clearedIds.has(notifId) && !clearedIds.has(`punch-out-${s.id}`)) {
+              items.push({
+                id: notifId,
+                type: 'PUNCH',
+                title: `${s.name}`,
+                subtitle: `Shift Completed (${s.time_out})`,
+                time: s.time_out,
+                tab: 'live',
+                badge: 'Clock OUT',
+                badgeClass: 'bg-sky-100 text-sky-800',
+                icon: 'log-out',
+                iconBg: 'bg-sky-100 text-sky-700'
+              });
+            }
           }
         });
       }
 
       // 2. Approved Leaves Today
       if (typeof allLeaves !== 'undefined' && Array.isArray(allLeaves)) {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = typeof getLocalTodayStr === 'function' ? getLocalTodayStr() : new Date().toISOString().split('T')[0];
         allLeaves.filter(l => l.date === todayStr).forEach(l => {
-          items.push({
-            id: `leave-${l.id}`,
-            type: 'LEAVE',
-            title: `${l.staff_name}`,
-            subtitle: `Approved Leave today (${l.reason || 'Personal'})`,
-            time: 'Today',
-            tab: 'leaves',
-            badge: l.leave_type === 'HALF_DAY' ? 'Half Day' : 'Full Leave',
-            badgeClass: 'bg-emerald-100 text-[#156D38]',
-            icon: 'calendar-off',
-            iconBg: 'bg-emerald-50 text-[#156D38]'
-          });
+          const notifId = `leave-${l.id}`;
+          if (!clearedIds.has(notifId)) {
+            items.push({
+              id: notifId,
+              type: 'LEAVE',
+              title: `${l.staff_name}`,
+              subtitle: `Approved Leave today (${l.reason || 'Personal'})`,
+              time: 'Today',
+              tab: 'leaves',
+              badge: l.leave_type === 'HALF_DAY' ? 'Half Day' : 'Full Leave',
+              badgeClass: 'bg-emerald-100 text-[#156D38]',
+              icon: 'calendar-off',
+              iconBg: 'bg-emerald-50 text-[#156D38]'
+            });
+          }
         });
       }
 
       // 3. 30+ Days Overdue Customers
       if (typeof allCustomers !== 'undefined' && Array.isArray(allCustomers)) {
         allCustomers.filter(c => Number(c.current_balance || 0) > 0 && Number(c.overdue_days || 0) >= 30).slice(0, 5).forEach(c => {
-          items.push({
-            id: `overdue-${c.id}`,
-            type: 'OVERDUE',
-            title: `${c.name}`,
-            subtitle: `Due Rs. ${Number(c.current_balance).toLocaleString()} (${c.overdue_days} days overdue)`,
-            time: `${c.overdue_days}d ago`,
-            tab: 'customer-khata',
-            badge: 'Overdue',
-            badgeClass: 'bg-rose-100 text-rose-800',
-            icon: 'alert-triangle',
-            iconBg: 'bg-rose-100 text-rose-700'
-          });
+          const notifId = `overdue-${c.id}`;
+          if (!clearedIds.has(notifId)) {
+            items.push({
+              id: notifId,
+              type: 'OVERDUE',
+              title: `${c.name}`,
+              subtitle: `Due Rs. ${Number(c.current_balance).toLocaleString()} (${c.overdue_days} days overdue)`,
+              time: `${c.overdue_days}d ago`,
+              tab: 'customer-khata',
+              badge: 'Overdue',
+              badgeClass: 'bg-rose-100 text-rose-800',
+              icon: 'alert-triangle',
+              iconBg: 'bg-rose-100 text-rose-700'
+            });
+          }
         });
       }
 
@@ -7007,6 +7128,9 @@
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
             <span class="text-[10px] font-mono font-semibold text-slate-400">${item.time}</span>
+            <button onclick="dismissSingleNotification('${item.id}', event)" class="p-1 rounded-md text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer" title="Dismiss notification">
+              <i data-lucide="x" class="w-3.5 h-3.5"></i>
+            </button>
             <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300 group-hover:text-[#156D38] group-hover:translate-x-0.5 transition-all"></i>
           </div>
         </div>
@@ -7023,22 +7147,23 @@
       switchTab(tabId);
     }
 
-    let notificationsCleared = false;
+    function dismissSingleNotification(notifId, event) {
+      if (event) event.stopPropagation();
+      addClearedNotifIds([notifId]);
+      systemNotifications = systemNotifications.filter(n => n.id !== notifId);
+      updateNotificationBadge();
+      renderNotificationDropdown();
+    }
 
     function clearAllNotifications(event) {
       if (event) event.stopPropagation();
+      
+      const currentIds = systemNotifications.map(n => n.id);
+      addClearedNotifIds(currentIds);
+
       systemNotifications = [];
-      notificationsCleared = true;
-      const countEl = document.getElementById('notif-badge-count');
-      const headerBadge = document.getElementById('notif-header-badge');
-      if (countEl) {
-        countEl.innerText = '0';
-        countEl.classList.add('hidden');
-      }
-      if (headerBadge) {
-        headerBadge.innerText = '0 New';
-        headerBadge.className = 'text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 shadow-2xs';
-      }
+      updateNotificationBadge();
+
       const container = document.getElementById('notif-items-list');
       if (container) {
         container.innerHTML = `
@@ -7047,7 +7172,7 @@
               <i data-lucide="check-check" class="w-5 h-5"></i>
             </div>
             <p class="font-bold text-slate-800">All notifications cleared!</p>
-            <p class="text-[11px] text-slate-400 mt-0.5">You're all caught up with your operational alerts.</p>
+            <p class="text-[11px] text-slate-400 mt-0.5">Cleared notifications will not show up on refresh or app reopen.</p>
           </div>
         `;
         if (window.lucide) {
@@ -7257,6 +7382,9 @@
 
     // 2. Navigation Tabs (High-Performance 0ms switching)
     function switchTab(tabId) {
+      if (currentPortalMode === 'STAFF' && ADMIN_ONLY_TABS.includes(tabId)) {
+        tabId = 'kiosk';
+      }
       const allTabs = ['kiosk', 'live', 'payroll', 'advances', 'customer-khata', 'delivery', 'staff', 'leaves', 'reports', 'settings', 'audit-log'];
       allTabs.forEach(t => {
         const viewEl = document.getElementById(`view-${t}`);
@@ -10587,8 +10715,15 @@
         const textMatch = !q || nameMatch || cnicMatch || phoneMatch || roleMatch || addressMatch;
 
         // 2. Designation match
-        const role = (s.designation || s.role || '').toLowerCase();
-        const desigMatch = desig === 'ALL' || role.includes(desig.toLowerCase());
+        let desigMatch = false;
+        if (desig === 'ALL') {
+          desigMatch = true;
+        } else if (desig === 'TEMP_RIDER') {
+          desigMatch = (s.is_temp_delivery_staff == 1 || s.is_temp_delivery_staff === true || (s.role || '').toLowerCase().includes('temp') || (s.designation || '').toLowerCase().includes('temp'));
+        } else {
+          const role = (s.designation || s.role || '').toLowerCase();
+          desigMatch = role.includes(desig.toLowerCase());
+        }
 
         // 3. Shift match
         const shiftMatch = shift === 'ALL' || String(s.shift_id) === String(shift);
@@ -10607,6 +10742,18 @@
 
       renderStaffDirectory(filtered);
     }, 100);
+
+    function filterStaffByTemp() {
+      const dF = document.getElementById('staff-filter-designation');
+      if (dF) {
+        if (dF.value === 'TEMP_RIDER') {
+          dF.value = 'ALL';
+        } else {
+          dF.value = 'TEMP_RIDER';
+        }
+      }
+      handleStaffFilter();
+    }
 
     function clearStaffFilters() {
       const pIn = document.getElementById('staff-search-input');
@@ -10675,9 +10822,13 @@
         counterBadge.innerText = `${(data || []).length} ${(data || []).length === 1 ? 'Record' : 'Records'}`;
       }
 
-      // Update Summary Cards Above Table
+      // Update Summary Cards & Badges Above Table
       const summaryTotal = document.getElementById('staff-summary-total');
       if (summaryTotal) summaryTotal.innerText = (staffList || []).length;
+
+      const tempStaffCount = (staffList || []).filter(s => s.is_temp_delivery_staff == 1 || s.is_temp_delivery_staff === true || (s.role || '').toLowerCase().includes('temp') || (s.designation || '').toLowerCase().includes('temp')).length;
+      const tempBadge = document.getElementById('temp-staff-count-badge');
+      if (tempBadge) tempBadge.innerText = tempStaffCount;
 
       let presentCount = 0;
       let lateCount = 0;
@@ -10744,10 +10895,17 @@
               <!-- 2. Staff Details -->
               <td class="py-3 px-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200 flex-shrink-0">
+                  <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-xs flex items-center justify-center border border-emerald-200 flex-shrink-0 shadow-2xs">
                     ${initials}
                   </div>
-                       <!-- 3. Designation -->
+                  <div>
+                    <h5 class="font-extrabold text-slate-900 text-xs">${escapeHtml(s.name)}</h5>
+                    <p class="text-[10px] text-slate-400 font-mono">CNIC: ${cnic} • ID: #${s.id}</p>
+                  </div>
+                </div>
+              </td>
+
+              <!-- 3. Designation -->
               <td class="py-3 px-4">
                 <div class="flex flex-col items-start gap-1">
                   <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200">
@@ -15276,6 +15434,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       const delivAdminCont = document.getElementById('delivery-admin-container');
 
       populateDeliveryStaffDropdown();
+      initDeliveryAutoRefresh();
 
       if (currentPortalMode === 'STAFF') {
         if (delivStaffCont) delivStaffCont.classList.remove('hidden');
@@ -15467,12 +15626,31 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       }
     }
 
+    // Global track variables
+    let currentDispatchDeliveryId = null;
+    let currentReturnDeliveryId = null;
+    let deliveryAutoRefreshTimer = null;
+
+    function initDeliveryAutoRefresh() {
+      if (deliveryAutoRefreshTimer) return;
+      deliveryAutoRefreshTimer = setInterval(() => {
+        const delivView = document.getElementById('view-delivery');
+        if (delivView && !delivView.classList.contains('hidden')) {
+          loadAdminDeliveriesTable();
+          refreshDeliveryStats();
+          loadActiveDeliveriesForReturn(true);
+        }
+      }, 5000);
+    }
+
     // 10. Dispatch Success Modal
     function openDispatchSuccessModal(data) {
       const modal = document.getElementById('delivery-dispatch-success-modal');
       if (!modal) return;
 
       const d = data.delivery || {};
+      currentDispatchDeliveryId = d.id || null;
+
       const elInv = document.getElementById('disp-modal-inv');
       const elCust = document.getElementById('disp-modal-cust');
       const elRider = document.getElementById('disp-modal-rider');
@@ -15482,7 +15660,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
       if (elInv) elInv.innerText = d.invoice_no || `DEL-#${d.id}`;
       if (elCust) elCust.innerText = d.customer_name || 'Customer';
-      if (elRider) elRider.innerText = d.delivery_person_name || d.rider_name || 'Rider';
+      if (elRider) elRider.innerText = d.delivery_person_name || d.staff_name || d.rider_name || 'Rider';
       if (elAmount) elAmount.innerText = `Rs. ${(d.bill_amount || d.total_amount || 0).toLocaleString()}`;
 
       const admWa = data.admin_wa_link || (data.whatsapp && data.whatsapp.admin_link) || '';
@@ -15501,6 +15679,44 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
       modal.classList.remove('hidden');
       scheduleIconsRender();
+    }
+
+    function onDispatchWaBtnClicked(type) {
+      console.log(`Dispatch WhatsApp alert clicked for ${type}`);
+    }
+
+    async function confirmDispatchAlertsSent() {
+      if (!currentDispatchDeliveryId) {
+        closeDispatchSuccessModal();
+        return;
+      }
+      const btn = document.getElementById('btn-confirm-dispatch-sent');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Confirming...</span>`;
+        scheduleIconsRender();
+      }
+      try {
+        const res = await fetch(`/api/deliveries/${currentDispatchDeliveryId}/confirm-dispatch`, { method: 'POST' });
+        const d = await res.json();
+        if (res.ok && d.success) {
+          closeDispatchSuccessModal();
+          loadActiveDeliveriesForReturn(true);
+          loadAdminDeliveriesTable();
+          refreshDeliveryStats();
+        } else {
+          alert(d.detail || "Error confirming dispatch status.");
+        }
+      } catch (err) {
+        console.error("Confirm dispatch error:", err);
+        alert("Network or server error confirming dispatch.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i><span>Confirm Both WhatsApp Alerts Sent &amp; Mark Out For Delivery</span>`;
+          scheduleIconsRender();
+        }
+      }
     }
 
     function closeDispatchSuccessModal() {
@@ -15542,9 +15758,9 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
         grid.innerHTML = list.map(d => {
           const invNo = d.invoice_no || `DEL-${d.id}`;
-          const riderName = d.rider_name || 'Assigned Rider';
+          const riderName = d.delivery_person_name || d.staff_name || d.rider_name || 'Assigned Rider';
           const custName = d.customer_name || 'Customer';
-          const amount = d.total_amount || 0;
+          const amount = d.bill_amount || d.total_amount || 0;
           const timeDispatched = (d.dispatched_at || '').substring(11, 16) || 'Recently';
 
           return `
@@ -15574,7 +15790,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                 </div>
                 <div class="text-slate-600">
                   <span class="text-slate-400 font-medium block">Address:</span>
-                  <p class="text-[11px] text-slate-700 mt-0.5 line-clamp-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100">${escapeHtml(d.delivery_address || '—')}</p>
+                  <p class="text-[11px] text-slate-700 mt-0.5 line-clamp-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100">${escapeHtml(d.customer_address || d.delivery_address || '—')}</p>
                 </div>
                 <div class="flex items-center justify-between pt-2 border-t border-slate-100">
                   <div>
@@ -15662,15 +15878,8 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
         closeRiderReturnModal();
 
-        // If return WhatsApp alert generated, offer direct open
-        if (data.admin_wa_link) {
-          window.open(data.admin_wa_link, '_blank');
-        }
-
-        alert("Delivery successfully marked as DELIVERED! Handover recorded. Approval status is PENDING for Admin End-of-Day reconciliation.");
-
-        // Refresh return list
-        await loadActiveDeliveriesForReturn();
+        // Open Rider Return Confirmation Modal (Step 2: WhatsApp & Mark Delivered)
+        openReturnSuccessModal(data);
 
       } catch (err) {
         console.error("Rider return error:", err);
@@ -15678,10 +15887,145 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       } finally {
         if (confirmBtn) {
           confirmBtn.disabled = false;
-          confirmBtn.innerHTML = `<i data-lucide="check-check" class="w-4 h-4"></i><span>Confirm Return &amp; Complete</span>`;
+          confirmBtn.innerHTML = `<i data-lucide="check-check" class="w-4 h-4"></i><span>Verify Rider PIN &amp; Proceed</span>`;
           scheduleIconsRender();
         }
       }
+    }
+
+    function openReturnSuccessModal(data) {
+      currentReturnDeliveryId = data.delivery ? data.delivery.id : null;
+      const modal = document.getElementById('delivery-return-success-modal');
+      if (!modal) return;
+
+      const d = data.delivery || {};
+      const elInv = document.getElementById('return-succ-inv');
+      const elRider = document.getElementById('return-succ-rider');
+      const elCust = document.getElementById('return-succ-cust');
+      const elAmount = document.getElementById('return-succ-amount');
+      const adminLink = document.getElementById('return-succ-admin-link');
+
+      if (elInv) elInv.innerText = d.invoice_no || `DEL-#${d.id}`;
+      if (elRider) elRider.innerText = d.delivery_person_name || d.staff_name || d.rider_name || 'Rider';
+      if (elCust) elCust.innerText = d.customer_name || 'Customer';
+      if (elAmount) elAmount.innerText = `Rs. ${(d.bill_amount || d.total_amount || 0).toLocaleString()}`;
+
+      const waUrl = data.admin_wa_link || (data.whatsapp && data.whatsapp.admin_link) || '';
+      if (adminLink) {
+        adminLink.href = waUrl || '#';
+        adminLink.style.pointerEvents = waUrl ? 'auto' : 'none';
+        adminLink.style.opacity = waUrl ? '1' : '0.5';
+      }
+
+      modal.classList.remove('hidden');
+      scheduleIconsRender();
+    }
+
+    function closeReturnSuccessModal() {
+      const modal = document.getElementById('delivery-return-success-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function confirmReturnAlertSent() {
+      if (!currentReturnDeliveryId) {
+        closeReturnSuccessModal();
+        return;
+      }
+      const btn = document.getElementById('btn-confirm-return-sent');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Confirming...</span>`;
+        scheduleIconsRender();
+      }
+      try {
+        const res = await fetch(`/api/deliveries/${currentReturnDeliveryId}/confirm-return`, { method: 'POST' });
+        const d = await res.json();
+        if (res.ok && d.success) {
+          closeReturnSuccessModal();
+          loadActiveDeliveriesForReturn(true);
+          loadAdminDeliveriesTable();
+          refreshDeliveryStats();
+          alert("Order successfully marked as DELIVERED!");
+        } else {
+          alert(d.detail || "Error confirming return status.");
+        }
+      } catch (err) {
+        console.error("Confirm return error:", err);
+        alert("Network or server error confirming return.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="check-check" class="w-4 h-4"></i><span>Confirm Return Alert Sent &amp; Mark Delivered</span>`;
+          scheduleIconsRender();
+        }
+      }
+    }
+
+    // WhatsApp Template Settings (Admin Only)
+    async function openWATemplatesModal() {
+      const modal = document.getElementById('delivery-wa-templates-modal');
+      if (!modal) return;
+      try {
+        const res = await fetch('/api/deliveries/templates');
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('wa-tmpl-admin-dispatch').value = data.admin_dispatch || '';
+          document.getElementById('wa-tmpl-customer-dispatch').value = data.customer_dispatch || '';
+          document.getElementById('wa-tmpl-admin-return').value = data.admin_return || '';
+        }
+      } catch (e) {
+        console.error("Error loading WA templates:", e);
+      }
+      modal.classList.remove('hidden');
+      scheduleIconsRender();
+    }
+
+    function closeWATemplatesModal() {
+      const modal = document.getElementById('delivery-wa-templates-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function saveWATemplates() {
+      const admin_dispatch = document.getElementById('wa-tmpl-admin-dispatch').value;
+      const customer_dispatch = document.getElementById('wa-tmpl-customer-dispatch').value;
+      const admin_return = document.getElementById('wa-tmpl-admin-return').value;
+
+      const btn = document.getElementById('btn-save-wa-templates');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Saving...</span>`;
+        scheduleIconsRender();
+      }
+      try {
+        const res = await fetch('/api/deliveries/templates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ admin_dispatch, customer_dispatch, admin_return })
+        });
+        const d = await res.json();
+        if (res.ok && d.success) {
+          alert("WhatsApp Message Templates saved successfully!");
+          closeWATemplatesModal();
+        } else {
+          alert(d.detail || "Failed to save templates.");
+        }
+      } catch (err) {
+        console.error("Save WA templates error:", err);
+        alert("Network error while saving templates.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i><span>Save Templates</span>`;
+          scheduleIconsRender();
+        }
+      }
+    }
+
+    function resetWATemplatesToDefault() {
+      if (!confirm("Are you sure you want to restore WhatsApp message templates to system defaults?")) return;
+      document.getElementById('wa-tmpl-admin-dispatch').value = "🚀 *MUMTAZ PHARMACY — ORDER DISPATCHED*\n━━━━━━━━━━━━━━━━━━━━\n🧾 *Invoice:* #{invoice}\n💰 *Bill Amount:* Rs. {amount} ({payment_method})\n👤 *Customer:* {customer_name} ({customer_phone})\n📍 *Address:* {address}\n🛵 *Rider:* {rider_name} ({rider_phone})\n⏰ *Dispatched At:* {time}\n{notes}\n━━━━━━━━━━━━━━━━━━━━\n⚠️ *Admin Audit:* Operational OUT_FOR_DELIVERY • Pending End-of-Day cash reconciliation.";
+      document.getElementById('wa-tmpl-customer-dispatch').value = "📦 *MUMTAZ PHARMACY — YOUR ORDER IS ON THE WAY!*\n━━━━━━━━━━━━━━━━━━━━\nDear *{customer_name}*,\nYour medicine / pharmacy order has been dispatched.\n\n🧾 *Invoice:* #{invoice}\n💰 *Amount Payable:* Rs. {amount} ({payment_method})\n🛵 *Delivery Rider:* {rider_name}\n📞 *Rider Contact:* {rider_phone}\n\nOur rider will arrive shortly. Please have the exact cash ready if paying on delivery.\nThank you for choosing Mumtaz Pharmacy! 🏥\n📍 Model Town, Lahore";
+      document.getElementById('wa-tmpl-admin-return').value = "✅ *MUMTAZ PHARMACY — RIDER RETURN CONFIRMATION*\n━━━━━━━━━━━━━━━━━━━━\n🛵 *Rider:* {rider_name} has returned to the pharmacy.\n🧾 *Invoice:* #{invoice}\n👤 *Customer:* {customer_name}\n💵 *Cash Collected:* Rs. {amount}\n⏰ *Return Time:* {time}\n━━━━━━━━━━━━━━━━━━━━\n📋 *Status:* Operational DELIVERED • Please verify hisaab & click Approve in Admin Portal.";
     }
 
     // 13. Admin Filter Controls
@@ -15706,6 +16050,28 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         dateInput.value = '';
         loadAdminDeliveriesTable();
       }
+    }
+
+    function filterAdminDeliveriesByKpi(statusVal, approvalVal, isTodayOnly = true) {
+      const searchInput = document.getElementById('deliv-filter-search');
+      if (searchInput) searchInput.value = '';
+
+      const dateInput = document.getElementById('deliv-filter-date');
+      if (dateInput) {
+        if (isTodayOnly) {
+          dateInput.value = getLocalTodayStr();
+        } else {
+          dateInput.value = '';
+        }
+      }
+
+      const statusSelect = document.getElementById('deliv-filter-status');
+      if (statusSelect) statusSelect.value = statusVal;
+
+      const approvalSelect = document.getElementById('deliv-filter-approval');
+      if (approvalSelect) approvalSelect.value = approvalVal;
+
+      loadAdminDeliveriesTable();
     }
 
     // 14. Admin Deliveries Reconciliation Table
@@ -15740,11 +16106,17 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
           const invNo = d.invoice_no || `DEL-${d.id}`;
           const isTempRider = (d.is_temp_delivery_staff == 1 || d.is_temp_delivery_staff === true);
           const timeDispatched = (d.dispatched_at || '').substring(11, 16) || '';
+          const riderFullName = d.delivery_person_name || d.staff_name || d.rider_name || 'Rider';
+          const riderPhoneNum = d.delivery_person_phone || d.rider_phone || '';
 
           // Operational Status Badge
           let opBadge = '';
           if (d.status === 'OUT_FOR_DELIVERY') {
             opBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Out for Delivery</span>`;
+          } else if (d.status === 'PENDING_DISPATCH') {
+            opBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200"><span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>Pending Alerts</span>`;
+          } else if (d.status === 'PENDING_RETURN') {
+            opBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200"><span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>Returned (Confirm Alert)</span>`;
           } else if (d.status === 'DELIVERED') {
             opBadge = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Delivered</span>`;
           } else {
@@ -15773,7 +16145,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                   <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
                   <span>Approve</span>
                 </button>
-                <button type="button" onclick="openRejectDeliveryModal(${d.id}, '${escapeHtml(invNo)}', ${d.total_amount})"
+                <button type="button" onclick="openRejectDeliveryModal(${d.id}, '${escapeHtml(invNo)}', ${d.bill_amount || d.total_amount || 0})"
                   title="Reject Delivery Hisaab"
                   class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-bold transition-colors shadow-2xs cursor-pointer">
                   <i data-lucide="x-circle" class="w-3.5 h-3.5"></i>
@@ -15821,13 +16193,13 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
               <td class="py-3 px-4">
                 <div class="font-bold text-slate-900 text-xs">${escapeHtml(d.customer_name || 'Customer')}</div>
                 <div class="text-[11px] text-slate-500 font-mono">${escapeHtml(d.customer_phone || '—')}</div>
-                <div class="text-[10px] text-slate-400 truncate max-w-[170px]" title="${escapeHtml(d.delivery_address || '')}">${escapeHtml(d.delivery_address || '—')}</div>
+                <div class="text-[10px] text-slate-400 truncate max-w-[170px]" title="${escapeHtml(d.customer_address || d.delivery_address || '')}">${escapeHtml(d.customer_address || d.delivery_address || '—')}</div>
               </td>
 
               <!-- 4. Rider -->
               <td class="py-3 px-4">
-                <div class="font-bold text-slate-800 text-xs">${escapeHtml(d.rider_name || 'Rider')}</div>
-                <div class="text-[10px] text-slate-400 font-mono">${escapeHtml(d.rider_phone || '')}</div>
+                <div class="font-bold text-slate-800 text-xs">${escapeHtml(riderFullName)}</div>
+                <div class="text-[10px] text-slate-400 font-mono">${escapeHtml(riderPhoneNum)}</div>
                 ${isTempRider ? `
                   <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200 mt-0.5">
                     <i data-lucide="bike" class="w-2.5 h-2.5 text-amber-600"></i> Temp Rider
@@ -15837,7 +16209,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
               <!-- 5. Bill Amount -->
               <td class="py-3 px-4 text-right">
-                <div class="font-mono font-black text-slate-900 text-xs">Rs. ${(d.total_amount || 0).toLocaleString()}</div>
+                <div class="font-mono font-black text-slate-900 text-xs">Rs. ${(d.bill_amount || d.total_amount || 0).toLocaleString()}</div>
                 <div class="text-[10px] text-slate-400">${escapeHtml(d.notes || 'COD')}</div>
               </td>
 
@@ -16000,11 +16372,12 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
         document.getElementById('detail-cust-name').innerText = d.customer_name || '-';
         document.getElementById('detail-cust-phone').innerText = d.customer_phone || '-';
-        document.getElementById('detail-cust-address').innerText = d.delivery_address || '-';
+        document.getElementById('detail-cust-address').innerText = d.customer_address || d.delivery_address || '-';
 
-        document.getElementById('detail-rider-name').innerText = d.rider_name || '-';
-        document.getElementById('detail-rider-phone').innerText = d.rider_phone || '-';
-        document.getElementById('detail-bill-amount').innerText = `Rs. ${(d.total_amount || 0).toLocaleString()}`;
+        document.getElementById('detail-rider-name').innerText = d.rider_name || d.delivery_person_name || '-';
+        document.getElementById('detail-rider-phone').innerText = d.rider_phone || d.delivery_person_phone || '-';
+        const amountVal = (d.bill_amount !== undefined && d.bill_amount !== null) ? d.bill_amount : (d.total_amount || 0);
+        document.getElementById('detail-bill-amount').innerText = `Rs. ${Number(amountVal).toLocaleString()}`;
         document.getElementById('detail-payment-method').innerText = d.notes || 'Cash on Delivery';
 
         document.getElementById('detail-dispatched-at').innerText = d.dispatched_at || '-';
