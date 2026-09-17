@@ -1815,6 +1815,11 @@
                 quota tracking</p>
             </div>
             <div class="flex items-center gap-2.5 self-start sm:self-auto">
+              <button id="admin-pending-leaves-btn" onclick="openAdminPendingLeavesModal()" class="relative bg-amber-500 hover:bg-amber-600 active:scale-95 text-white text-xs font-bold py-2 px-3.5 rounded-xl flex items-center gap-2 shadow-sm transition cursor-pointer">
+                <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+                <span>Pending Requests</span>
+                <span id="admin-pending-leaves-badge" class="px-1.5 py-0.5 rounded-full bg-white text-amber-900 font-black text-[10px] shadow-2xs">0</span>
+              </button>
               <button onclick="exportLeavesExcel()"
                 class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer"
                 title="Export leaves to Excel">
@@ -2164,12 +2169,27 @@
                 <span id="badge-top-pending-count" class="bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded-full text-[9px] font-black ml-0.5">0</span>
               </button>
 
-              <!-- Unified Report Button (Admin Only) -->
-              <button id="btn-cust-report-modal" onclick="openCustomerKhataReportModal()"
-                class="admin-only-action bg-[#0F172A] hover:bg-slate-800 active:scale-95 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs transition cursor-pointer"
-                title="Open Customer Khata Reports & Exports">
-                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i>
-                <span>Report</span>
+              <!-- 2 All-Time Excel Reports (Admin Only) -->
+              <button onclick="window.open('/api/customer-khata/reports/general-all-time', '_blank')"
+                class="admin-only-action bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs transition cursor-pointer"
+                title="Export All Khata Excel Report">
+                <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+                <span>Export All Khata (.xlsx)</span>
+              </button>
+
+              <button onclick="window.open('/api/customer-khata/reports/overdue-pending', '_blank')"
+                class="admin-only-action bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs transition cursor-pointer"
+                title="Export Pending / Overdue Khata Excel Report">
+                <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                <span>Export Pending / Overdue (.xlsx)</span>
+              </button>
+
+              <!-- Excel Customer Directory Import Button (Admin Only) -->
+              <button onclick="openCustomerImportModal()"
+                class="admin-only-action bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-xs transition cursor-pointer"
+                title="Import Customer Directory from Excel file">
+                <i data-lucide="file-input" class="w-3.5 h-3.5"></i>
+                <span>Import Customers (Excel)</span>
               </button>
 
               <!-- Delete Cleared Records Button (Admin Only) -->
@@ -2864,6 +2884,63 @@
               <input type="text" id="kiosk-staff-search" oninput="filterKioskStaff(this.value)"
                 placeholder="Search staff name..."
                 class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3.5 py-2.5 text-xs font-semibold text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#156D38]/20 focus:border-[#156D38] transition">
+            </div>
+          </div>
+
+          <!-- STAFF LEAVE DESK (PIN-BASED SUBMISSION & STATUS CHECK) -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div>
+                <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                  <i data-lucide="calendar-heart" class="w-4 h-4 text-emerald-600"></i>
+                  <span>Staff Leave Desk</span>
+                </h4>
+                <p class="text-xs text-slate-500 mt-0.5">Submit leave applications or check real-time status using your 4-digit PIN</p>
+              </div>
+              <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
+                <button onclick="switchKioskLeaveTab('apply')" id="kiosk-leave-tab-apply" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-2xs cursor-pointer">📝 Apply Leave</button>
+                <button onclick="switchKioskLeaveTab('status')" id="kiosk-leave-tab-status" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer">🔍 Check Status</button>
+              </div>
+            </div>
+
+            <!-- VIEW 1: APPLY LEAVE -->
+            <div id="kiosk-leave-view-apply" class="space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Leave Date *</label>
+                  <input type="date" id="kiosk-leave-date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Leave Type</label>
+                  <select id="kiosk-leave-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="FULL_DAY">Full Day (1.0)</option>
+                    <option value="HALF_DAY">Half Day (0.5)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Your 4-Digit PIN *</label>
+                  <input type="password" id="kiosk-leave-pin" maxlength="4" placeholder="e.g. 1234" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center tracking-widest">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Reason for Leave *</label>
+                <input type="text" id="kiosk-leave-reason" placeholder="e.g. Urgent family matter / Fever..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+              </div>
+              <button onclick="submitStaffLeaveRequest()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                <span>Submit Leave Application</span>
+              </button>
+            </div>
+
+            <!-- VIEW 2: CHECK STATUS -->
+            <div id="kiosk-leave-view-status" class="space-y-3 hidden">
+              <div class="flex items-center gap-3">
+                <input type="password" id="kiosk-status-pin" maxlength="4" placeholder="Enter your 4-digit PIN..." class="w-48 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center tracking-widest">
+                <button onclick="checkStaffLeaveStatus()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-xl cursor-pointer">Search My Requests</button>
+              </div>
+              <div id="kiosk-leave-status-list" class="space-y-2">
+                <p class="text-xs text-slate-400">Apna 4-digit PIN enter kar ke "Search My Requests" click karein.</p>
+              </div>
             </div>
           </div>
 
@@ -3813,7 +3890,13 @@
               </p>
             </div>
 
-            <div class="flex items-center gap-3 shrink-0">
+            <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+              <div class="flex items-center gap-1.5 bg-white/10 border border-white/20 px-3 py-1.5 rounded-xl text-xs text-white shadow-2xs">
+                <span class="font-bold text-slate-200">⏱️ OTP Validity:</span>
+                <input type="number" id="otp-expiry-minutes-input" min="1" max="60" value="5" class="w-14 px-2 py-1 bg-slate-900 border border-slate-700 rounded-lg text-xs font-bold text-white text-center focus:outline-none focus:ring-1 focus:ring-emerald-400">
+                <span class="text-slate-300 font-medium">min</span>
+                <button onclick="saveOtpExpirySetting()" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs px-2.5 py-1 rounded-lg transition cursor-pointer">Save</button>
+              </div>
               <input type="date" id="audit-filter-date" onchange="loadAuditLog()"
                 class="bg-white/10 text-white border border-white/20 rounded-xl px-3.5 py-2 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer">
               <button onclick="loadAuditLog()"
@@ -5181,6 +5264,13 @@
         <!-- REAL-TIME CREDIT LIMIT WARNING BANNER -->
         <div id="khata-limit-warning-box" class="hidden"></div>
 
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">👤 Authorized / Handled By (Staff) *</label>
+          <select id="khata-staff-select" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
+            <option value="" disabled selected>-- Select Staff Member --</option>
+          </select>
+        </div>
+
         <div class="flex gap-3 pt-3">
           <button type="submit" id="khata-submit-btn"
             class="flex-1 bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
@@ -5398,6 +5488,13 @@
             (Optional)</label>
           <input type="text" id="settle-entry-notes" placeholder="e.g. Paid at evening counter"
             class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-semibold text-slate-800">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">👤 Authorized / Handled By (Staff) *</label>
+          <select id="settle-khata-staff-select" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
+            <option value="" disabled selected>-- Select Staff Member --</option>
+          </select>
         </div>
 
         <div class="flex gap-3 pt-3">
@@ -6536,6 +6633,160 @@
   </div>
 
   <!-- JAVASCRIPT LOGIC -->
+  <!-- MODAL: EXCEL CUSTOMER IMPORT -->
+  <div id="customer-import-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
+            <i data-lucide="file-input" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-base">Import Customers from Excel</h3>
+            <p class="text-xs text-slate-500">Extract names, phone numbers & addresses directly from Excel (.xlsx)</p>
+          </div>
+        </div>
+        <button onclick="closeCustomerImportModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-2xl flex items-center justify-between">
+          <span class="text-xs text-indigo-900 font-medium">Download sample template file:</span>
+          <button onclick="window.open('/api/customers/sample-template', '_blank')" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-2xs cursor-pointer">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>Sample .xlsx</span>
+          </button>
+        </div>
+
+        <div class="border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-2xl p-6 text-center cursor-pointer bg-slate-50 transition" onclick="document.getElementById('customer-excel-file').click()">
+          <i data-lucide="upload-cloud" class="w-8 h-8 text-slate-400 mx-auto mb-2"></i>
+          <p class="text-xs font-bold text-slate-700">Click to select Excel (.xlsx / .csv) file</p>
+          <p id="customer-import-filename" class="text-[11px] text-slate-400 mt-1">Supports Customer Name, Phone, Address & Credit Limit</p>
+          <input type="file" id="customer-excel-file" accept=".xlsx, .xls, .csv" class="hidden" onchange="onCustomerExcelFileSelected(event)">
+        </div>
+      </div>
+
+      <div class="pt-2 flex items-center justify-end gap-2">
+        <button onclick="closeCustomerImportModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer">Cancel</button>
+        <button onclick="submitCustomerExcelImport()" id="btn-submit-customer-import" disabled class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1.5">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span>Import Now</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN PENDING LEAVES REVIEW -->
+  <div id="admin-pending-leaves-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-6 shadow-2xl space-y-4 border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold">
+            <i data-lucide="clock" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-base">Pending Leave Requests</h3>
+            <p class="text-xs text-slate-500">1-Click Approve or Decline staff leave applications</p>
+          </div>
+        </div>
+        <button onclick="closeAdminPendingLeavesModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="admin-pending-leaves-list" class="max-h-96 overflow-y-auto space-y-3">
+        <!-- Populated via JS -->
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button onclick="closeAdminPendingLeavesModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RIDER SETTLEMENT & HISAAB (WITH PAKISTANI PRESETS) -->
+  <div id="delivery-return-settle-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-[#156D38] text-white flex items-center justify-center font-bold">
+            <i data-lucide="truck" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-base">Rider Settlement &amp; Hisaab</h3>
+            <p id="return-settle-subtitle" class="text-xs text-slate-500">Invoice # ---</p>
+          </div>
+        </div>
+        <button onclick="closeDeliveryReturnSettleModal()" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-xl hover:bg-slate-100">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Outcome Selector -->
+      <div class="space-y-3">
+        <label class="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Delivery Outcome *</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" onclick="setReturnOutcome('DELIVERED')" id="outcome-btn-delivered" class="py-2.5 px-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs">
+            <span>✅ Delivered</span>
+          </button>
+          <button type="button" onclick="setReturnOutcome('RETURNED')" id="outcome-btn-returned" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold flex items-center justify-center gap-1.5">
+            <span>❌ Returned</span>
+          </button>
+        </div>
+
+        <!-- DELIVERED OPTIONS -->
+        <div id="outcome-delivered-box" class="space-y-3 pt-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Payment Status</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="setPaymentStatus('FULL')" id="pay-status-btn-full" class="py-2 px-3 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-xs font-bold">Full Paid</button>
+              <button type="button" onclick="setPaymentStatus('PARTIAL')" id="pay-status-btn-partial" class="py-2 px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold">Partial Paid</button>
+            </div>
+          </div>
+
+          <div id="partial-amount-box" class="hidden">
+            <label class="block text-[11px] font-bold text-amber-900 uppercase mb-1">Amount Received (Rs.) *</label>
+            <input type="number" id="return-paid-amount" oninput="updateReturnBalanceMath()" min="0" placeholder="e.g. 1000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800">
+            <p id="return-balance-display" class="text-xs font-bold text-amber-700 mt-1">Remaining Balance: Rs. 0</p>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Payment Method</label>
+            <select id="return-payment-method" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800">
+              <option value="Cash on Delivery" selected>Cash on Delivery</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="JazzCash">JazzCash</option>
+              <option value="EasyPaisa">EasyPaisa</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- RETURNED OPTIONS (PAKISTANI PRESETS) -->
+        <div id="outcome-returned-box" class="space-y-3 pt-2 hidden">
+          <label class="block text-[11px] font-bold text-slate-600 uppercase">Select Return Reason (Pakistani Presets)</label>
+          <div class="grid grid-cols-1 gap-1.5">
+            <button type="button" onclick="selectPakistaniReturnReason('📵 Customer phone nahi utha raha (No Answer)')" class="w-full text-left p-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700">📵 Customer phone nahi utha raha (No Answer)</button>
+            <button type="button" onclick="selectPakistaniReturnReason('🚪 Customer ghar par mojood nahi tha (Unavailable)')" class="w-full text-left p-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700">🚪 Customer ghar par mojood nahi tha (Unavailable)</button>
+            <button type="button" onclick="selectPakistaniReturnReason('❌ Customer ne order cancel kar diya (Cancelled)')" class="w-full text-left p-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700">❌ Customer ne order cancel kar diya (Cancelled)</button>
+            <button type="button" onclick="selectPakistaniReturnReason('📍 Ghalat pata / Location nahi mili (Wrong Address)')" class="w-full text-left p-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700">📍 Ghalat pata / Location nahi mili (Wrong Address)</button>
+            <button type="button" onclick="selectPakistaniReturnReason('💸 Customer ke paas cash mojood nahi tha (Cash Shortage)')" class="w-full text-left p-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700">💸 Customer ke paas cash mojood nahi tha (Cash Shortage)</button>
+          </div>
+          <input type="text" id="return-reason-input" placeholder="Or enter custom return reason..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800">
+        </div>
+      </div>
+
+      <div class="pt-3 flex items-center justify-end gap-2">
+        <button onclick="closeDeliveryReturnSettleModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl">Cancel</button>
+        <button onclick="submitDeliveryReturnSettle()" class="px-4 py-2 bg-[#156D38] hover:bg-[#0E4D27] text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Confirm Hisaab &amp; Notify Admin</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     function getLocalTodayStr() {
       const d = new Date();
@@ -6543,6 +6794,540 @@
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    async function saveOtpExpirySetting() {
+      const inputEl = document.getElementById('otp-expiry-minutes-input');
+      const val = inputEl ? inputEl.value.trim() : '5';
+      if (!val || parseInt(val) < 1 || parseInt(val) > 60) {
+        if (typeof showToast === 'function') showToast("Barah-e-karam OTP validity 1 se 60 minutes ke darmiyan rakhein.", "error");
+        else alert("Barah-e-karam OTP validity 1 se 60 minutes ke darmiyan rakhein.");
+        return;
+      }
+      try {
+        const res = await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ otp_expiry_minutes: String(val) })
+        });
+        if (res.ok) {
+          localStorage.setItem('mumtaz_otp_expiry', String(val));
+          if (typeof showToast === 'function') showToast(`OTP Expiry ${val} minutes saved!`, "success");
+          else alert(`OTP Expiry ${val} minutes saved!`);
+        } else {
+          alert("Setting save nahi ho saki.");
+        }
+      } catch(e) {
+        console.error("Error saving OTP expiry setting", e);
+      }
+    }
+
+    function switchKioskLeaveTab(tab) {
+      const applyView = document.getElementById('kiosk-leave-view-apply');
+      const statusView = document.getElementById('kiosk-leave-view-status');
+      const applyBtn = document.getElementById('kiosk-leave-tab-apply');
+      const statusBtn = document.getElementById('kiosk-leave-tab-status');
+
+      if (tab === 'apply') {
+        if (applyView) applyView.classList.remove('hidden');
+        if (statusView) statusView.classList.add('hidden');
+        if (applyBtn) applyBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-2xs cursor-pointer";
+        if (statusBtn) statusBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
+      } else {
+        if (applyView) applyView.classList.add('hidden');
+        if (statusView) statusView.classList.remove('hidden');
+        if (statusBtn) statusBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-2xs cursor-pointer";
+        if (applyBtn) applyBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
+      }
+    }
+
+    async function submitStaffLeaveRequest() {
+      const dateVal = document.getElementById('kiosk-leave-date').value;
+      const typeVal = document.getElementById('kiosk-leave-type').value;
+      const pinVal = document.getElementById('kiosk-leave-pin').value.trim();
+      const reasonVal = document.getElementById('kiosk-leave-reason').value.trim();
+
+      if (!dateVal) {
+        alert("Barah-e-karam Leave Date choose karein.");
+        return;
+      }
+      if (!pinVal || pinVal.length < 4) {
+        alert("Barah-e-karam apna 4-digit secret PIN darj karein.");
+        return;
+      }
+      if (!reasonVal) {
+        alert("Barah-e-karam Chutti ki wajah (Reason) biyan karein.");
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/staff/leave-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pin: pinVal,
+            leave_date: dateVal,
+            leave_type: typeVal,
+            reason: reasonVal
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          alert(data.detail || data.message || "Leave request submit nahi ho saki.");
+          return;
+        }
+
+        alert(data.message || "Leave request submitted successfully!");
+        document.getElementById('kiosk-leave-reason').value = '';
+        document.getElementById('kiosk-leave-pin').value = '';
+        
+        checkAdminPendingLeavesBadge();
+      } catch(e) {
+        console.error("Error submitting leave request:", e);
+        alert("Network error. Leave request submit nahi ho saki.");
+      }
+    }
+
+    async function checkStaffLeaveStatus() {
+      const pinVal = document.getElementById('kiosk-status-pin').value.trim();
+      const container = document.getElementById('kiosk-leave-status-list');
+      if (!pinVal || pinVal.length < 4) {
+        alert("Barah-e-karam apna 4-digit PIN enter karein.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/staff/leave-requests?pin=${encodeURIComponent(pinVal)}`);
+        const data = await res.json();
+        if (!res.ok || !data.leave_requests) {
+          container.innerHTML = `<p class="text-xs text-rose-500 font-bold">Ghalat PIN ya koi record nahi mila.</p>`;
+          return;
+        }
+
+        const list = data.leave_requests;
+        if (list.length === 0) {
+          container.innerHTML = `<p class="text-xs text-slate-500">Aap ki koi past leave requests nahi mili.</p>`;
+          return;
+        }
+
+        let html = '';
+        list.forEach(req => {
+          let statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800">PENDING 🟡</span>';
+          if (req.status === 'APPROVED') {
+            statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">APPROVED 🟢</span>';
+          } else if (req.status === 'REJECTED') {
+            statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-800">REJECTED 🔴</span>';
+          }
+
+          html += `
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+              <div>
+                <div class="font-bold text-slate-900">${req.leave_date} (${req.leave_type === 'HALF_DAY' ? 'Half Day' : 'Full Day'})</div>
+                <div class="text-slate-500 text-[11px] mt-0.5">${req.reason}</div>
+              </div>
+              <div class="text-right">
+                ${statusBadge}
+                ${req.admin_notes ? `<div class="text-[10px] text-slate-400 mt-1">Note: ${req.admin_notes}</div>` : ''}
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch(e) {
+        console.error("Error fetching staff leave status:", e);
+      }
+    }
+
+    async function checkAdminPendingLeavesBadge() {
+      try {
+        const res = await fetch('/api/admin/leave-requests/pending');
+        if (!res.ok) return;
+        const data = await res.json();
+        const count = data.pending_count || 0;
+        const badgeEl = document.getElementById('admin-pending-leaves-badge');
+        if (badgeEl) {
+          badgeEl.innerText = count;
+        }
+      } catch(e) {}
+    }
+
+    async function openAdminPendingLeavesModal() {
+      const modal = document.getElementById('admin-pending-leaves-modal');
+      const container = document.getElementById('admin-pending-leaves-list');
+      if (!modal || !container) return;
+
+      modal.classList.remove('hidden');
+      container.innerHTML = '<p class="text-xs text-slate-500">Loading pending leave requests...</p>';
+
+      try {
+        const res = await fetch('/api/admin/leave-requests/pending');
+        const data = await res.json();
+        const list = data.pending_requests || [];
+
+        if (list.length === 0) {
+          container.innerHTML = '<p class="text-xs text-slate-500 py-4 text-center">Koi pending leave requests nahi hain. ✅</p>';
+          return;
+        }
+
+        let html = '';
+        list.forEach(r => {
+          html += `
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="font-bold text-slate-900 text-sm">${r.staff_name}</h4>
+                  <p class="text-xs text-slate-500">${r.designation || 'Staff'} • ${r.phone || ''}</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-800">${r.leave_date} (${r.leave_type})</span>
+              </div>
+              <p class="text-xs text-slate-700 bg-white p-2.5 rounded-xl border border-slate-200"><strong>Reason:</strong> ${r.reason}</p>
+              <div class="flex items-center justify-end gap-2 pt-1">
+                <button onclick="reviewStaffLeave(${r.id}, 'REJECT')" class="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-xs rounded-xl cursor-pointer">Decline (Red)</button>
+                <button onclick="reviewStaffLeave(${r.id}, 'APPROVE')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-2xs cursor-pointer">Approve (Green)</button>
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch(e) {
+        container.innerHTML = '<p class="text-xs text-rose-500">Failed to load pending leave requests.</p>';
+      }
+    }
+
+    function closeAdminPendingLeavesModal() {
+      const modal = document.getElementById('admin-pending-leaves-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function reviewStaffLeave(reqId, action) {
+      try {
+        const res = await fetch(`/api/admin/leave-requests/${reqId}/review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: action, admin_notes: '' })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.detail || "Review action failed.");
+          return;
+        }
+        openAdminPendingLeavesModal();
+        checkAdminPendingLeavesBadge();
+        if (typeof loadLeaves === 'function') loadLeaves();
+      } catch(e) {
+        console.error("Review leave error", e);
+      }
+    }
+
+    function populateKhataStaffDropdowns() {
+      const staffSelect = document.getElementById('khata-staff-select');
+      const settleStaffSelect = document.getElementById('settle-khata-staff-select');
+      const list = getEffectiveStaffList();
+      if (!list || list.length === 0) return;
+
+      let opts = '<option value="" disabled selected>-- Select Staff Member --</option>';
+      list.forEach(s => {
+        opts += `<option value="${s.id}" data-name="${s.name}">${s.name} (${s.designation || s.role || 'Staff'})</option>`;
+      });
+
+      if (staffSelect) staffSelect.innerHTML = opts;
+      if (settleStaffSelect) settleStaffSelect.innerHTML = opts;
+    }
+
+    function openCustomerImportModal() {
+      const modal = document.getElementById('customer-import-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeCustomerImportModal() {
+      const modal = document.getElementById('customer-import-modal');
+      if (modal) modal.classList.add('hidden');
+      const fileInput = document.getElementById('customer-excel-file');
+      if (fileInput) fileInput.value = '';
+      document.getElementById('customer-import-filename').innerText = 'Supports Customer Name, Phone, Address & Credit Limit';
+      document.getElementById('btn-submit-customer-import').disabled = true;
+    }
+
+    function onCustomerExcelFileSelected(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('customer-import-filename').innerText = `Selected File: ${file.name}`;
+      document.getElementById('btn-submit-customer-import').disabled = false;
+    }
+
+    async function submitCustomerExcelImport() {
+      const fileInput = document.getElementById('customer-excel-file');
+      const file = fileInput ? fileInput.files[0] : null;
+      if (!file) {
+        alert("Barah-e-karam Excel file choose karein.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const btn = document.getElementById('btn-submit-customer-import');
+      btn.disabled = true;
+      btn.innerText = "Importing...";
+
+      try {
+        const res = await fetch('/api/customers/import-excel', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.detail || "Excel import failed.");
+          btn.disabled = false;
+          btn.innerText = "Import Now";
+          return;
+        }
+
+        alert(data.message || `Imported ${data.imported_count} customers successfully!`);
+        closeCustomerImportModal();
+        if (typeof loadCustomers === 'function') loadCustomers();
+      } catch(e) {
+        alert("Network error importing Excel file.");
+        btn.disabled = false;
+        btn.innerText = "Import Now";
+      }
+    }
+
+    function updateDeliveryNetTotalMath() {
+      const billEl = document.getElementById('dispatch-bill-amount');
+      const chgEl = document.getElementById('dispatch-delivery-charges');
+      const displayEl = document.getElementById('dispatch-net-total-display');
+
+      const bill = parseFloat(billEl ? billEl.value : 0) || 0;
+      const chg = parseFloat(chgEl ? chgEl.value : 0) || 0;
+      const net = bill + chg;
+
+      if (displayEl) displayEl.innerText = `Rs. ${net.toLocaleString()}`;
+    }
+
+    let _currentReturnSettleDeliveryId = null;
+    let _currentReturnOutcome = 'DELIVERED';
+    let _currentPaymentStatus = 'FULL';
+    let _currentReturnNetTotal = 0;
+
+    function openDeliveryReturnSettleModal(deliveryId, invoiceNo, netTotal) {
+      _currentReturnSettleDeliveryId = deliveryId;
+      _currentReturnOutcome = 'DELIVERED';
+      _currentPaymentStatus = 'FULL';
+      _currentReturnNetTotal = netTotal || 0;
+
+      document.getElementById('return-settle-subtitle').innerText = `Invoice #${invoiceNo} • Net Total: Rs. ${netTotal.toLocaleString()}`;
+      document.getElementById('return-paid-amount').value = netTotal;
+
+      setReturnOutcome('DELIVERED');
+      setPaymentStatus('FULL');
+
+      const modal = document.getElementById('delivery-return-settle-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeDeliveryReturnSettleModal() {
+      const modal = document.getElementById('delivery-return-settle-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function setReturnOutcome(outcome) {
+      _currentReturnOutcome = outcome;
+      const delBox = document.getElementById('outcome-delivered-box');
+      const retBox = document.getElementById('outcome-returned-box');
+      const btnDel = document.getElementById('outcome-btn-delivered');
+      const btnRet = document.getElementById('outcome-btn-returned');
+
+      if (outcome === 'DELIVERED') {
+        if (delBox) delBox.classList.remove('hidden');
+        if (retBox) retBox.classList.add('hidden');
+        if (btnDel) btnDel.className = "py-2.5 px-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs";
+        if (btnRet) btnRet.className = "py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold flex items-center justify-center gap-1.5";
+      } else {
+        if (delBox) delBox.classList.add('hidden');
+        if (retBox) retBox.classList.remove('hidden');
+        if (btnRet) btnRet.className = "py-2.5 px-3 rounded-xl border-2 border-rose-600 bg-rose-50 text-rose-900 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs";
+        if (btnDel) btnDel.className = "py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold flex items-center justify-center gap-1.5";
+      }
+    }
+
+    function setPaymentStatus(status) {
+      _currentPaymentStatus = status;
+      const partialBox = document.getElementById('partial-amount-box');
+      const btnFull = document.getElementById('pay-status-btn-full');
+      const btnPartial = document.getElementById('pay-status-btn-partial');
+
+      if (status === 'FULL') {
+        if (partialBox) partialBox.classList.add('hidden');
+        if (btnFull) btnFull.className = "py-2 px-3 rounded-lg border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-xs font-bold";
+        if (btnPartial) btnPartial.className = "py-2 px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold";
+      } else {
+        if (partialBox) partialBox.classList.remove('hidden');
+        if (btnPartial) btnPartial.className = "py-2 px-3 rounded-lg border-2 border-amber-600 bg-amber-50 text-amber-900 text-xs font-bold";
+        if (btnFull) btnFull.className = "py-2 px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold";
+      }
+    }
+
+    function updateReturnBalanceMath() {
+      const paidVal = parseFloat(document.getElementById('return-paid-amount').value || 0);
+      const bal = Math.max(0, _currentReturnNetTotal - paidVal);
+      document.getElementById('return-balance-display').innerText = `Remaining Balance: Rs. ${bal.toLocaleString()}`;
+    }
+
+    function selectPakistaniReturnReason(reason) {
+      const input = document.getElementById('return-reason-input');
+      if (input) input.value = reason;
+    }
+
+    async function submitDeliveryReturnSettle() {
+      if (!_currentReturnSettleDeliveryId) return;
+
+      const paidVal = parseFloat(document.getElementById('return-paid-amount').value || 0);
+      const payMethod = document.getElementById('return-payment-method').value;
+      const reasonVal = document.getElementById('return-reason-input').value.trim();
+
+      const payload = {
+        delivery_result: _currentReturnOutcome,
+        payment_status: _currentPaymentStatus,
+        paid_amount: paidVal,
+        payment_method: payMethod,
+        return_reason: reasonVal
+      };
+
+      try {
+        const res = await fetch(`/api/deliveries/${_currentReturnSettleDeliveryId}/confirm-return`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.detail || "Settlement failed.");
+          return;
+        }
+        closeDeliveryReturnSettleModal();
+        if (data.admin_wa_link) {
+          window.open(data.admin_wa_link, '_blank');
+        }
+        if (typeof loadAdminDeliveries === 'function') loadAdminDeliveries();
+        if (typeof loadActiveDeliveries === 'function') loadActiveDeliveries();
+      } catch(e) {
+        console.error("Error submitting return settlement", e);
+      }
+    }
+
+    async function transferDeliveryBalanceToKhata(deliveryId) {
+      if (!confirm("Kya aap remaining delivery balance customer ke Customer Khata ledger mein transfer karna chahte hain?")) return;
+
+      try {
+        const res = await fetch(`/api/deliveries/${deliveryId}/transfer-to-khata`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.detail || "Khata transfer failed.");
+          return;
+        }
+        alert(data.message || "Balance successfully transferred to Customer Khata!");
+        if (typeof loadAdminDeliveries === 'function') loadAdminDeliveries();
+      } catch(e) {
+        console.error("Error transferring delivery balance to khata", e);
+      }
+    }
+
+    function switchStaffDeliveryTab(tab) {
+      const dispatchBox = document.getElementById('staff-delivery-dispatch-box');
+      const activeBox = document.getElementById('staff-delivery-active-box');
+      const completedBox = document.getElementById('staff-delivery-completed-box');
+
+      const tab1 = document.getElementById('staff-deliv-tab-dispatch');
+      const tab2 = document.getElementById('staff-deliv-tab-active');
+      const tab3 = document.getElementById('staff-deliv-tab-completed');
+
+      if (tab === 'completed') {
+        if (dispatchBox) dispatchBox.classList.add('hidden');
+        if (activeBox) activeBox.classList.add('hidden');
+        if (completedBox) completedBox.classList.remove('hidden');
+
+        if (tab3) tab3.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#156D38] text-white shadow-xs cursor-pointer";
+        if (tab1) tab1.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
+        if (tab2) tab2.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
+
+        loadStaffCompletedDeliveriesToday();
+      } else if (tab === 'active') {
+        if (dispatchBox) dispatchBox.classList.add('hidden');
+        if (activeBox) activeBox.classList.remove('hidden');
+        if (completedBox) completedBox.classList.add('hidden');
+
+        if (tab2) tab2.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#156D38] text-white shadow-xs cursor-pointer";
+        if (tab1) tab1.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
+        if (tab3) tab3.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
+      } else {
+        if (dispatchBox) dispatchBox.classList.remove('hidden');
+        if (activeBox) activeBox.classList.add('hidden');
+        if (completedBox) completedBox.classList.add('hidden');
+
+        if (tab1) tab1.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#156D38] text-white shadow-xs cursor-pointer";
+        if (tab2) tab2.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
+        if (tab3) tab3.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
+      }
+    }
+
+    async function loadStaffCompletedDeliveriesToday() {
+      const container = document.getElementById('staff-completed-deliveries-list');
+      if (!container) return;
+
+      container.innerHTML = '<p class="text-xs text-slate-400 p-4">Loading today\'s completed orders...</p>';
+
+      try {
+        const res = await fetch('/api/deliveries/staff/completed-today');
+        const data = await res.json();
+        if (!res.ok || !data || data.length === 0) {
+          container.innerHTML = '<p class="text-xs text-slate-500 p-4 text-center">Aaj abhi tak koi order complete/returned nahi hua.</p>';
+          return;
+        }
+
+        let html = `
+          <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
+                  <th class="p-3">Invoice #</th>
+                  <th class="p-3">Customer</th>
+                  <th class="p-3">Rider</th>
+                  <th class="p-3">Result / Status</th>
+                  <th class="p-3">Net Total</th>
+                  <th class="p-3">Completed Time</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 text-xs font-medium text-slate-700">
+        `;
+
+        data.forEach(d => {
+          let stBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">DELIVERED</span>';
+          if (d.status === 'RETURNED' || d.delivery_result === 'RETURNED') {
+            stBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-800">RETURNED (${d.return_reason || 'Wapis'})</span>`;
+          }
+
+          html += `
+            <tr class="hover:bg-slate-50">
+              <td class="p-3 font-bold text-slate-900">#${d.invoice_no}</td>
+              <td class="p-3 font-semibold text-slate-800">${d.customer_name}<br><span class="text-[10px] text-slate-400">${d.customer_phone}</span></td>
+              <td class="p-3">${d.rider_name}</td>
+              <td class="p-3">${stBadge}</td>
+              <td class="p-3 font-bold text-[#156D38]">Rs. ${(d.net_total || 0).toLocaleString()}</td>
+              <td class="p-3 text-slate-400 text-[11px]">${d.delivered_at || '-'}</td>
+            </tr>
+          `;
+        });
+
+        html += `
+              </tbody>
+            </table>
+          </div>
+        `;
+        container.innerHTML = html;
+      } catch(e) {
+        container.innerHTML = '<p class="text-xs text-rose-500 p-4">Failed to load completed orders.</p>';
+      }
     }
 
     let staffList = [];

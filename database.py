@@ -404,6 +404,24 @@ def init_db():
     );
     """)
 
+    # 13. Leave Requests Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS leave_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        staff_id INTEGER NOT NULL,
+        staff_name TEXT NOT NULL,
+        leave_date TEXT NOT NULL,
+        leave_type TEXT DEFAULT 'FULL_DAY',
+        reason TEXT NOT NULL,
+        status TEXT DEFAULT 'PENDING',
+        admin_notes TEXT DEFAULT '',
+        reviewed_by TEXT DEFAULT '',
+        reviewed_at TEXT DEFAULT '',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (staff_id) REFERENCES staff (id)
+    );
+    """)
+
     cursor.execute("PRAGMA table_info(deliveries)")
     existing_deliv_cols = {row[1] for row in cursor.fetchall()}
     if "rejection_reason" not in existing_deliv_cols:
@@ -412,6 +430,22 @@ def init_db():
         cursor.execute("ALTER TABLE deliveries ADD COLUMN return_pin_verified INTEGER DEFAULT 0")
     if "return_wa_sent" not in existing_deliv_cols:
         cursor.execute("ALTER TABLE deliveries ADD COLUMN return_wa_sent INTEGER DEFAULT 0")
+    if "delivery_charges" not in existing_deliv_cols:
+        cursor.execute("ALTER TABLE deliveries ADD COLUMN delivery_charges REAL DEFAULT 0.0")
+    if "delivery_result" not in existing_deliv_cols:
+        cursor.execute("ALTER TABLE deliveries ADD COLUMN delivery_result TEXT DEFAULT 'DELIVERED'")
+    if "payment_status" not in existing_deliv_cols:
+        cursor.execute("ALTER TABLE deliveries ADD COLUMN payment_status TEXT DEFAULT 'FULL'")
+    if "paid_amount" not in existing_deliv_cols:
+        cursor.execute("ALTER TABLE deliveries ADD COLUMN paid_amount REAL DEFAULT 0.0")
+    if "balance_amount" not in existing_deliv_cols:
+        cursor.execute("ALTER TABLE deliveries ADD COLUMN balance_amount REAL DEFAULT 0.0")
+    if "khata_transferred" not in existing_deliv_cols:
+        cursor.execute("ALTER TABLE deliveries ADD COLUMN khata_transferred INTEGER DEFAULT 0")
+    if "return_reason" not in existing_deliv_cols:
+        cursor.execute("ALTER TABLE deliveries ADD COLUMN return_reason TEXT DEFAULT ''")
+    if "return_notes" not in existing_deliv_cols:
+        cursor.execute("ALTER TABLE deliveries ADD COLUMN return_notes TEXT DEFAULT ''")
 
     # High-Performance Indexes for Zero Table-Scans & Instant Query Processing
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_deliveries_status ON deliveries(status)")
@@ -419,6 +453,8 @@ def init_db():
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_deliveries_created ON deliveries(created_at DESC)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_deliveries_invoice ON deliveries(invoice_no)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_deliveries_staff ON deliveries(staff_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_leave_req_status ON leave_requests(status)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_leave_req_staff ON leave_requests(staff_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_attendance_date ON attendance_logs(date)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_attendance_staff_date ON attendance_logs(staff_id, date)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_attendance_status ON attendance_logs(status)")
@@ -1113,6 +1149,9 @@ def get_delivery_by_id(delivery_id: int) -> dict:
         d["total_amount"] = d.get("bill_amount")
     if d.get("bill_amount") is None and d.get("total_amount") is not None:
         d["bill_amount"] = d.get("total_amount")
+    bill = float(d.get("bill_amount") or 0.0)
+    chg = float(d.get("delivery_charges") or 0.0)
+    d["net_total"] = bill + chg
     return d
 
 def create_delivery(
@@ -1130,7 +1169,8 @@ def create_delivery(
     dispatch_pin_verified: int = 1,
     admin_wa_sent: int = 1,
     customer_wa_sent: int = 1,
-    initial_status: str = "OUT_FOR_DELIVERY"
+    initial_status: str = "OUT_FOR_DELIVERY",
+    delivery_charges: float = 0.0
 ) -> dict:
     """Inserts a new delivery order. Dispatched with initial_status (default OUT_FOR_DELIVERY) and approval_status PENDING."""
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -1140,20 +1180,20 @@ def create_delivery(
         INSERT INTO deliveries (
             staff_id, delivery_person_name, delivery_person_phone, is_guest_delivery,
             customer_name, customer_phone, customer_address, invoice_no, bill_amount,
-            payment_method, notes, status, approval_status, dispatch_pin_verified,
+            delivery_charges, payment_method, notes, status, approval_status, dispatch_pin_verified,
             admin_wa_sent, customer_wa_sent, return_pin_verified, return_wa_sent,
             dispatched_at, delivered_at
         ) VALUES (
             ?, ?, ?, ?,
             ?, ?, ?, ?, ?,
-            ?, ?, ?, 'PENDING', ?,
+            ?, ?, ?, ?, 'PENDING', ?,
             ?, ?, 0, 0,
             ?, ''
         )
     """, (
         staff_id, delivery_person_name, delivery_person_phone, is_guest_delivery,
         customer_name, customer_phone, customer_address, invoice_no, float(bill_amount or 0.0),
-        payment_method, notes, initial_status, dispatch_pin_verified,
+        float(delivery_charges or 0.0), payment_method, notes, initial_status, dispatch_pin_verified,
         admin_wa_sent, customer_wa_sent,
         now_str
     ))
@@ -1416,8 +1456,8 @@ def get_delivery_stats_today(date_str: str = None) -> dict:
             COALESCE(SUM(CASE WHEN status = 'DELIVERED' THEN bill_amount ELSE 0 END), 0) as total_delivered_amount,
             COALESCE(SUM(bill_amount), 0) as total_order_amount
         FROM deliveries
-        WHERE date(created_at) = ? OR created_at LIKE ?
-    """, (date_str, f"{date_str}%"))
+        WHERE date(created_at, 'localtime') = ? OR date(created_at) = ? OR created_at LIKE ?
+    """, (date_str, date_str, f"{date_str}%"))
 
     row = cursor.fetchone()
     conn.close()
@@ -1470,6 +1510,95 @@ def convert_temp_rider_to_permanent(
         )
         return dict(row)
     return {}
+
+def create_leave_request(staff_id: int, staff_name: str, leave_date: str, leave_type: str, reason: str) -> dict:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO leave_requests (staff_id, staff_name, leave_date, leave_type, reason, status)
+        VALUES (?, ?, ?, ?, ?, 'PENDING')
+    """, (staff_id, staff_name, leave_date, leave_type, reason))
+    req_id = cursor.lastrowid
+    conn.commit()
+    cursor.execute("SELECT * FROM leave_requests WHERE id = ?", (req_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else {}
+
+def get_leave_requests_by_staff_pin(pin: str) -> list:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name FROM staff WHERE pin = ? AND is_active = 1", (str(pin).strip(),))
+    staff = cursor.fetchone()
+    if not staff:
+        conn.close()
+        return []
+    cursor.execute("""
+        SELECT * FROM leave_requests 
+        WHERE staff_id = ? 
+        ORDER BY created_at DESC
+    """, (staff["id"],))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def get_pending_leave_requests() -> list:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT lr.*, coalesce(nullif(s.designation, ''), s.role) as designation, s.phone 
+        FROM leave_requests lr
+        JOIN staff s ON lr.staff_id = s.id
+        WHERE lr.status = 'PENDING'
+        ORDER BY lr.created_at DESC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def review_leave_request(request_id: int, action: str, admin_notes: str = "", reviewed_by: str = "Admin") -> dict:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM leave_requests WHERE id = ?", (request_id,))
+    req = cursor.fetchone()
+    if not req:
+        conn.close()
+        raise ValueError("Leave request not found")
+    
+    req_dict = dict(req)
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    new_status = "APPROVED" if action.upper() == "APPROVE" else "REJECTED"
+
+    cursor.execute("""
+        UPDATE leave_requests
+        SET status = ?, admin_notes = ?, reviewed_by = ?, reviewed_at = ?
+        WHERE id = ?
+    """, (new_status, admin_notes, reviewed_by, now_str, request_id))
+
+    if new_status == "APPROVED":
+        cursor.execute("""
+            INSERT INTO leaves (staff_id, date, reason)
+            VALUES (?, ?, ?)
+        """, (req_dict["staff_id"], req_dict["leave_date"], f"[Online Request] {req_dict['reason']}"))
+        cursor.execute("""
+            SELECT id FROM attendance_logs WHERE staff_id = ? AND date = ?
+        """, (req_dict["staff_id"], req_dict["leave_date"]))
+        att_row = cursor.fetchone()
+        if att_row:
+            cursor.execute("""
+                UPDATE attendance_logs SET status = 'LEAVE' WHERE id = ?
+            """, (att_row["id"],))
+        else:
+            cursor.execute("""
+                INSERT INTO attendance_logs (staff_id, date, status)
+                VALUES (?, ?, 'LEAVE')
+            """, (req_dict["staff_id"], req_dict["leave_date"]))
+
+    conn.commit()
+    cursor.execute("SELECT * FROM leave_requests WHERE id = ?", (request_id,))
+    updated = cursor.fetchone()
+    conn.close()
+    return dict(updated) if updated else {}
 
 if __name__ == "__main__":
     init_db()

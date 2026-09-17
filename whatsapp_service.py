@@ -345,17 +345,41 @@ class WhatsAppService:
                 "time": time_str
             })
 
-        return (
-            f"✅ *MUMTAZ PHARMACY — RIDER RETURN CONFIRMATION*\n"
+        res_type = delivery.get("delivery_result") or ("RETURNED" if delivery.get("status") == "RETURNED" else "DELIVERED")
+        is_delivered = (res_type == "DELIVERED")
+        status_header = "✅ *MUMTAZ PHARMACY — DELIVERY COMPLETED*" if is_delivered else "❌ *MUMTAZ PHARMACY — ORDER RETURNED*"
+
+        delivery_charges = float(delivery.get("delivery_charges") or 0.0)
+        paid_amt = float(delivery.get("paid_amount") or (amount if is_delivered else 0.0))
+        bal_amt = float(delivery.get("balance_amount") or 0.0)
+        pay_status = delivery.get("payment_status", "FULL")
+        ret_reason = delivery.get("return_reason", "")
+
+        msg = (
+            f"{status_header}\n"
             f"━━━━━━━━━━━━━━━━━━━━\n"
-            f"🛵 *Rider:* {rider} has returned to the pharmacy.\n"
             f"🧾 *Invoice:* #{invoice}\n"
-            f"👤 *Customer:* {cust_name}\n"
-            f"💵 *Cash Collected:* Rs. {amount:,.0f}\n"
+            f"🛵 *Rider:* {rider} ({rider_phone})\n"
+            f"👤 *Customer:* {cust_name} ({cust_phone})\n"
+            f"📍 *Address:* {address}\n"
+            f"💵 *Medicine Bill:* Rs. {amount:,.0f}\n"
+            f"🚚 *Delivery Charges:* Rs. {delivery_charges:,.0f}\n"
+            f"💰 *Net Total:* Rs. {(amount + delivery_charges):,.0f}\n"
+        )
+        if is_delivered:
+            msg += (
+                f"💳 *Payment Method:* {payment_method}\n"
+                f"📊 *Payment Status:* {pay_status} (Paid: Rs. {paid_amt:,.0f} | Remaining: Rs. {bal_amt:,.0f})\n"
+            )
+        else:
+            msg += f"⚠️ *Return Reason:* {ret_reason}\n"
+
+        msg += (
             f"⏰ *Return Time:* {time_str}\n"
             f"━━━━━━━━━━━━━━━━━━━━\n"
-            f"📋 *Status:* Operational DELIVERED • Please verify hisaab & click Approve in Admin Portal."
+            f"📋 *Action Required:* Please verify hisaab in Admin Portal."
         )
+        return msg
 
     def dispatch_delivery_alerts(self, delivery: Dict[str, Any], admin_phone: str = "") -> Dict[str, Any]:
         """Dispatches dispatch alerts for both Admin and Customer and returns WhatsApp direct links."""

@@ -10,6 +10,11 @@ def setup_db():
     init_db()
 
 def test_check_and_register_temp_rider():
+    conn = get_db_connection()
+    conn.execute("DELETE FROM staff WHERE phone = '03009876543'")
+    conn.commit()
+    conn.close()
+
     payload = {
         "phone": "03009876543",
         "name": "Kashif Rider"

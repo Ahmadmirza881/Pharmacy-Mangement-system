@@ -4,14 +4,16 @@ FastAPI application providing endpoints for biometric punches, live roster,
 shift scheduling, staff advance khata, and 1-click month-end payroll.
 """
 
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Query, File, UploadFile, Response
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime, date, timedelta
 import os
+import io
+import openpyxl
 import calendar
 import re
 import urllib.parse
@@ -28,7 +30,8 @@ from database import (
     create_delivery, confirm_delivery_dispatch, complete_delivery_return, confirm_delivery_return,
     reconcile_delivery, get_deliveries_list, get_active_deliveries_for_return,
     get_delivery_stats_today, convert_temp_rider_to_permanent,
-    get_delivery_wa_templates, save_delivery_wa_templates
+    get_delivery_wa_templates, save_delivery_wa_templates,
+    create_leave_request, get_leave_requests_by_staff_pin, get_pending_leave_requests, review_leave_request
 )
 from payroll_engine import process_punch, calculate_monthly_payroll, calculate_custom_range_payroll
 from biometric_service import biometric_service
@@ -95,6 +98,26 @@ class SettingsUpdate(BaseModel):
 class WhatsAppTestRequest(BaseModel):
     phone: Optional[str] = None
     message: Optional[str] = None
+
+class LeaveRequestCreate(BaseModel):
+    pin: str
+    leave_date: str
+    leave_type: Optional[str] = "FULL_DAY"
+    reason: str
+
+class LeaveReviewRequest(BaseModel):
+    action: str  # "APPROVE" or "REJECT"
+    admin_notes: Optional[str] = ""
+    reviewed_by: Optional[str] = "Admin"
+
+class DeliveryReturnConfirm(BaseModel):
+    rider_pin: Optional[str] = None
+    delivery_result: Optional[str] = "DELIVERED"
+    payment_status: Optional[str] = "FULL"
+    paid_amount: Optional[float] = 0.0
+    payment_method: Optional[str] = "Cash on Delivery"
+    return_reason: Optional[str] = ""
+    return_notes: Optional[str] = ""
 
 class StaffCreate(BaseModel):
     name: str
@@ -815,6 +838,80 @@ def test_whatsapp(req: WhatsAppTestRequest):
 def get_recent_whatsapp_dispatches():
     """Returns recent dispatched WhatsApp messages."""
     return whatsapp_service.get_recent_messages()
+
+# =====================================================================
+# STAFF LEAVE REQUEST & ADMIN REVIEW ENDPOINTS
+# =====================================================================
+
+@app.post("/api/staff/leave-request")
+def apply_leave_request(req: LeaveRequestCreate):
+    """Staff submits leave request via 4-digit PIN."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, pin FROM staff WHERE pin = ? AND is_active = 1", (req.pin.strip(),))
+    staff = cursor.fetchone()
+    conn.close()
+    if not staff:
+        raise HTTPException(status_code=400, detail="Ghalat 4-digit Secret PIN! Leave request submit nahi ho saki.")
+    
+    leave_rec = create_leave_request(
+        staff_id=staff["id"],
+        staff_name=staff["name"],
+        leave_date=req.leave_date.strip(),
+        leave_type=req.leave_type or "FULL_DAY",
+        reason=req.reason.strip()
+    )
+
+    log_activity(
+        category="LEAVES",
+        action_type="LEAVE_REQUESTED",
+        title=f"Leave Requested: {staff['name']}",
+        description=f"Date: {req.leave_date} ({req.leave_type}) • Reason: {req.reason}",
+        staff_name=staff["name"]
+    )
+
+    return {
+        "success": True,
+        "leave_request": leave_rec,
+        "message": f"Leave request for {staff['name']} on {req.leave_date} submitted successfully!"
+    }
+
+@app.get("/api/staff/leave-requests")
+def get_staff_leave_requests(pin: str = Query(...)):
+    """Staff checks their leave requests via 4-digit PIN."""
+    requests = get_leave_requests_by_staff_pin(pin)
+    return {
+        "success": True,
+        "leave_requests": requests
+    }
+
+@app.get("/api/admin/leave-requests/pending")
+def get_admin_pending_leave_requests():
+    """Admin retrieves all pending leave requests and count for badge."""
+    pending = get_pending_leave_requests()
+    return {
+        "success": True,
+        "pending_count": len(pending),
+        "pending_requests": pending
+    }
+
+@app.post("/api/admin/leave-requests/{request_id}/review")
+def review_leave_request_endpoint(request_id: int, req: LeaveReviewRequest):
+    """Admin approves or rejects a pending leave request."""
+    try:
+        updated = review_leave_request(
+            request_id=request_id,
+            action=req.action,
+            admin_notes=req.admin_notes or "",
+            reviewed_by=req.reviewed_by or "Admin"
+        )
+        return {
+            "success": True,
+            "leave_request": updated,
+            "message": f"Leave request {req.action.lower()}d successfully."
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/api/attendance/today")
 def get_today_attendance(target_date: Optional[str] = Query(None, alias="date")):
@@ -2246,8 +2343,8 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
 
         cursor.execute("""
             INSERT INTO staff_approval_requests (request_type, customer_id, customer_name, reference_id, amount, payment_method, details, notes, payload_json, status, added_by)
-            VALUES ('SETTLEMENT', ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', 'Staff (Counter)')
-        """, (entry["customer_id"], cust_name, entry_id, paid_amt, pay_method, details_txt, notes_val, settle_payload))
+            VALUES ('SETTLEMENT', ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?)
+        """, (entry["customer_id"], cust_name, entry_id, paid_amt, pay_method, details_txt, notes_val, settle_payload, (data.added_by or 'Staff (Counter)')))
         conn.commit()
         conn.close()
 
@@ -2839,17 +2936,451 @@ def return_delivery(delivery_id: int, data: DeliveryReturnRequest):
     }
 
 @app.post("/api/deliveries/{delivery_id}/confirm-return")
-def confirm_return_endpoint(delivery_id: int):
-    """Confirms return alert sent and marks status as DELIVERED."""
+def confirm_return_endpoint(delivery_id: int, data: Optional[DeliveryReturnConfirm] = None):
+    """Confirms return alert sent, saves partial payment / return reasons, and updates status."""
+    deliv = get_delivery_by_id(delivery_id)
+    if not deliv:
+        raise HTTPException(status_code=404, detail="Delivery record not found")
+
+    res_type = (data.delivery_result if data else "DELIVERED") or "DELIVERED"
+    res_type = res_type.upper().strip()
+    is_delivered = (res_type == "DELIVERED")
+
+    bill = float(deliv.get("bill_amount") or 0.0)
+    chg = float(deliv.get("delivery_charges") or 0.0)
+    net_total = bill + chg
+
+    if data and data.paid_amount is not None and data.paid_amount > 0:
+        paid_amt = float(data.paid_amount)
+    else:
+        paid_amt = net_total if is_delivered else 0.0
+
+    if is_delivered:
+        bal_amt = max(0.0, net_total - paid_amt)
+        pay_status = "PARTIAL" if (bal_amt > 0.5) else "FULL"
+        final_status = "DELIVERED"
+    else:
+        paid_amt = 0.0
+        bal_amt = 0.0
+        pay_status = "UNPAID"
+        final_status = "RETURNED"
+
+    pay_method = (data.payment_method if data else "Cash on Delivery") or "Cash on Delivery"
+    ret_reason = (data.return_reason if data else "") or ""
+    ret_notes = (data.return_notes if data else "") or ""
+
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE deliveries
+        SET status = ?,
+            delivery_result = ?,
+            payment_status = ?,
+            paid_amount = ?,
+            balance_amount = ?,
+            payment_method = ?,
+            return_reason = ?,
+            return_notes = ?,
+            delivered_at = CASE WHEN delivered_at IS NULL OR delivered_at = '' THEN ? ELSE delivered_at END,
+            return_pin_verified = 1,
+            return_wa_sent = 1
+        WHERE id = ?
+    """, (
+        final_status, res_type, pay_status, paid_amt, bal_amt, pay_method,
+        ret_reason, ret_notes, now_str, delivery_id
+    ))
+    conn.commit()
+    conn.close()
+
+    updated = get_delivery_by_id(delivery_id)
+
+    log_activity(
+        category="DELIVERY",
+        action_type="DELIVERED" if is_delivered else "RETURNED",
+        title=f"Delivery {final_status}: #{updated['invoice_no']}",
+        description=f"Rider {updated['delivery_person_name']} • Customer: {updated['customer_name']} • Paid: Rs. {paid_amt:,.0f} | Bal: Rs. {bal_amt:,.0f}" + (f" • Reason: {ret_reason}" if ret_reason else ""),
+        staff_name=updated["delivery_person_name"],
+        amount=paid_amt
+    )
+
+    admin_phone = get_setting("admin_whatsapp_number") or "03001234567"
+    wa_return = whatsapp_service.dispatch_delivery_return_alert(updated, admin_phone=admin_phone)
+
+    return {
+        "success": True,
+        "delivery": updated,
+        "whatsapp": wa_return,
+        "admin_wa_link": wa_return.get("admin_link", ""),
+        "message": f"Delivery #{updated['invoice_no']} updated to {final_status}."
+    }
+
+@app.post("/api/deliveries/{delivery_id}/transfer-to-khata")
+def transfer_delivery_balance_to_khata(delivery_id: int):
+    """1-Click transfers remaining delivery unpaid balance to Customer Khata ledger."""
+    deliv = get_delivery_by_id(delivery_id)
+    if not deliv:
+        raise HTTPException(status_code=404, detail="Delivery record not found")
+    
+    bal = float(deliv.get("balance_amount") or 0.0)
+    if bal <= 0:
+        raise HTTPException(status_code=400, detail="Yeh delivery pehle se fully paid hai ya balance 0 hai.")
+
+    if deliv.get("khata_transferred") == 1:
+        return {"success": True, "message": "Balance pehle se Customer Khata mein transfer ho chuka hai.", "already_transferred": True}
+
+    cust_name = deliv["customer_name"].strip()
+    cust_phone = re.sub(r"[^\d+]", "", deliv.get("customer_phone") or "")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if cust_phone:
+        cursor.execute("SELECT id FROM customers WHERE phone = ? OR name = ?", (cust_phone, cust_name))
+    else:
+        cursor.execute("SELECT id FROM customers WHERE name = ?", (cust_name,))
+    cust_row = cursor.fetchone()
+
+    if cust_row:
+        cust_id = cust_row["id"]
+    else:
+        cursor.execute("""
+            INSERT INTO customers (name, phone, address, credit_limit, is_active)
+            VALUES (?, ?, ?, 10000.0, 1)
+        """, (cust_name, cust_phone, deliv.get("customer_address") or ""))
+        cust_id = cursor.lastrowid
+
+    now_date = date.today().isoformat()
+    inv_no = deliv["invoice_no"]
+    desc = f"Home Delivery Balance (Invoice #{inv_no})"
+
+    cursor.execute("""
+        INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes, added_by, approval_status, approved_by, approved_at)
+        VALUES (?, ?, ?, ?, ?, 0, 'Auto-transferred from Home Delivery', 'Delivery System', 'APPROVED', 'System', ?)
+    """, (cust_id, f"DEL-BAL-{inv_no}", now_date, desc, bal, datetime.now().isoformat()))
+    
+    khata_id = cursor.lastrowid
+
+    cursor.execute("""
+        UPDATE deliveries
+        SET khata_transferred = 1
+        WHERE id = ?
+    """, (delivery_id,))
+    conn.commit()
+    conn.close()
+
+    log_activity(
+        category="CUSTOMER_KHATA",
+        action_type="DELIVERY_BALANCE_TRANSFERRED",
+        title=f"Delivery Balance Transferred: {cust_name}",
+        description=f"Invoice #{inv_no} balance of Rs. {bal:,.2f} transferred to Khata Ledger",
+        staff_name=cust_name,
+        amount=bal
+    )
+
+    return {
+        "success": True,
+        "khata_entry_id": khata_id,
+        "balance_amount": bal,
+        "message": f"Rs. {bal:,.2f} successfully transferred to {cust_name}'s Customer Khata ledger!"
+    }
+
+@app.get("/api/deliveries/staff/completed-today")
+def get_staff_completed_deliveries_today():
+    """Returns read-only list of today's completed/returned deliveries for Staff Portal."""
+    today_str = date.today().isoformat()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT d.*, 
+               COALESCE(s.name, d.delivery_person_name) as rider_name,
+               s.phone as rider_phone
+        FROM deliveries d
+        LEFT JOIN staff s ON d.staff_id = s.id
+        WHERE date(d.created_at) = ? AND d.status IN ('DELIVERED', 'RETURNED', 'REJECTED')
+        ORDER BY d.created_at DESC
+    """, (today_str,))
+    rows = cursor.fetchall()
+    conn.close()
+
+    result = []
+    for r in rows:
+        d = dict(r)
+        bill = float(d.get("bill_amount") or 0.0)
+        chg = float(d.get("delivery_charges") or 0.0)
+        d["net_total"] = bill + chg
+        result.append(d)
+    return result
+
+@app.get("/api/deliveries/reports/all-time")
+def export_all_deliveries_excel():
+    """Generates and downloads All-Time Home Deliveries Excel Report (.xlsx)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT d.*, COALESCE(s.name, d.delivery_person_name) as rider_name
+        FROM deliveries d
+        LEFT JOIN staff s ON d.staff_id = s.id
+        ORDER BY d.created_at DESC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "All Deliveries"
+
+    headers = [
+        "Invoice #", "Customer Name", "Customer Phone", "Delivery Address", "Rider Name",
+        "Medicine Bill (Rs.)", "Delivery Charges (Rs.)", "Net Total (Rs.)", "Paid Amount (Rs.)",
+        "Balance Amount (Rs.)", "Payment Method", "Payment Status", "Delivery Result / Status",
+        "Return Reason", "Approval Status", "Dispatched At", "Completed At"
+    ]
+    ws.append(headers)
+
+    for r in rows:
+        d = dict(r)
+        bill = float(d.get("bill_amount") or 0.0)
+        chg = float(d.get("delivery_charges") or 0.0)
+        net = bill + chg
+        paid = float(d.get("paid_amount") or (net if d.get("status") == "DELIVERED" else 0.0))
+        bal = float(d.get("balance_amount") or 0.0)
+        res_st = d.get("delivery_result") or d.get("status") or "-"
+
+        ws.append([
+            d.get("invoice_no") or "-", d.get("customer_name") or "-", d.get("customer_phone") or "-",
+            d.get("customer_address") or "-", d.get("rider_name") or "-", bill, chg, net,
+            paid, bal, d.get("payment_method") or "-", d.get("payment_status") or "-",
+            res_st, d.get("return_reason") or "-", d.get("approval_status") or "-",
+            d.get("dispatched_at") or "-", d.get("delivered_at") or "-"
+        ])
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    filename = f"All_Deliveries_Report_{date.today().strftime('%Y%m%d')}.xlsx"
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+# =========================================================================
+# ALL-TIME KHATA & CUSTOMER IMPORT ENDPOINTS
+# =========================================================================
+
+@app.get("/api/customer-khata/reports/general-all-time")
+def export_general_khata_all_time():
+    """Generates and downloads All-Time General Khata Excel Report (.xlsx)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT c.id, c.name, c.phone, c.address, c.credit_limit,
+               COALESCE(SUM(CASE WHEN k.is_settled = 0 THEN k.amount ELSE 0 END), 0) as pending_balance,
+               COALESCE(SUM(CASE WHEN k.is_settled = 1 THEN k.amount ELSE 0 END), 0) as total_settled,
+               COALESCE(SUM(k.amount), 0) as total_credit_bills,
+               MAX(k.date) as last_transaction_date
+        FROM customers c
+        LEFT JOIN customer_khata k ON c.id = k.customer_id
+        WHERE c.is_active = 1
+        GROUP BY c.id
+        ORDER BY pending_balance DESC, c.name ASC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "General Khata All-Time"
+
+    headers = ["Customer ID", "Customer Name", "Phone Number", "Address", "Credit Limit (Rs.)", "Pending Balance (Rs.)", "Total Settled (Rs.)", "Total Credit Bills (Rs.)", "Last Activity Date"]
+    ws.append(headers)
+
+    for r in rows:
+        ws.append([
+            r["id"], r["name"], r["phone"] or "-", r["address"] or "-",
+            float(r["credit_limit"] or 0), float(r["pending_balance"] or 0),
+            float(r["total_settled"] or 0), float(r["total_credit_bills"] or 0),
+            r["last_transaction_date"] or "-"
+        ])
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    filename = f"General_Khata_All_Time_{date.today().strftime('%Y%m%d')}.xlsx"
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@app.get("/api/customer-khata/reports/overdue-pending")
+def export_overdue_pending_khata_all_time():
+    """Generates and downloads All-Time Overdue / Pending Khata Excel Report (.xlsx)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT c.id, c.name, c.phone, c.address, c.credit_limit,
+               SUM(k.amount) as pending_balance,
+               COUNT(k.id) as pending_invoices_count,
+               MIN(k.date) as oldest_unpaid_date,
+               MAX(k.date) as latest_unpaid_date
+        FROM customers c
+        JOIN customer_khata k ON c.id = k.customer_id
+        WHERE c.is_active = 1 AND k.is_settled = 0
+        GROUP BY c.id
+        HAVING pending_balance > 0
+        ORDER BY pending_balance DESC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Pending Overdue Khata"
+
+    headers = ["Customer ID", "Customer Name", "Phone Number", "Address", "Pending Balance (Rs.)", "Credit Limit (Rs.)", "Pending Invoices Count", "Oldest Unpaid Date", "Latest Unpaid Date"]
+    ws.append(headers)
+
+    for r in rows:
+        ws.append([
+            r["id"], r["name"], r["phone"] or "-", r["address"] or "-",
+            float(r["pending_balance"] or 0), float(r["credit_limit"] or 0),
+            r["pending_invoices_count"], r["oldest_unpaid_date"] or "-", r["latest_unpaid_date"] or "-"
+        ])
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    filename = f"Overdue_Pending_Khata_{date.today().strftime('%Y%m%d')}.xlsx"
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
+
+@app.get("/api/customers/sample-template")
+def download_customer_sample_template():
+    """Returns downloadable Excel sample template for importing customers."""
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Customers Import Template"
+
+    headers = ["Customer Name", "Phone Number", "Address", "Credit Limit"]
+    ws.append(headers)
+    ws.append(["Tariq Customer", "03211234567", "Gulberg III, Lahore", 25000])
+    ws.append(["Ali Ahmad", "03009876543", "DHA Phase 5, Lahore", 50000])
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=Customers_Import_Sample_Template.xlsx"}
+    )
+
+@app.post("/api/customers/import-excel")
+async def import_customers_excel(file: UploadFile = File(...)):
+    """Extracts and imports customer names & phone numbers from Excel (.xlsx/.csv)."""
+    if not file.filename.endswith(('.xlsx', '.xls', '.csv')):
+        raise HTTPException(status_code=400, detail="Invalid file format! Please upload an Excel (.xlsx) or CSV file.")
+
+    contents = await file.read()
+    imported_count = 0
+    skipped_count = 0
+
     try:
-        updated = confirm_delivery_return(delivery_id)
+        wb = openpyxl.load_workbook(filename=io.BytesIO(contents), data_only=True)
+        ws = wb.active
+
+        rows = list(ws.iter_rows(values_only=True))
+        if not rows or len(rows) < 2:
+            raise HTTPException(status_code=400, detail="Excel file is empty or has no data rows.")
+
+        header = [str(cell or "").strip().lower() for cell in rows[0]]
+        
+        name_idx = -1
+        phone_idx = -1
+        address_idx = -1
+        limit_idx = -1
+
+        for idx, col in enumerate(header):
+            if "name" in col or "customer" in col:
+                name_idx = idx
+            elif "phone" in col or "mobile" in col or "contact" in col or "number" in col:
+                phone_idx = idx
+            elif "address" in col or "pata" in col or "location" in col:
+                address_idx = idx
+            elif "limit" in col or "credit" in col:
+                limit_idx = idx
+
+        if name_idx == -1:
+            name_idx = 0
+        if phone_idx == -1 and len(header) > 1:
+            phone_idx = 1
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        for row in rows[1:]:
+            if not row or not any(row):
+                continue
+            cust_name = str(row[name_idx] or "").strip() if name_idx < len(row) else ""
+            cust_phone = str(row[phone_idx] or "").strip() if (phone_idx >= 0 and phone_idx < len(row)) else ""
+            cust_address = str(row[address_idx] or "").strip() if (address_idx >= 0 and address_idx < len(row)) else ""
+            
+            raw_limit = row[limit_idx] if (limit_idx >= 0 and limit_idx < len(row)) else 10000.0
+            try:
+                credit_limit = float(raw_limit or 10000.0)
+            except ValueError:
+                credit_limit = 10000.0
+
+            if not cust_name:
+                continue
+
+            clean_phone = re.sub(r"[^\d+]", "", cust_phone)
+
+            if clean_phone:
+                cursor.execute("SELECT id FROM customers WHERE phone = ? OR name = ?", (clean_phone, cust_name))
+            else:
+                cursor.execute("SELECT id FROM customers WHERE name = ?", (cust_name,))
+
+            existing = cursor.fetchone()
+            if existing:
+                skipped_count += 1
+                continue
+
+            cursor.execute("""
+                INSERT INTO customers (name, phone, address, credit_limit, is_active)
+                VALUES (?, ?, ?, ?, 1)
+            """, (cust_name, clean_phone, cust_address, credit_limit))
+            imported_count += 1
+
+        conn.commit()
+        conn.close()
+
+        log_activity(
+            category="CUSTOMERS",
+            action_type="CUSTOMERS_IMPORTED",
+            title=f"Customers Excel Import: {imported_count} Added",
+            description=f"Imported: {imported_count} new customers • Skipped (Duplicates): {skipped_count}",
+            staff_name="Admin"
+        )
+
         return {
             "success": True,
-            "delivery": updated,
-            "message": f"Delivery #{updated['invoice_no']} status updated to DELIVERED."
+            "imported_count": imported_count,
+            "skipped_count": skipped_count,
+            "message": f"Successfully imported {imported_count} customers! ({skipped_count} duplicates skipped)."
         }
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to parse Excel file: {str(e)}")
 
 @app.get("/api/deliveries")
 def list_deliveries(
