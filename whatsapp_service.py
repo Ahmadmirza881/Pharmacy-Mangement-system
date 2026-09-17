@@ -56,46 +56,71 @@ class WhatsAppService:
         except Exception:
             return "127.0.0.1"
 
-    def build_in_otp_message(self, staff_name: str, designation: str, time_str: str, reveal_link: str = "") -> str:
+    def shorten_url(self, url: str) -> str:
+        """Converts raw local IP links (e.g. http://192.168.x.x:8000/...) into clickable short links (tinyurl)."""
+        if not url:
+            return ""
+        try:
+            import urllib.request
+            encoded_url = urllib.parse.quote(url, safe='')
+            api_url = f"https://tinyurl.com/api-create.php?url={encoded_url}"
+            req = urllib.request.Request(api_url, headers={"User-Agent": "MumtazPharmacy/1.0"})
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                short = resp.read().decode('utf-8').strip()
+                if short.startswith("http"):
+                    return short
+        except Exception:
+            pass
+        return url
+
+    def build_in_otp_message(self, staff_name: str, designation: str, time_str: str, reveal_link: str = "", otp_code: str = "") -> str:
         """Creates formal WhatsApp message template for Admin Check-IN authorization via secure link."""
         if reveal_link:
             link_block = (
-                f"🔑 *Admin:* OTP dekhne ke liye is link par click karein:\n\n"
-                f"{reveal_link}\n"
+                f"👉 *GET OTP & APPROVE (Tap Secure Link):*\n"
+                f"{reveal_link}\n\n"
+                f"🛡️ _Link khol kar apna Admin Password darj karein taake OTP unlock ho._\n"
             )
+            otp_block = ""
         else:
-            link_block = "🔑 *Admin:* OTP link generate nahi ho saka."
+            link_block = ""
+            otp_block = f"🔑 *Instant OTP Code:* *{otp_code}*\n" if otp_code else ""
 
         return (
             f"🔔 *MUMTAZ PHARMACY — STAFF CHECK-IN REQUEST*\n"
-            f"━━━━━━━━━━━━━━━━━━\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
             f"👤 Staff: *{staff_name}* ({designation or 'Staff'})\n"
             f"⏰ Request Time: *{time_str}*\n"
             f"📍 Action: *Duty Check-IN*\n\n"
-            f"{link_block}\n\n"
+            f"{link_block}"
+            f"{otp_block}"
             f"⏱️ _Yeh link 5 minute ke liye valid hai._\n"
-            f"━━━━━━━━━━━━━━━━━━"
+            f"━━━━━━━━━━━━━━━━━━━━"
         )
 
-    def build_out_otp_message(self, staff_name: str, designation: str, time_str: str, reveal_link: str = "") -> str:
+    def build_out_otp_message(self, staff_name: str, designation: str, time_str: str, reveal_link: str = "", otp_code: str = "") -> str:
         """Creates formal WhatsApp message template for Admin Check-OUT authorization via secure link."""
         if reveal_link:
             link_block = (
-                f"🔑 *Admin:* OTP dekhne ke liye is link par click karein:\n\n"
-                f"{reveal_link}\n"
+                f"👉 *GET OTP & APPROVE (Tap Secure Link):*\n"
+                f"{reveal_link}\n\n"
+                f"🛡️ _Link khol kar apna Admin Password darj karein taake OTP unlock ho._\n"
             )
+            otp_block = ""
         else:
-            link_block = "🔑 *Admin:* OTP link generate nahi ho saka."
+            link_block = ""
+            otp_block = f"🔑 *Instant OTP Code:* *{otp_code}*\n" if otp_code else ""
 
         return (
             f"🔔 *MUMTAZ PHARMACY — STAFF CHECK-OUT REQUEST*\n"
-            f"━━━━━━━━━━━━━━━━━━\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
             f"👤 Staff: *{staff_name}* ({designation or 'Staff'})\n"
             f"⏰ Request Time: *{time_str}*\n"
             f"📍 Action: *Duty Check-OUT*\n\n"
-            f"{link_block}\n\n"
+            f"{link_block}"
+            f"{otp_block}"
             f"⏱️ _Yeh link 5 minute ke liye valid hai._\n"
-            f"━━━━━━━━━━━━━━━━━━"
+            f"━━━━━━━━━━━━━━━━━━━━"
         )
 
     def send_otp(self, target_phone: str, staff_name: str, designation: str, otp_code: str, action: str, reveal_link: str = "") -> Dict[str, Any]:
@@ -107,15 +132,16 @@ class WhatsAppService:
         time_str = now.strftime("%I:%M %p")
         wa_number = self.normalize_phone(target_phone)
 
+        clean_link = self.shorten_url(reveal_link) if reveal_link else ""
         if action.upper() == "IN":
-            message_text = self.build_in_otp_message(staff_name, designation, time_str, reveal_link=reveal_link)
+            message_text = self.build_in_otp_message(staff_name, designation, time_str, reveal_link=clean_link, otp_code=otp_code)
         else:
-            message_text = self.build_out_otp_message(staff_name, designation, time_str, reveal_link=reveal_link)
+            message_text = self.build_out_otp_message(staff_name, designation, time_str, reveal_link=clean_link, otp_code=otp_code)
 
         recipient_label = f"Admin ({self.mask_phone(target_phone)})"
 
         encoded_text = urllib.parse.quote(message_text)
-        direct_link = f"https://api.whatsapp.com/send?phone={wa_number}&text={encoded_text}" if wa_number else ""
+        direct_link = f"https://wa.me/{wa_number}?text={encoded_text}" if wa_number else ""
 
         entry = {
             "id": len(self.message_history) + 1,
@@ -160,7 +186,7 @@ class WhatsAppService:
         )
 
         encoded = urllib.parse.quote(text)
-        link = f"https://api.whatsapp.com/send?phone={wa_number}&text={encoded}" if wa_number else ""
+        link = f"https://wa.me/{wa_number}?text={encoded}" if wa_number else ""
 
         entry = {
             "id": len(self.message_history) + 1,

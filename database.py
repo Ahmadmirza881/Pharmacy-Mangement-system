@@ -16,6 +16,10 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode = WAL")
     conn.execute("PRAGMA foreign_keys = ON")
+    conn.execute("PRAGMA synchronous = NORMAL")
+    conn.execute("PRAGMA cache_size = -64000")   # 64MB in-memory query cache
+    conn.execute("PRAGMA temp_store = MEMORY")   # Store temp tables/sorts in RAM
+    conn.execute("PRAGMA mmap_size = 268435456") # 256MB memory-mapped I/O
     return conn
 
 def init_db():
@@ -315,6 +319,21 @@ def init_db():
     if "master_pin_attempts" not in existing_otp_cols:
         cursor.execute("ALTER TABLE otp_verifications ADD COLUMN master_pin_attempts INTEGER DEFAULT 0")
 
+    # High-Performance Indexes for Zero Table-Scans & Instant Query Processing
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_attendance_date ON attendance_logs(date)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_attendance_staff_date ON attendance_logs(staff_id, date)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_attendance_status ON attendance_logs(status)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_leaves_staff_date ON leaves(staff_id, date)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_advances_staff_settled ON advance_salaries(staff_id, is_settled, date)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_customer_khata_cust_date ON customer_khata(customer_id, date DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_customer_khata_settled ON customer_khata(is_settled)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_customers_phone ON customers(phone)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_activity_created ON activity_logs(created_at DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_activity_date ON activity_logs(date, category)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_staff_pin ON staff(pin, is_active)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_staff_phone ON staff(phone)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_otp_token ON otp_verifications(token)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_otp_staff_action ON otp_verifications(staff_id, action, is_used)")
 
     # Populate Default Shifts if empty
     cursor.execute("SELECT COUNT(*) FROM shifts")

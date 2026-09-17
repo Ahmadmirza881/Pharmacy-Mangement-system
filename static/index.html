@@ -26,6 +26,35 @@
   <!-- html2pdf CDN for 1-click Digital PDF Slips -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
+    // =========================================================================
+    // HIGH-PERFORMANCE OPTIMIZATION LAYER (DEBOUNCE, BATCHING & SCOPED ICONS)
+    // =========================================================================
+    function debounce(func, wait = 100) {
+      let timeout;
+      const debounced = function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+      debounced.cancel = () => clearTimeout(timeout);
+      return debounced;
+    }
+
+    let _iconRafId = null;
+    function scheduleIconsRender(container = null) {
+      if (container && window.lucide && typeof lucide.createIcons === 'function') {
+        try {
+          lucide.createIcons({ root: container });
+          return;
+        } catch (e) {}
+      }
+      if (_iconRafId) cancelAnimationFrame(_iconRafId);
+      _iconRafId = requestAnimationFrame(() => {
+        _iconRafId = null;
+        if (window.lucide && typeof lucide.createIcons === 'function') {
+          lucide.createIcons();
+        }
+      });
+    }
 
     // ==========================================
     // DEMO / DUMMY DATA ENGINE (AUTO-DETECT)
@@ -2632,6 +2661,8 @@
           </div>
         </div>
       </div>
+    </section>
+
     <!-- ================================================================= -->
     <!-- TAB: PIN & OTP ATTENDANCE AUDIT LOG (ADMIN PORTAL)               -->
     <!-- ================================================================= -->
@@ -4958,7 +4989,7 @@
         // Apply the current filter
         renderAuditTable(logs, _auditFilter, countBadge, tbody);
 
-        if (window.lucide) lucide.createIcons();
+        scheduleIconsRender();
       } catch (err) {
         console.error("Failed to load audit log:", err);
       }
@@ -5066,16 +5097,20 @@
         }).join('');
     }
 
-    // 1. Live Clock
+    // 1. Live Clock (Optimized with visibility state awareness)
     function startLiveClock() {
       setInterval(() => {
+        if (document.hidden) return; // Skip DOM writes when tab is hidden/minimized
         const now = new Date();
-        document.getElementById('live-time').innerText = now.toLocaleTimeString();
-        document.getElementById('live-date').innerText = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
+        const timeEl = document.getElementById('live-time');
+        const dateEl = document.getElementById('live-date');
+        if (timeEl) timeEl.innerText = now.toLocaleTimeString();
+        if (dateEl) dateEl.innerText = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' });
       }, 1000);
 
-      // Auto-refresh Dashboard attendance and live activities every 15 seconds if Executive Dashboard is open
+      // Auto-refresh Dashboard attendance and live activities every 15s ONLY if tab is active and visible
       setInterval(() => {
+        if (document.hidden) return;
         const liveView = document.getElementById('view-live');
         if (liveView && !liveView.classList.contains('hidden')) {
           loadTodayAttendance();
@@ -5341,7 +5376,7 @@
         `;
       }).join('');
 
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     // Render Touch Cards for Staff Attendance Roster
@@ -5499,10 +5534,10 @@
         `;
       }).join('');
 
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
-    function filterKioskStaff(query) {
+    const filterKioskStaff = debounce(function(query) {
       if (!query || !query.trim()) {
         renderKioskStaffGrid();
         return;
@@ -5515,7 +5550,7 @@
         (s.role && s.role.toLowerCase().includes(q))
       );
       renderKioskStaffGrid(filtered);
-    }
+    }, 100);
 
     // USER EXPLICITLY DECIDES CHECK-IN OR CHECK-OUT
     function setUserAction(action) {
@@ -5614,7 +5649,7 @@
 
       const modal = document.getElementById('pin-otp-modal');
       modal.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
 
       // Attach physical keyboard listener
       if (kioskKeydownHandler) {
@@ -5758,7 +5793,7 @@
         target_type: 'ADMIN',
         target_label: 'Admin WhatsApp',
         target_masked_phone: maskedAdmin,
-        direct_link: `https://api.whatsapp.com/send?phone=${encodeURIComponent(adminPhone.replace(/[^0-9]/g, ''))}&text=MUMTAZ%20OTP:1234`,
+        direct_link: `https://wa.me/${encodeURIComponent(adminPhone.replace(/[^0-9]/g, ''))}?text=MUMTAZ%20OTP:1234`,
         expiry_minutes: 5,
         otp_code: '1234',
         message: `Confirmation code sent to Admin WhatsApp (${maskedAdmin})`
@@ -6370,7 +6405,7 @@
             </button>
           </div>
         `).join('');
-        if (window.lucide) lucide.createIcons();
+        scheduleIconsRender();
       } catch (err) {
         console.error("Failed to load active OTPs", err);
       }
@@ -6755,7 +6790,7 @@
         `;
       }).join('');
 
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     // 5.1 Real-Time Today's Live Activities Feed (Dashboard Stream)
@@ -6790,7 +6825,7 @@
               Failed to load activities. Please refresh the page.
             </div>
           `;
-          if (window.lucide) lucide.createIcons();
+          scheduleIconsRender();
         }
       }
     }
@@ -6858,7 +6893,7 @@
             <p class="text-[11px] text-slate-400 mt-0.5">Punches, leaves, staff advances and customer credit will appear here live.</p>
           </div>
         `;
-        if (window.lucide) lucide.createIcons();
+        scheduleIconsRender();
         return;
       }
 
@@ -6972,7 +7007,7 @@
       }).join('');
 
       container.innerHTML = html;
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     // Manual Attendance Override Functions (Feature 18)
@@ -7171,9 +7206,9 @@
       }
     }
 
-    function filterPayrollTable() {
+    const filterPayrollTable = debounce(function() {
       renderPayrollTable();
-    }
+    }, 100);
 
     let currentPayrollFilter = 'all';
 
@@ -7394,7 +7429,7 @@
       // Apply current section visibility
       setPayrollFilter(currentPayrollFilter);
 
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
     const loadPayroll = generatePayroll;
 
@@ -7480,7 +7515,7 @@
         // Dynamically calculate salary for selected date range
         await recalculateSlipCustomDates();
 
-        if (window.lucide) lucide.createIcons();
+        scheduleIconsRender();
       } catch (err) {
         console.error("Error opening payslip modal", err);
       }
@@ -8286,16 +8321,16 @@
     // =========================================================================
 
     // Synchronize Top Header Search with Staff Search Input
-    function syncStaffSearch(val) {
+    const syncStaffSearch = debounce(function(val) {
       const pageInput = document.getElementById('staff-search-input');
       if (pageInput) {
         pageInput.value = val;
       }
       handleStaffFilter();
-    }
+    }, 100);
 
-    // Comprehensive Multi-Criteria Staff Filter
-    function handleStaffFilter() {
+    // Comprehensive Multi-Criteria Staff Filter (Debounced for 60fps input)
+    const handleStaffFilter = debounce(function() {
       const q = (document.getElementById('staff-search-input')?.value || '').toLowerCase().trim();
       const desig = document.getElementById('staff-filter-designation')?.value || 'ALL';
       const status = document.getElementById('staff-filter-status')?.value || 'ALL';
@@ -8330,7 +8365,7 @@
       });
 
       renderStaffDirectory(filtered);
-    }
+    }, 100);
 
     function clearStaffFilters() {
       const pIn = document.getElementById('staff-search-input');
@@ -8868,7 +8903,7 @@
         switchDossierTab('att');
         const modal = document.getElementById('staff-history-modal');
         if (modal) modal.classList.remove('hidden');
-        if (window.lucide) lucide.createIcons();
+        scheduleIconsRender();
       } catch (err) {
         console.error("Dossier error", err);
         alert("Dossier error: " + err.message);
@@ -9160,9 +9195,9 @@
       renderCustomerTable();
     }
 
-    function filterCustomerTable() {
+    const filterCustomerTable = debounce(function() {
       renderCustomerTable();
-    }
+    }, 100);
 
     function renderCustomerTable() {
       const q = (document.getElementById('customer-search-input')?.value || '').toLowerCase().trim();
@@ -9341,7 +9376,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
             </td>
           </tr>
         `;
-        if (window.lucide) lucide.createIcons();
+        scheduleIconsRender();
         return;
       }
 
@@ -9420,7 +9455,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         `;
       }).join('');
 
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function sendBatchOverdueReminders() {
@@ -10356,7 +10391,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         renderBatchDebtorsList();
         const modal = document.getElementById('batch-whatsapp-modal');
         if (modal) modal.classList.remove('hidden');
-        if (window.lucide) lucide.createIcons();
+        scheduleIconsRender();
       } catch (err) {
         console.error("Error opening batch WhatsApp modal:", err);
       }
@@ -10470,7 +10505,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       }).join('');
 
       updateBatchSelectionCount();
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function toggleSelectAllDebtors(checked) {
@@ -10612,7 +10647,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       // Automatically launch WhatsApp for this customer
       openCurrentRunnerWa();
 
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function openCurrentRunnerWa() {
@@ -10892,7 +10927,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
             openStaffLeaveDetailsModal(currentLeaveDetailStaffId);
           }
         }
-        if (window.lucide) lucide.createIcons();
+        scheduleIconsRender();
       } catch (err) {
         console.error("Failed to load leaves", err);
       }
@@ -10979,7 +11014,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         }
       });
 
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function renderTodayPresence() {
@@ -11223,10 +11258,10 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         }
       }
 
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
-    function filterLeavesTable() {
+    const filterLeavesTable = debounce(function() {
       const q = (document.getElementById('leaves-search-input')?.value || '').toLowerCase().trim();
       const m = document.getElementById('leaves-filter-month')?.value || 'ALL';
 
@@ -11237,7 +11272,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       });
 
       renderLeavesTable(filtered);
-    }
+    }, 100);
 
     function renderLeavesTable(list = null) {
       const tbody = document.getElementById('leaves-tbody');
@@ -11282,7 +11317,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
           </td>
         </tr>
       `).join('');
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function openApplyLeaveModal(preSelectStaffId = null) {
@@ -11293,7 +11328,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       const dateInp = document.getElementById('leave-date-input');
       if (dateInp) dateInp.value = getLocalTodayStr();
       document.getElementById('apply-leave-modal').classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function closeApplyLeaveModal() {
@@ -11382,7 +11417,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
       const modalEl = document.getElementById('edit-leave-modal');
       if (modalEl) modalEl.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function closeEditLeaveModal() {
@@ -11585,7 +11620,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
       const modalEl = document.getElementById('staff-leave-detail-modal');
       if (modalEl) modalEl.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function closeStaffLeaveDetailsModal() {
@@ -12151,7 +12186,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       const txt = document.getElementById('wa-template-customer-text');
       if (txt) txt.value = getWaCustomerTemplate();
       modal.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function closeCustomerWaTemplateModal() {
@@ -12194,7 +12229,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       const txt = document.getElementById('wa-template-salary-text');
       if (txt) txt.value = getWaSalaryTemplate();
       modal.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function closeSalaryWaTemplateModal() {
@@ -12287,7 +12322,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       if (msgBox) msgBox.value = buildCustomerWaMessage(c);
 
       modal.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function openSalaryWaPreviewModal(staffId) {
@@ -12318,7 +12353,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       if (msgBox) msgBox.value = buildSalaryWaMessage(p);
 
       modal.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      scheduleIconsRender();
     }
 
     function closeSingleWaPreviewModal() {

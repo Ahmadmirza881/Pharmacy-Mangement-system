@@ -28,6 +28,8 @@ from payroll_engine import process_punch, calculate_monthly_payroll, calculate_c
 from biometric_service import biometric_service
 from whatsapp_service import whatsapp_service
 
+from fastapi.middleware.gzip import GZipMiddleware
+
 app = FastAPI(title="Mumtaz Pharmacy Attendance & Payroll System")
 
 app.add_middleware(
@@ -37,6 +39,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Enable high-speed compression for HTML, JS, JSON responses (>1KB)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Startup: Initialize DB
 @app.on_event("startup")
@@ -617,22 +622,23 @@ def get_otp_verify_page(token: Optional[str] = Query(None)):
         </div>
 
         <div id="pin-section">
-            <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 16px; font-weight: 600;">Enter Admin Master PIN to reveal OTP:</p>
+            <p style="font-size: 14px; color: #cbd5e1; margin-bottom: 16px; font-weight: 600;">🔒 Enter Admin Master Password (PIN):</p>
             <div class="pin-box">
-                <input type="tel" id="master-pin" class="pin-input" maxlength="4" inputmode="numeric" placeholder="1370" autofocus autocomplete="off">
+                <input type="password" id="master-pin" class="pin-input" maxlength="6" inputmode="numeric" placeholder="••••" autofocus autocomplete="off" onkeydown="if(event.key==='Enter') submitMasterPin()">
             </div>
-            <button id="reveal-btn" onclick="submitMasterPin()" class="btn">Show OTP Code</button>
+            <button id="reveal-btn" onclick="submitMasterPin()" class="btn">🔓 UNLOCK &amp; GET OTP</button>
             <div id="error-alert" class="error-banner"></div>
         </div>
 
         <div id="otp-section" class="hidden">
             <div class="reveal-box">
-                <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">4-DIGIT CONFIRMATION OTP</div>
+                <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">STAFF CONFIRMATION OTP</div>
                 <div id="otp-display" class="otp-code">----</div>
+                <button onclick="copyOtp()" style="margin-top: 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; font-weight: 700; font-size: 13px; padding: 6px 14px; border-radius: 8px; cursor: pointer;">📋 Copy OTP Code</button>
                 <div id="timer-display" class="timer">⏱️ Valid for 05:00</div>
             </div>
 
-            <p style="font-size: 12px; color: #94a3b8; margin-top: 16px;">Staff ko yeh 4-digit code batayein taake Kiosk par attendance mark ho sake.</p>
+            <p style="font-size: 13px; color: #94a3b8; margin-top: 16px;">Yeh 4-digit code staff ko batayein ya confirm karein.</p>
         </div>
     </div>
 
@@ -644,6 +650,20 @@ def get_otp_verify_page(token: Optional[str] = Query(None)):
         if (!token) {{
             showError("Ghair-mootabar (invalid) link! URL mein token nahi mila.");
             document.getElementById('reveal-btn').disabled = true;
+        }} else {{
+            // Focus PIN input for Admin
+            setTimeout(() => {{
+                const el = document.getElementById('master-pin');
+                if (el) el.focus();
+            }}, 200);
+        }}
+
+        function copyOtp() {{
+            const code = document.getElementById('otp-display').innerText.replace(/\s+/g, '');
+            if (navigator.clipboard) {{
+                navigator.clipboard.writeText(code);
+                alert("OTP Code Copied: " + code);
+            }}
         }}
 
         async function submitMasterPin() {{
@@ -658,7 +678,7 @@ def get_otp_verify_page(token: Optional[str] = Query(None)):
             }}
 
             btn.disabled = true;
-            btn.innerText = "Verifying...";
+            btn.innerText = "Getting OTP...";
 
             try {{
                 const res = await fetch('/api/otp/reveal', {{
@@ -672,7 +692,7 @@ def get_otp_verify_page(token: Optional[str] = Query(None)):
                 if (!res.ok || !data.success) {{
                     showError(data.detail || data.message || "Ghalat Admin Master PIN!");
                     btn.disabled = false;
-                    btn.innerText = "Show OTP Code";
+                    btn.innerText = "🟢 GET OTP CODE NOW";
                     return;
                 }}
 
@@ -686,9 +706,9 @@ def get_otp_verify_page(token: Optional[str] = Query(None)):
 
                 startCountdown(data.expires_in_seconds || 300);
             }} catch (err) {{
-                showError("Network error. Connect to Pharmacy Wi-Fi and try again.");
+                showError("Network error. Make sure you are connected to the Pharmacy Wi-Fi.");
                 btn.disabled = false;
-                btn.innerText = "Show OTP Code";
+                btn.innerText = "🟢 GET OTP CODE NOW";
             }}
         }}
 
