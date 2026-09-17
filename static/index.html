@@ -1250,47 +1250,47 @@
   <!-- ================================================================= -->
   <div class="flex-1 flex flex-col min-w-0 min-h-screen">
     
-    <!-- TOP HEADER BAR (MATCHING SCREENSHOT) -->
-    <header class="bg-white border-b border-slate-200 px-6 py-3.5 sticky top-0 z-30 flex items-center justify-between shadow-xs">
-      <!-- Left: Dynamic Page Title & Subtitle + Portal Badge -->
-      <div class="flex items-center gap-4">
-        <div>
-          <h2 id="page-title" class="text-lg font-extrabold text-slate-900 tracking-tight leading-tight">Executive Dashboard</h2>
-          <p id="page-subtitle" class="text-xs text-slate-500 font-medium">Real-time staff pulse, attendance and pharmacy operations</p>
-        </div>
-        <div id="portal-status-badge"></div>
+    <!-- TOP HEADER BAR (CLEAN EXECUTIVE DESIGN) -->
+    <header class="bg-white border-b border-slate-200 px-6 py-3 sticky top-0 z-30 flex items-center justify-between shadow-2xs gap-4">
+      <!-- Left: Dynamic Page Title & Subtitle -->
+      <div class="min-w-0 flex-1">
+        <h2 id="page-title" class="text-lg font-extrabold text-slate-900 tracking-tight leading-tight truncate">Executive Dashboard</h2>
+        <p id="page-subtitle" class="text-xs text-slate-500 font-medium truncate">Real-time staff pulse, attendance and pharmacy operations</p>
       </div>
 
-      <!-- Right: Search, Clock, Notifications, Admin Profile -->
-      <div class="flex items-center gap-4 sm:gap-5">
-        <div id="portal-switch-action-btn"></div>
-        <button onclick="openStaffModal()" id="header-add-staff-btn" class="admin-only-tab bg-[#156D38] hover:bg-[#0E4D27] text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-sm shadow-emerald-950/30 flex items-center gap-1.5 transition cursor-pointer">
+      <!-- Right: Unified Controls (Mode Switcher, Add New, Search, Time, Notifs, Profile) -->
+      <div class="flex items-center gap-3 sm:gap-4 shrink-0">
+        
+        <!-- Unified Portal Mode & Quick Switcher Pill -->
+        <div id="unified-portal-bar" class="flex items-center"></div>
+
+        <!-- Add Staff Button (Admin Only) -->
+        <button onclick="openStaffModal()" id="header-add-staff-btn" class="admin-only-tab bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-2xs flex items-center gap-1.5 transition cursor-pointer">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
           <span>Add New</span>
         </button>
 
         <!-- Top Search Input -->
-        <div class="relative hidden md:block w-56 lg:w-64">
-          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
-          <input type="text" id="top-staff-search" oninput="syncStaffSearch(this.value)" placeholder="Search staff by name, CNIC..." class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-1.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
+        <div class="relative hidden xl:block w-52">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"></i>
+          <input type="text" id="top-staff-search" oninput="syncStaffSearch(this.value)" placeholder="Search staff..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition">
         </div>
 
-        <!-- Live Time & Date in JetBrains Mono -->
-        <div class="text-right hidden lg:block">
-          <div id="live-time" class="text-xs font-black font-mono text-slate-800">00:00:00 AM</div>
-          <div id="live-date" class="text-[10px] text-slate-400 font-medium">Wednesday, 10 Sept 2026</div>
+        <!-- Live Time in JetBrains Mono -->
+        <div class="text-right hidden lg:block border-l border-slate-200 pl-3">
+          <div id="live-time" class="text-xs font-bold font-mono text-slate-800 leading-tight">00:00:00 AM</div>
+          <div id="live-date" class="text-[10px] text-slate-400 font-medium leading-tight">Sep 17, 2026</div>
         </div>
 
-        <!-- Notification Bell with Interactive Dropdown & Quick Drawer -->
+        <!-- Notification Bell -->
         <div class="relative" id="notif-dropdown-wrapper">
-          <button id="notif-bell-btn" onclick="toggleNotificationDropdown(event)" class="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer focus:outline-none" title="Notifications & Quick Operations">
-            <i data-lucide="bell" class="w-5 h-5"></i>
-            <span id="notif-badge-count" class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white rounded-full text-[10px] font-black flex items-center justify-center border-2 border-white shadow-xs">0</span>
+          <button id="notif-bell-btn" onclick="toggleNotificationDropdown(event)" class="relative p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer focus:outline-none" title="Notifications">
+            <i data-lucide="bell" class="w-4 h-4"></i>
+            <span id="notif-badge-count" class="absolute 0.5 -top-0.5 -right-0.5 min-w-[16px] h-[16px] px-1 bg-rose-500 text-white rounded-full text-[9px] font-black flex items-center justify-center border-2 border-white shadow-xs">0</span>
           </button>
 
           <!-- Notification Dropdown Panel -->
           <div id="notif-dropdown-panel" class="hidden absolute right-0 mt-2.5 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden transform transition-all duration-150 origin-top-right">
-            <!-- Header -->
             <div class="p-3.5 bg-gradient-to-r from-slate-900 to-[#0F172A] text-white flex items-center justify-between">
               <div class="flex items-center gap-2.5">
                 <div class="w-7 h-7 rounded-lg bg-[#156D38] flex items-center justify-center text-white shadow-2xs">
@@ -1303,16 +1303,13 @@
               </div>
               <div class="flex items-center gap-1.5">
                 <span id="notif-header-badge" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-rose-500 text-white shadow-2xs">0 New</span>
-                <button onclick="clearAllNotifications(event)" title="Clear All Notifications" class="text-[10px] font-extrabold bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white px-2 py-0.5 rounded-md border border-rose-400/30 transition cursor-pointer">
-                  Clear All
-                </button>
+                <button onclick="clearAllNotifications(event)" title="Clear All Notifications" class="text-[10px] font-extrabold bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white px-2 py-0.5 rounded-md border border-rose-400/30 transition cursor-pointer">Clear All</button>
                 <button onclick="refreshNotificationData(event)" title="Refresh Notifications" class="p-1 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 transition cursor-pointer">
                   <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
             </div>
 
-            <!-- Category Filter Pills -->
             <div class="p-2 bg-slate-50 border-b border-slate-100 flex items-center gap-1 overflow-x-auto text-[11px] font-semibold">
               <button onclick="filterNotificationList('ALL', event)" id="notif-tab-ALL" class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-2xs font-bold transition cursor-pointer whitespace-nowrap">All</button>
               <button onclick="filterNotificationList('PUNCH', event)" id="notif-tab-PUNCH" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 transition cursor-pointer whitespace-nowrap flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Punches</button>
@@ -1320,7 +1317,6 @@
               <button onclick="filterNotificationList('OVERDUE', event)" id="notif-tab-OVERDUE" class="px-2.5 py-1 rounded-lg text-slate-500 hover:text-slate-900 transition cursor-pointer whitespace-nowrap flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Overdue</button>
             </div>
 
-            <!-- Notification Items Scroll List -->
             <div id="notif-items-list" class="max-h-[320px] overflow-y-auto divide-y divide-slate-100 p-1">
               <div class="text-center py-8 text-slate-400 text-xs">
                 <i data-lucide="bell-off" class="w-6 h-6 mx-auto mb-1 text-slate-300"></i>
@@ -1328,35 +1324,33 @@
               </div>
             </div>
 
-            <!-- Footer Action Links -->
             <div class="p-2.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
               <button onclick="openTabFromNotif('live')" class="text-[11px] font-bold text-[#156D38] hover:text-[#0E4D27] flex items-center gap-1 transition cursor-pointer">
                 <span>View Full Activity Stream</span>
                 <i data-lucide="arrow-right" class="w-3 h-3"></i>
               </button>
               <div class="flex items-center gap-3">
-                <button onclick="clearAllNotifications(event)" class="text-[11px] font-bold text-rose-600 hover:text-rose-700 transition cursor-pointer">
-                  Clear All
-                </button>
-                <button onclick="closeNotificationDropdown()" class="text-[11px] text-slate-400 hover:text-slate-600 transition cursor-pointer">
-                  Close
-                </button>
+                <button onclick="clearAllNotifications(event)" class="text-[11px] font-bold text-rose-600 hover:text-rose-700 transition cursor-pointer">Clear All</button>
+                <button onclick="closeNotificationDropdown()" class="text-[11px] text-slate-400 hover:text-slate-600 transition cursor-pointer">Close</button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Admin Profile Pill (from prompt) -->
-        <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200 cursor-pointer">
-          <div class="w-8 h-8 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+        <!-- Profile Section & Clean Logout Button -->
+        <div class="flex items-center gap-2 pl-3 border-l border-slate-200">
+          <div id="header-user-avatar" class="w-8 h-8 rounded-xl bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
             AD
           </div>
           <div class="hidden sm:block text-left leading-tight">
-            <p class="text-xs font-bold text-slate-800">Admin</p>
-            <p class="text-[10px] text-slate-400">Mumtaz HR</p>
+            <p id="header-user-role" class="text-xs font-bold text-slate-800">Admin</p>
+            <p id="header-user-dept" class="text-[10px] text-slate-400">Mumtaz HR</p>
           </div>
-          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400"></i>
+          <button onclick="logoutPortal()" class="ml-1 p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer" title="Logout & Return to Login Screen">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
         </div>
+
       </div>
     </header>
 
@@ -5020,7 +5014,7 @@
       }
     }
 
-    function enterStaffPortal(saveSession = true) {
+        function enterStaffPortal(saveSession = true) {
       currentPortalMode = 'STAFF';
       if (saveSession) sessionStorage.setItem('mumtaz_portal_mode', 'STAFF');
       
@@ -5033,30 +5027,31 @@
       document.querySelectorAll('.admin-only-tab').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.staff-only-tab').forEach(el => el.classList.remove('hidden'));
 
-      // Update Header Portal Badge & Action Button
-      const portalBadge = document.getElementById('portal-status-badge');
-      if (portalBadge) {
-        portalBadge.innerHTML = `
-          <span class="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[11px] font-extrabold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
-            <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-600"></i>
-            <span>Staff Portal (Counter Mode)</span>
-          </span>
+      // Update Unified Portal Bar in Header (Clean Single Pill)
+      const unifiedBar = document.getElementById('unified-portal-bar');
+      if (unifiedBar) {
+        unifiedBar.innerHTML = `
+          <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-xl shadow-2xs">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="shield" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Staff / Counter Mode</span>
+            </span>
+            <span class="text-emerald-300">|</span>
+            <button onclick="showLoginScreen('admin')" class="text-amber-800 hover:text-amber-950 font-black flex items-center gap-1 hover:underline cursor-pointer" title="Switch to Admin Portal">
+              <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>Admin Login</span>
+            </button>
+          </div>
         `;
       }
 
-      const portalSwitchBtn = document.getElementById('portal-switch-action-btn');
-      if (portalSwitchBtn) {
-        portalSwitchBtn.innerHTML = `
-          <button onclick="showLoginScreen('admin')" class="bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-amber-200 border border-amber-500/40 text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Switch to Admin Portal">
-            <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-400"></i>
-            <span>👑 Admin Login</span>
-          </button>
-          <button onclick="logoutPortal()" class="bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-300 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 transition cursor-pointer" title="Logout">
-            <i data-lucide="log-out" class="w-3.5 h-3.5 text-slate-500"></i>
-            <span>Logout</span>
-          </button>
-        `;
-      }
+      // Update Profile text
+      const av = document.getElementById('header-user-avatar');
+      const role = document.getElementById('header-user-role');
+      const dept = document.getElementById('header-user-dept');
+      if (av) { av.innerText = "ST"; av.className = "w-8 h-8 rounded-xl bg-[#156D38] text-white flex items-center justify-center font-bold text-xs shadow-2xs"; }
+      if (role) role.innerText = "Staff";
+      if (dept) dept.innerText = "Counter Mode";
 
       // Default active tab in Staff mode: Kiosk (PIN attendance)
       switchTab('kiosk');
@@ -5072,34 +5067,35 @@
       if (loginScreen) loginScreen.classList.add('hidden');
       if (app) app.classList.remove('hidden');
 
-      // In Admin Mode: Show Admin-Only tabs, Hide Staff/Counter-Only tabs (Keep sidebar clean for Admin!)
+      // In Admin Mode: Show Admin-Only tabs, Hide Staff/Counter-Only tabs
       document.querySelectorAll('.admin-only-tab').forEach(el => el.classList.remove('hidden'));
       document.querySelectorAll('.staff-only-tab').forEach(el => el.classList.add('hidden'));
 
-      // Update Header Portal Badge & Quick Switch Button to Staff Portal
-      const portalBadge = document.getElementById('portal-status-badge');
-      if (portalBadge) {
-        portalBadge.innerHTML = `
-          <span class="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-extrabold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
-            <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-600"></i>
-            <span>Executive Admin Portal</span>
-          </span>
+      // Update Unified Portal Bar in Header (Clean Single Pill)
+      const unifiedBar = document.getElementById('unified-portal-bar');
+      if (unifiedBar) {
+        unifiedBar.innerHTML = `
+          <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold px-3 py-1.5 rounded-xl shadow-2xs">
+            <span class="flex items-center gap-1.5">
+              <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-600"></i>
+              <span>Executive Admin</span>
+            </span>
+            <span class="text-amber-300">|</span>
+            <button onclick="enterStaffPortal(false)" class="text-emerald-700 hover:text-emerald-950 font-black flex items-center gap-1 hover:underline cursor-pointer" title="Quick Switch to Counter / Staff Portal">
+              <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-600"></i>
+              <span>Open Staff Portal</span>
+            </button>
+          </div>
         `;
       }
 
-      const portalSwitchBtn = document.getElementById('portal-switch-action-btn');
-      if (portalSwitchBtn) {
-        portalSwitchBtn.innerHTML = `
-          <button onclick="enterStaffPortal(false)" class="bg-[#156D38] hover:bg-[#0E4D27] text-white border border-emerald-500/40 text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Switch to Staff / Counter Portal">
-            <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-300"></i>
-            <span>🟢 Open Staff Portal</span>
-          </button>
-          <button onclick="logoutPortal()" class="bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-300 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 transition cursor-pointer" title="Logout & Return to Login Screen">
-            <i data-lucide="log-out" class="w-3.5 h-3.5 text-rose-500"></i>
-            <span>Logout</span>
-          </button>
-        `;
-      }
+      // Update Profile text
+      const av = document.getElementById('header-user-avatar');
+      const role = document.getElementById('header-user-role');
+      const dept = document.getElementById('header-user-dept');
+      if (av) { av.innerText = "AD"; av.className = "w-8 h-8 rounded-xl bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shadow-2xs"; }
+      if (role) role.innerText = "Admin";
+      if (dept) dept.innerText = "Mumtaz HR";
 
       // Default active tab in Admin mode: Live Dashboard / HR Overview
       switchTab('live');
