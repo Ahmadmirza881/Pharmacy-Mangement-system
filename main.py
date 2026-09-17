@@ -196,6 +196,16 @@ class CustomerSettleAll(BaseModel):
 
 # --- API Endpoints ---
 
+@app.get("/api/status")
+@app.get("/api/health")
+def get_system_status():
+    return {
+        "status": "ok",
+        "system": "Mumtaz Pharmacy Management System",
+        "version": "2.4",
+        "timestamp": datetime.now().isoformat()
+    }
+
 @app.get("/api/activities/today")
 def get_activities_today(date: Optional[str] = None, category: Optional[str] = "ALL", limit: Optional[int] = 50):
     """Returns today's real-time operational activity log for the Dashboard."""

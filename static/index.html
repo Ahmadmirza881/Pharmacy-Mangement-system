@@ -1173,7 +1173,7 @@
       </button>
 
       <!-- ATTENDANCE TAB -->
-      <button onclick="switchTab('kiosk')" id="side-tab-kiosk" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+      <button onclick="switchTab('kiosk')" id="side-tab-kiosk" class="staff-only-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
         <i data-lucide="fingerprint" class="w-4 h-4"></i>
         <span>PIN &amp; OTP Attendance</span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
@@ -1188,7 +1188,7 @@
 
 
       <!-- LEAVE MANAGEMENT TAB -->
-      <button onclick="switchTab('leaves')" id="side-tab-leaves" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+      <button onclick="switchTab('leaves')" id="side-tab-leaves" class="staff-only-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
         <i data-lucide="calendar-off" class="w-4 h-4"></i>
         <span>Leave Management</span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
@@ -1209,7 +1209,7 @@
       </button>
 
       <!-- CUSTOMER KHATA TAB -->
-      <button onclick="switchTab('customer-khata')" id="side-tab-customer-khata" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+      <button onclick="switchTab('customer-khata')" id="side-tab-customer-khata" class="staff-only-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
         <i data-lucide="book-open-check" class="w-4 h-4"></i>
         <span>Customer Khata</span>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
@@ -4823,10 +4823,13 @@
     // Initialize Page
     
     // =========================================================================
-    // UNIFIED TABBED LOGIN & DUAL-PORTAL STATE ENGINE
+    // UNIFIED TABBED LOGIN & STRICT DUAL-PORTAL ENGINE
     // =========================================================================
     let currentPortalMode = sessionStorage.getItem('mumtaz_portal_mode') || 'GATEWAY';
     let currentLoginTab = 'admin'; // 'admin' or 'staff'
+
+    const ADMIN_ONLY_TABS = ['staff', 'payroll', 'advances', 'audit-log', 'settings'];
+    const STAFF_ONLY_TABS = ['kiosk', 'customer-khata', 'leaves'];
 
     function initPortalMode() {
       if (currentPortalMode === 'STAFF') {
@@ -5026,8 +5029,9 @@
       if (loginScreen) loginScreen.classList.add('hidden');
       if (app) app.classList.remove('hidden');
 
-      // Hide all Admin-Only tabs in sidebar & header
+      // In Staff Mode: Show Staff-Only tabs, Hide Admin-Only tabs
       document.querySelectorAll('.admin-only-tab').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.staff-only-tab').forEach(el => el.classList.remove('hidden'));
 
       // Update Header Portal Badge & Action Button
       const portalBadge = document.getElementById('portal-status-badge');
@@ -5044,8 +5048,12 @@
       if (portalSwitchBtn) {
         portalSwitchBtn.innerHTML = `
           <button onclick="showLoginScreen('admin')" class="bg-slate-900 hover:bg-slate-800 text-amber-300 hover:text-amber-200 border border-amber-500/40 text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Switch to Admin Portal">
-            <i data-lucide="key" class="w-3.5 h-3.5 text-amber-400"></i>
-            <span>Admin Login</span>
+            <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>👑 Admin Login</span>
+          </button>
+          <button onclick="logoutPortal()" class="bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-300 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 transition cursor-pointer" title="Logout">
+            <i data-lucide="log-out" class="w-3.5 h-3.5 text-slate-500"></i>
+            <span>Logout</span>
           </button>
         `;
       }
@@ -5064,10 +5072,11 @@
       if (loginScreen) loginScreen.classList.add('hidden');
       if (app) app.classList.remove('hidden');
 
-      // Show all Admin-Only tabs in sidebar & header
+      // In Admin Mode: Show Admin-Only tabs, Hide Staff/Counter-Only tabs (Keep sidebar clean for Admin!)
       document.querySelectorAll('.admin-only-tab').forEach(el => el.classList.remove('hidden'));
+      document.querySelectorAll('.staff-only-tab').forEach(el => el.classList.add('hidden'));
 
-      // Update Header Portal Badge & Lock Button
+      // Update Header Portal Badge & Quick Switch Button to Staff Portal
       const portalBadge = document.getElementById('portal-status-badge');
       if (portalBadge) {
         portalBadge.innerHTML = `
@@ -5081,13 +5090,18 @@
       const portalSwitchBtn = document.getElementById('portal-switch-action-btn');
       if (portalSwitchBtn) {
         portalSwitchBtn.innerHTML = `
-          <button onclick="logoutPortal()" class="bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-300 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-2xs transition cursor-pointer" title="Logout & Return to Login Screen">
+          <button onclick="enterStaffPortal(false)" class="bg-[#156D38] hover:bg-[#0E4D27] text-white border border-emerald-500/40 text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm transition cursor-pointer" title="Switch to Staff / Counter Portal">
+            <i data-lucide="users" class="w-3.5 h-3.5 text-emerald-300"></i>
+            <span>🟢 Open Staff Portal</span>
+          </button>
+          <button onclick="logoutPortal()" class="bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-slate-300 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1 transition cursor-pointer" title="Logout & Return to Login Screen">
             <i data-lucide="log-out" class="w-3.5 h-3.5 text-rose-500"></i>
-            <span>Logout / Switch</span>
+            <span>Logout</span>
           </button>
         `;
       }
 
+      // Default active tab in Admin mode: Live Dashboard / HR Overview
       switchTab('live');
       scheduleIconsRender();
     }
@@ -5557,9 +5571,8 @@
 
     // 2. Navigation Tabs (High-Performance 0ms Switching & Portal Security)
     function switchTab(tabId) {
-      const adminTabs = ['staff', 'payroll', 'advances', 'audit-log', 'settings'];
-      if (currentPortalMode === 'STAFF' && adminTabs.includes(tabId)) {
-        showAdminLoginScreen();
+      if (currentPortalMode === 'STAFF' && ADMIN_ONLY_TABS.includes(tabId)) {
+        showLoginScreen('admin');
         return;
       }
 
@@ -5570,9 +5583,13 @@
         const legacyTab = document.getElementById(`tab-${t}`);
         if (viewEl && t !== tabId) viewEl.classList.add('hidden');
         if (sideEl) {
-          const isAdminTab = adminTabs.includes(t);
-          sideEl.className = `${isAdminTab ? 'admin-only-tab ' : ''}w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer`;
+          const isAdminTab = ADMIN_ONLY_TABS.includes(t);
+          const isStaffTab = STAFF_ONLY_TABS.includes(t);
+          const tagClass = isAdminTab ? 'admin-only-tab ' : (isStaffTab ? 'staff-only-tab ' : '');
+          sideEl.className = `${tagClass}w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer`;
           if (currentPortalMode === 'STAFF' && isAdminTab) {
+            sideEl.classList.add('hidden');
+          } else if (currentPortalMode === 'ADMIN' && isStaffTab) {
             sideEl.classList.add('hidden');
           }
         }
@@ -5587,9 +5604,13 @@
         targetView.classList.add('view-tab-animate');
       }
       if (targetSide) {
-        const isAdminTab = adminTabs.includes(tabId);
-        targetSide.className = `${isAdminTab ? 'admin-only-tab ' : ''}w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-white bg-[#156D38] shadow-sm shadow-emerald-950/40 transition-colors cursor-pointer`;
+        const isAdminTab = ADMIN_ONLY_TABS.includes(tabId);
+        const isStaffTab = STAFF_ONLY_TABS.includes(tabId);
+        const tagClass = isAdminTab ? 'admin-only-tab ' : (isStaffTab ? 'staff-only-tab ' : '');
+        targetSide.className = `${tagClass}w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-white bg-[#156D38] shadow-sm shadow-emerald-950/40 transition-colors cursor-pointer`;
         if (currentPortalMode === 'STAFF' && isAdminTab) {
+          targetSide.classList.add('hidden');
+        } else if (currentPortalMode === 'ADMIN' && isStaffTab) {
           targetSide.classList.add('hidden');
         }
       }
