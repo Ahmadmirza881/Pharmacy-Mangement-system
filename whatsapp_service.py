@@ -206,6 +206,165 @@ class WhatsAppService:
         self.message_history.insert(0, entry)
         return entry
 
+    def build_delivery_dispatch_admin_message(self, delivery: Dict[str, Any]) -> str:
+        """Formal WhatsApp message for Admin when order is dispatched."""
+        now = datetime.now()
+        time_str = now.strftime("%I:%M %p")
+        invoice = delivery.get("invoice_no", "N/A")
+        cust_name = delivery.get("customer_name", "Customer")
+        cust_phone = delivery.get("customer_phone", "")
+        address = delivery.get("customer_address", "")
+        amount = float(delivery.get("bill_amount", 0.0))
+        payment_method = delivery.get("payment_method", "Cash on Delivery")
+        rider = delivery.get("delivery_person_name", "Rider")
+        rider_phone = delivery.get("delivery_person_phone", "")
+        notes = (delivery.get("notes") or "").strip()
+        notes_str = f"📝 *Notes:* {notes}\n" if notes else ""
+
+        return (
+            f"🚀 *MUMTAZ PHARMACY — ORDER DISPATCHED*\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"🧾 *Invoice:* #{invoice}\n"
+            f"💰 *Bill Amount:* Rs. {amount:,.0f} ({payment_method})\n"
+            f"👤 *Customer:* {cust_name} ({cust_phone})\n"
+            f"📍 *Address:* {address}\n"
+            f"🛵 *Rider:* {rider} ({rider_phone})\n"
+            f"⏰ *Dispatched At:* {time_str}\n"
+            f"{notes_str}"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"⚠️ *Admin Audit:* Operational OUT_FOR_DELIVERY • Pending End-of-Day cash reconciliation."
+        )
+
+    def build_delivery_dispatch_customer_message(self, delivery: Dict[str, Any]) -> str:
+        """Formal WhatsApp message for Customer when order is on the way."""
+        cust_name = delivery.get("customer_name", "Valued Customer")
+        invoice = delivery.get("invoice_no", "N/A")
+        amount = float(delivery.get("bill_amount", 0.0))
+        payment_method = delivery.get("payment_method", "Cash on Delivery")
+        rider = delivery.get("delivery_person_name", "Rider")
+        rider_phone = delivery.get("delivery_person_phone", "")
+
+        return (
+            f"📦 *MUMTAZ PHARMACY — YOUR ORDER IS ON THE WAY!*\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"Dear *{cust_name}*,\n"
+            f"Your medicine / pharmacy order has been dispatched.\n\n"
+            f"🧾 *Invoice:* #{invoice}\n"
+            f"💰 *Amount Payable:* Rs. {amount:,.0f} ({payment_method})\n"
+            f"🛵 *Delivery Rider:* {rider}\n"
+            f"📞 *Rider Contact:* {rider_phone}\n\n"
+            f"Our rider will arrive shortly. Please have the exact cash ready if paying on delivery.\n"
+            f"Thank you for choosing Mumtaz Pharmacy! 🏥\n"
+            f"📍 Model Town, Lahore"
+        )
+
+    def build_delivery_return_admin_message(self, delivery: Dict[str, Any]) -> str:
+        """Formal WhatsApp message for Admin when rider confirms return."""
+        now = datetime.now()
+        time_str = now.strftime("%I:%M %p")
+        invoice = delivery.get("invoice_no", "N/A")
+        cust_name = delivery.get("customer_name", "Customer")
+        amount = float(delivery.get("bill_amount", 0.0))
+        rider = delivery.get("delivery_person_name", "Rider")
+
+        return (
+            f"✅ *MUMTAZ PHARMACY — RIDER RETURN CONFIRMATION*\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"🛵 *Rider:* {rider} has returned to the pharmacy.\n"
+            f"🧾 *Invoice:* #{invoice}\n"
+            f"👤 *Customer:* {cust_name}\n"
+            f"💵 *Cash Collected:* Rs. {amount:,.0f}\n"
+            f"⏰ *Return Time:* {time_str}\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"📋 *Status:* Operational DELIVERED • Please verify hisaab & click Approve in Admin Portal."
+        )
+
+    def dispatch_delivery_alerts(self, delivery: Dict[str, Any], admin_phone: str = "") -> Dict[str, Any]:
+        """Dispatches dispatch alerts for both Admin and Customer and returns WhatsApp direct links."""
+        admin_text = self.build_delivery_dispatch_admin_message(delivery)
+        cust_text = self.build_delivery_dispatch_customer_message(delivery)
+        
+        adm_wa = self.normalize_phone(admin_phone)
+        cust_wa = self.normalize_phone(delivery.get("customer_phone", ""))
+
+        adm_link = f"https://wa.me/{adm_wa}?text={urllib.parse.quote(admin_text)}" if adm_wa else ""
+        cust_link = f"https://wa.me/{cust_wa}?text={urllib.parse.quote(cust_text)}" if cust_wa else ""
+
+        now = datetime.now()
+        if adm_link:
+            self.message_history.insert(0, {
+                "id": len(self.message_history) + 1,
+                "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
+                "time_label": now.strftime("%I:%M %p"),
+                "action": "DELIVERY_DISPATCH_ADMIN",
+                "staff_name": delivery.get("delivery_person_name", "Rider"),
+                "target_phone": admin_phone,
+                "wa_number": adm_wa,
+                "masked_phone": self.mask_phone(admin_phone),
+                "recipient_label": f"Admin ({self.mask_phone(admin_phone)})",
+                "otp_code": f"INV-{delivery.get('invoice_no')}",
+                "message_text": admin_text,
+                "direct_link": adm_link,
+                "status": "SENT"
+            })
+        if cust_link:
+            self.message_history.insert(0, {
+                "id": len(self.message_history) + 1,
+                "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
+                "time_label": now.strftime("%I:%M %p"),
+                "action": "DELIVERY_DISPATCH_CUSTOMER",
+                "staff_name": delivery.get("customer_name", "Customer"),
+                "target_phone": delivery.get("customer_phone", ""),
+                "wa_number": cust_wa,
+                "masked_phone": self.mask_phone(delivery.get("customer_phone", "")),
+                "recipient_label": f"Customer ({self.mask_phone(delivery.get('customer_phone', ''))})",
+                "otp_code": f"INV-{delivery.get('invoice_no')}",
+                "message_text": cust_text,
+                "direct_link": cust_link,
+                "status": "SENT"
+            })
+        
+        if len(self.message_history) > 50:
+            self.message_history = self.message_history[:50]
+
+        return {
+            "admin_message": admin_text,
+            "admin_link": adm_link,
+            "customer_message": cust_text,
+            "customer_link": cust_link
+        }
+
+    def dispatch_delivery_return_alert(self, delivery: Dict[str, Any], admin_phone: str = "") -> Dict[str, Any]:
+        """Dispatches return alert to Admin and returns direct WhatsApp link."""
+        return_text = self.build_delivery_return_admin_message(delivery)
+        adm_wa = self.normalize_phone(admin_phone)
+        adm_link = f"https://wa.me/{adm_wa}?text={urllib.parse.quote(return_text)}" if adm_wa else ""
+
+        now = datetime.now()
+        if adm_link:
+            self.message_history.insert(0, {
+                "id": len(self.message_history) + 1,
+                "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
+                "time_label": now.strftime("%I:%M %p"),
+                "action": "DELIVERY_RETURN_ADMIN",
+                "staff_name": delivery.get("delivery_person_name", "Rider"),
+                "target_phone": admin_phone,
+                "wa_number": adm_wa,
+                "masked_phone": self.mask_phone(admin_phone),
+                "recipient_label": f"Admin ({self.mask_phone(admin_phone)})",
+                "otp_code": f"INV-{delivery.get('invoice_no')}",
+                "message_text": return_text,
+                "direct_link": adm_link,
+                "status": "SENT"
+            })
+        if len(self.message_history) > 50:
+            self.message_history = self.message_history[:50]
+
+        return {
+            "admin_message": return_text,
+            "admin_link": adm_link
+        }
+
     def get_recent_messages(self, limit: int = 15) -> List[Dict[str, Any]]:
         return self.message_history[:limit]
 

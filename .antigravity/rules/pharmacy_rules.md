@@ -38,3 +38,15 @@ http://localhost:8000
 # Run automated test suite
 python tests/test_payroll.py
 ```
+
+## 5. Mandatory Agent Execution Standard (Strictly Enforced)
+* **Incremental Steps Only:** Whenever implementing or debugging features, work strictly in **small, incremental steps** (chotay chotay steps). Never attempt to rewrite or dump massive multi-thousand-line chunks into monolithic files.
+* **Large File Protection (`static/index.html` is >800 KB):**
+  - Always use targeted, surgical edits (`replace_file_content` on small snippets) or separate modular scripts/CSS instead of touching large sections.
+  - Never regenerate large parts of `static/index.html`.
+* **Surgical Verification:**
+  - Verify database schema & migrations first.
+  - Implement backend endpoints and run automated tests (`pytest`) next.
+  - Integrate frontend controls and validate JavaScript syntax (`node validate_js.js`).
+* **Explicit Error Handling:** Never swallow errors or use generic alerts like "Network or server error". Always display the exact exception or server response detail so the user and developer immediately see the root cause.
+

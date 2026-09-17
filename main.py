@@ -16,13 +16,18 @@ import calendar
 import re
 import urllib.parse
 import random
+import json
 
 from database import (
     init_db, get_db_connection, log_activity, get_today_activities,
     get_setting, set_setting, get_all_settings, create_otp_record,
     verify_and_consume_otp, get_active_otps, get_pin_otp_audit_logs,
     mark_otp_notified, get_admin_master_pin, set_admin_master_pin,
-    verify_and_reveal_otp_by_token, get_otp_by_token
+    verify_and_reveal_otp_by_token, get_otp_by_token,
+    register_or_get_delivery_staff, verify_rider_pin, get_delivery_by_id,
+    create_delivery, complete_delivery_return, reconcile_delivery,
+    get_deliveries_list, get_active_deliveries_for_return,
+    get_delivery_stats_today, convert_temp_rider_to_permanent
 )
 from payroll_engine import process_punch, calculate_monthly_payroll, calculate_custom_range_payroll
 from biometric_service import biometric_service
@@ -98,7 +103,7 @@ class StaffCreate(BaseModel):
     designation: str = "Pharmacist"
     monthly_salary: float
     joining_date: Optional[str] = None
-    shift_id: int
+    shift_id: int = 1
     fingerprint_id: Optional[str] = None
     police_report: Optional[int] = 0
     allowed_leaves: Optional[int] = 2
@@ -119,6 +124,7 @@ class StaffUpdate(BaseModel):
     allowed_leaves: Optional[int] = None
     daily_hours: Optional[float] = None
     pin: Optional[str] = None
+    is_temp_delivery_staff: Optional[int] = None
 
 class AdvanceCreate(BaseModel):
     staff_id: int
@@ -166,6 +172,9 @@ class CustomerCreate(BaseModel):
     phone: str
     address: Optional[str] = ""
     credit_limit: Optional[float] = 15000.0
+    added_by: Optional[str] = "Admin"
+    approval_status: Optional[str] = None
+    is_staff: Optional[bool] = False
 
 class CustomerUpdate(BaseModel):
     name: Optional[str] = None
@@ -181,18 +190,29 @@ class CustomerKhataCreate(BaseModel):
     item_description: str
     amount: float
     notes: Optional[str] = ""
+    added_by: Optional[str] = "Admin"
+    approval_status: Optional[str] = None
+    is_staff: Optional[bool] = False
 
 class CustomerKhataSettle(BaseModel):
     settled_at: Optional[str] = None
     payment_method: Optional[str] = "Cash"
     notes: Optional[str] = ""
     amount: Optional[float] = None # Optional amount: if less than invoice amount, recorded as partial payment
+    is_staff: Optional[bool] = False
+    added_by: Optional[str] = "Admin"
 
 class CustomerSettleAll(BaseModel):
     settled_at: Optional[str] = None
     payment_method: Optional[str] = "Cash"
     notes: Optional[str] = ""
     amount: Optional[float] = None # Optional amount: if less than total balance, settled partially across pending invoices (FIFO)
+    is_staff: Optional[bool] = False
+    added_by: Optional[str] = "Admin"
+
+class BatchApproveRequest(BaseModel):
+    request_ids: Optional[List[int]] = None
+    approve_all: Optional[bool] = False
 
 # --- API Endpoints ---
 
@@ -1119,6 +1139,9 @@ def update_staff(staff_id: int, data: StaffUpdate):
     if data.pin is not None:
         fields.append("pin = ?")
         values.append(data.pin.strip())
+    if data.is_temp_delivery_staff is not None:
+        fields.append("is_temp_delivery_staff = ?")
+        values.append(int(data.is_temp_delivery_staff))
 
     if fields:
         values.append(staff_id)
@@ -1755,14 +1778,35 @@ def create_customer(data: CustomerCreate):
     """Registers a new customer account."""
     conn = get_db_connection()
     cursor = conn.cursor()
+    added_by = (data.added_by or "Admin").strip()
+    is_staff = bool(data.is_staff or ("Staff" in added_by))
+    if data.approval_status:
+        approval_status = data.approval_status.strip()
+    else:
+        approval_status = "PENDING" if is_staff else "APPROVED"
+
+    approved_by = "Admin" if approval_status == "APPROVED" else ""
+    approved_at = datetime.now().isoformat() if approval_status == "APPROVED" else ""
+
     cursor.execute("""
-        INSERT INTO customers (name, phone, address, credit_limit)
-        VALUES (?, ?, ?, ?)
-    """, (data.name.strip(), data.phone.strip(), (data.address or "").strip(), data.credit_limit or 15000.0))
+        INSERT INTO customers (name, phone, address, credit_limit, added_by, approval_status, approved_by, approved_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (data.name.strip(), data.phone.strip(), (data.address or "").strip(), data.credit_limit or 15000.0, added_by, approval_status, approved_by, approved_at))
     customer_id = cursor.lastrowid
+
+    if approval_status == "PENDING":
+        details_txt = f"New Customer: {data.name.strip()} • Phone: {data.phone.strip()} • Limit: Rs. {(data.credit_limit or 15000.0):,.2f}"
+        if data.address:
+            details_txt += f" • Addr: {data.address.strip()}"
+        cursor.execute("""
+            INSERT INTO staff_approval_requests (request_type, customer_id, customer_name, reference_id, amount, details, notes, status, added_by)
+            VALUES ('NEW_CUSTOMER', ?, ?, ?, ?, ?, ?, 'PENDING', ?)
+        """, (customer_id, data.name.strip(), customer_id, data.credit_limit or 15000.0, details_txt, "New Customer Added by Staff", added_by))
+
     conn.commit()
     conn.close()
-    return {"success": True, "id": customer_id, "message": f"Customer '{data.name}' registered successfully."}
+    msg = f"Customer '{data.name}' registered successfully." if approval_status == "APPROVED" else f"Customer '{data.name}' registered (Pending Admin Approval)."
+    return {"success": True, "id": customer_id, "status": approval_status, "approval_status": approval_status, "message": msg}
 
 @app.put("/api/customers/{customer_id}")
 def update_customer(customer_id: int, data: CustomerUpdate):
@@ -1847,11 +1891,42 @@ def add_customer_khata(data: CustomerKhataCreate):
         max_id = cursor.fetchone()[0] or 1000
         invoice_no = f"INV-{1000 + max_id + 1}"
 
+    added_by = (data.added_by or "Admin").strip()
+    is_staff = bool(data.is_staff or ("Staff" in added_by))
+    if data.approval_status:
+        approval_status = data.approval_status.strip()
+    else:
+        approval_status = "PENDING" if is_staff else "APPROVED"
+
+    approved_by = "Admin" if approval_status == "APPROVED" else ""
+    approved_at = datetime.now().isoformat() if approval_status == "APPROVED" else ""
+
     cursor.execute("""
-        INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes)
-        VALUES (?, ?, ?, ?, ?, 0, ?)
-    """, (data.customer_id, invoice_no.strip(), entry_date, data.item_description.strip(), data.amount, (data.notes or "").strip()))
+        INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes, added_by, approval_status, approved_by, approved_at)
+        VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?)
+    """, (
+        data.customer_id,
+        invoice_no.strip(),
+        entry_date,
+        data.item_description.strip(),
+        data.amount,
+        (data.notes or "").strip(),
+        added_by,
+        approval_status,
+        approved_by,
+        approved_at
+    ))
     entry_id = cursor.lastrowid
+
+    if approval_status == "PENDING":
+        details_txt = f"Invoice #{invoice_no}: {data.item_description.strip()} • Amount: Rs. {data.amount:,.2f}"
+        if data.notes:
+            details_txt += f" • Notes: {data.notes.strip()}"
+        cursor.execute("""
+            INSERT INTO staff_approval_requests (request_type, customer_id, customer_name, reference_id, amount, details, notes, status, added_by)
+            VALUES ('CREDIT_PURCHASE', ?, ?, ?, ?, ?, ?, 'PENDING', ?)
+        """, (data.customer_id, customer["name"], entry_id, data.amount, details_txt, data.notes or "", added_by))
+
     conn.commit()
 
     # Get updated balance
@@ -1859,11 +1934,12 @@ def add_customer_khata(data: CustomerKhataCreate):
     new_balance = cursor.fetchone()[0] or 0.0
     conn.close()
 
+    status_tag = f" [{approval_status}]" if approval_status != "APPROVED" else ""
     log_activity(
         category="CUSTOMER_KHATA",
         action_type="CUSTOMER_KHATA_ADDED",
-        title=f"Customer Credit: {customer['name']}",
-        description=f"Invoice #{invoice_no}: {data.item_description.strip()} (Rs. {data.amount:,.2f})",
+        title=f"Customer Credit: {customer['name']}{status_tag}",
+        description=f"Invoice #{invoice_no}: {data.item_description.strip()} (Rs. {data.amount:,.2f}) • By: {added_by}",
         staff_name=customer["name"],
         amount=data.amount,
         date_str=entry_date
@@ -1876,12 +1952,259 @@ def add_customer_khata(data: CustomerKhataCreate):
         "amount": data.amount,
         "customer_name": customer["name"],
         "new_balance": new_balance,
-        "message": f"Credit purchase of Rs. {data.amount:,.2f} recorded for {customer['name']} ({invoice_no})."
+        "added_by": added_by,
+        "approval_status": approval_status,
+        "message": f"Credit purchase of Rs. {data.amount:,.2f} recorded for {customer['name']} ({invoice_no}). Status: {approval_status}"
+    }
+
+@app.post("/api/customer-khata/{entry_id}/approve")
+def approve_customer_khata(entry_id: int):
+    """Admin approves a customer khata entry submitted by staff."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT k.*, c.name as customer_name FROM customer_khata k JOIN customers c ON k.customer_id = c.id WHERE k.id = ?", (entry_id,))
+    entry_row = cursor.fetchone()
+    if not entry_row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Khata entry not found")
+
+    entry = dict(entry_row)
+    now_str = datetime.now().isoformat()
+    cursor.execute("""
+        UPDATE customer_khata
+        SET approval_status = 'APPROVED', approved_by = 'Admin', approved_at = ?
+        WHERE id = ?
+    """, (now_str, entry_id))
+    cursor.execute("""
+        UPDATE staff_approval_requests
+        SET status = 'APPROVED', approved_by = 'Admin', approved_at = ?
+        WHERE request_type = 'CREDIT_PURCHASE' AND reference_id = ?
+    """, (now_str, entry_id))
+    conn.commit()
+
+    cursor.execute("SELECT SUM(amount) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (entry["customer_id"],))
+    new_balance = cursor.fetchone()[0] or 0.0
+    conn.close()
+
+    log_activity(
+        category="CUSTOMER_KHATA",
+        action_type="CUSTOMER_KHATA_APPROVED",
+        title=f"Khata Approved: {entry['customer_name']}",
+        description=f"Invoice #{entry['invoice_no']} (Rs. {entry['amount']:,.2f}) approved by Admin.",
+        staff_name=entry["customer_name"],
+        amount=entry["amount"],
+        date_str=date.today().isoformat()
+    )
+
+    return {
+        "success": True,
+        "id": entry_id,
+        "invoice_no": entry["invoice_no"],
+        "approval_status": "APPROVED",
+        "approved_by": "Admin",
+        "new_balance": new_balance,
+        "message": f"Invoice {entry['invoice_no']} approved successfully by Admin."
+    }
+
+# --- Admin Unified Approval Center Endpoints ---
+
+@app.get("/api/admin/pending-requests")
+def get_pending_staff_requests():
+    """Returns all pending staff requests (New Customers, Credit Purchases, Settlements)."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT * FROM staff_approval_requests
+        WHERE status = 'PENDING'
+        ORDER BY id DESC
+    """)
+    rows = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+    return {"success": True, "requests": rows}
+
+@app.post("/api/admin/pending-requests/{request_id}/approve")
+def approve_staff_request(request_id: int):
+    """Admin approves a staff request and executes the corresponding action."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM staff_approval_requests WHERE id = ?", (request_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    req = dict(row)
+    now_str = datetime.now().isoformat()
+    req_type = req["request_type"]
+
+    if req_type == "NEW_CUSTOMER":
+        cursor.execute("""
+            UPDATE customers
+            SET approval_status = 'APPROVED', approved_by = 'Admin', approved_at = ?
+            WHERE id = ?
+        """, (now_str, req["reference_id"]))
+
+    elif req_type == "CREDIT_PURCHASE":
+        cursor.execute("""
+            UPDATE customer_khata
+            SET approval_status = 'APPROVED', approved_by = 'Admin', approved_at = ?
+            WHERE id = ?
+        """, (now_str, req["reference_id"]))
+
+    elif req_type == "SETTLEMENT":
+        payload = json.loads(req["payload_json"] or "{}")
+        entry_id = payload.get("entry_id") or req["reference_id"]
+        cursor.execute("SELECT * FROM customer_khata WHERE id = ?", (entry_id,))
+        entry_row = cursor.fetchone()
+        if entry_row:
+            entry = dict(entry_row)
+            orig_amount = float(entry["amount"])
+            paid_amt = float(payload.get("amount", orig_amount))
+            pay_method = payload.get("payment_method", req["payment_method"] or "Cash")
+            settle_date = payload.get("settled_at", date.today().isoformat())
+            notes_val = payload.get("notes", "")
+
+            if paid_amt < orig_amount:
+                rem_amt = round(orig_amount - paid_amt, 2)
+                audit_note = f"Partial payment Rs. {paid_amt:,.2f} received on {settle_date} via {pay_method}"
+                if notes_val:
+                    audit_note += f" ({notes_val})"
+                cursor.execute("""
+                    UPDATE customer_khata
+                    SET amount = ?, is_settled = 1, settled_at = ?, payment_method = ?,
+                        notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
+                    WHERE id = ?
+                """, (paid_amt, settle_date, pay_method, audit_note, audit_note, entry_id))
+                cursor.execute("""
+                    INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes, approval_status, approved_by, approved_at)
+                    VALUES (?, ?, ?, ?, ?, 0, ?, 'APPROVED', 'Admin', ?)
+                """, (entry["customer_id"], f"{entry['invoice_no']}-REM", entry["date"], f"{entry['item_description']} (Baqaya)", rem_amt, f"Remaining baqaya from {entry['invoice_no']}", now_str))
+            else:
+                audit_note = f"Full payment on {settle_date} via {pay_method}"
+                if notes_val:
+                    audit_note += f" ({notes_val})"
+                cursor.execute("""
+                    UPDATE customer_khata
+                    SET is_settled = 1, settled_at = ?, payment_method = ?,
+                        notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
+                    WHERE id = ?
+                """, (settle_date, pay_method, audit_note, audit_note, entry_id))
+
+    elif req_type == "SETTLE_ALL":
+        payload = json.loads(req["payload_json"] or "{}")
+        cust_id = payload.get("customer_id") or req["customer_id"]
+        pay_method = payload.get("payment_method", req["payment_method"] or "Cash")
+        settle_date = payload.get("settled_at", date.today().isoformat())
+        paid_amt = float(payload.get("amount", req["amount"]))
+
+        cursor.execute("SELECT * FROM customer_khata WHERE customer_id = ? AND is_settled = 0 ORDER BY date ASC, id ASC", (cust_id,))
+        pending_items = [dict(r) for r in cursor.fetchall()]
+        remaining_to_allocate = paid_amt
+
+        for item in pending_items:
+            if remaining_to_allocate <= 0:
+                break
+            item_amt = float(item["amount"])
+            if remaining_to_allocate >= item_amt:
+                cursor.execute("""
+                    UPDATE customer_khata
+                    SET is_settled = 1, settled_at = ?, payment_method = ?,
+                        notes = CASE WHEN notes != '' THEN notes || ' | Settle-All' ELSE 'Settle-All Payment' END
+                    WHERE id = ?
+                """, (settle_date, pay_method, item["id"]))
+                remaining_to_allocate -= item_amt
+            else:
+                rem_amt = round(item_amt - remaining_to_allocate, 2)
+                cursor.execute("""
+                    UPDATE customer_khata
+                    SET amount = ?, is_settled = 1, settled_at = ?, payment_method = ?,
+                        notes = CASE WHEN notes != '' THEN notes || ' | Partial Settle-All' ELSE 'Partial Settle-All' END
+                    WHERE id = ?
+                """, (remaining_to_allocate, settle_date, pay_method, item["id"]))
+                cursor.execute("""
+                    INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes, approval_status, approved_by, approved_at)
+                    VALUES (?, ?, ?, ?, ?, 0, ?, 'APPROVED', 'Admin', ?)
+                """, (cust_id, f"{item['invoice_no']}-REM", item["date"], f"{item['item_description']} (Baqaya)", rem_amt, f"Remaining baqaya from {item['invoice_no']}", now_str))
+                remaining_to_allocate = 0
+
+    cursor.execute("""
+        UPDATE staff_approval_requests
+        SET status = 'APPROVED', approved_by = 'Admin', approved_at = ?
+        WHERE id = ?
+    """, (now_str, request_id))
+    conn.commit()
+    conn.close()
+
+    log_activity(
+        category="CUSTOMER_KHATA",
+        action_type="STAFF_REQUEST_APPROVED",
+        title=f"Staff Request Approved: {req['customer_name']}",
+        description=f"{req['request_type']} (Rs. {req['amount']:,.2f}) approved by Admin.",
+        staff_name=req["customer_name"],
+        amount=req["amount"],
+        date_str=date.today().isoformat()
+    )
+
+    return {"success": True, "request_id": request_id, "status": "APPROVED", "message": f"{req['request_type']} approved successfully by Admin."}
+
+@app.post("/api/admin/pending-requests/{request_id}/reject")
+def reject_staff_request(request_id: int):
+    """Admin rejects a staff request."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM staff_approval_requests WHERE id = ?", (request_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Request not found")
+    req = dict(row)
+    now_str = datetime.now().isoformat()
+
+    if req["request_type"] == "NEW_CUSTOMER":
+        cursor.execute("UPDATE customers SET is_active = 0, approval_status = 'REJECTED' WHERE id = ?", (req["reference_id"],))
+    elif req["request_type"] == "CREDIT_PURCHASE":
+        cursor.execute("DELETE FROM customer_khata WHERE id = ?", (req["reference_id"],))
+
+    cursor.execute("""
+        UPDATE staff_approval_requests
+        SET status = 'REJECTED', approved_by = 'Admin', approved_at = ?
+        WHERE id = ?
+    """, (now_str, request_id))
+    conn.commit()
+    conn.close()
+
+    return {"success": True, "request_id": request_id, "status": "REJECTED", "message": "Request rejected by Admin."}
+
+@app.post("/api/admin/pending-requests/approve-all")
+def batch_approve_staff_requests(data: BatchApproveRequest):
+    """Approves multiple or all pending staff requests with 1-click."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if data.approve_all or not data.request_ids:
+        cursor.execute("SELECT id FROM staff_approval_requests WHERE status = 'PENDING'")
+        ids = [r[0] for r in cursor.fetchall()]
+    else:
+        ids = data.request_ids
+    conn.close()
+
+    approved_count = 0
+    for req_id in ids:
+        try:
+            res = approve_staff_request(req_id)
+            if res.get("success"):
+                approved_count += 1
+        except Exception as e:
+            print(f"Error approving request {req_id}:", e)
+
+    return {
+        "success": True,
+        "approved_count": approved_count,
+        "message": f"Successfully approved {approved_count} staff requests."
     }
 
 @app.post("/api/customer-khata/{entry_id}/settle")
 def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
-    """Marks a single customer credit invoice as settled in full or in part."""
+    """Marks a single customer credit invoice as settled in full or in part, or queues for admin approval if staff."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM customer_khata WHERE id = ?", (entry_id,))
@@ -1900,7 +2223,43 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
     notes_val = (data.notes or "").strip()
     orig_amount = float(entry["amount"])
 
-    # Determine if full or partial
+    # If submitted by Staff, queue into staff_approval_requests
+    is_staff = bool(data.is_staff or ("Staff" in (data.added_by or "")))
+    if is_staff:
+        cursor.execute("SELECT name FROM customers WHERE id = ?", (entry["customer_id"],))
+        c_row = cursor.fetchone()
+        cust_name = c_row["name"] if c_row else "Customer"
+
+        paid_amt = round(float(data.amount), 2) if (data.amount is not None and data.amount > 0) else orig_amount
+        settle_payload = json.dumps({
+            "entry_id": entry_id,
+            "customer_id": entry["customer_id"],
+            "amount": paid_amt,
+            "payment_method": pay_method,
+            "notes": notes_val,
+            "settled_at": settle_date
+        })
+        details_txt = f"Payment for Invoice #{entry['invoice_no']} • Amount: Rs. {paid_amt:,.2f} via {pay_method}"
+        if notes_val:
+            details_txt += f" • Notes: {notes_val}"
+
+        cursor.execute("""
+            INSERT INTO staff_approval_requests (request_type, customer_id, customer_name, reference_id, amount, payment_method, details, notes, payload_json, status, added_by)
+            VALUES ('SETTLEMENT', ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', 'Staff (Counter)')
+        """, (entry["customer_id"], cust_name, entry_id, paid_amt, pay_method, details_txt, notes_val, settle_payload))
+        conn.commit()
+        conn.close()
+
+        return {
+            "success": True,
+            "pending_approval": True,
+            "entry_id": entry_id,
+            "amount": paid_amt,
+            "payment_method": pay_method,
+            "message": f"Settlement payment of Rs. {paid_amt:,.2f} for {entry['invoice_no']} sent to Admin for approval."
+        }
+
+    # Admin settlement: direct execution
     is_partial = False
     if data.amount is not None and 0 < data.amount < orig_amount:
         is_partial = True
@@ -1911,7 +2270,6 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
         if notes_val:
             audit_note += f" ({notes_val})"
 
-        # 1. Update this entry to be the settled portion
         cursor.execute("""
             UPDATE customer_khata
             SET amount = ?,
@@ -1922,7 +2280,6 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
             WHERE id = ?
         """, (paid_amt, settle_date, pay_method, audit_note, audit_note, entry_id))
 
-        # 2. Insert new entry for remaining unpaid balance
         cursor.execute("""
             INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes)
             VALUES (?, ?, ?, ?, ?, 0, ?)
@@ -1945,7 +2302,6 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
             "message": f"Partial payment of Rs. {paid_amt:,.2f} recorded for {entry['invoice_no']}. Baqaya remaining: Rs. {rem_amt:,.2f}."
         }
     else:
-        # Full settlement
         audit_note = f"Full payment on {settle_date} via {pay_method}"
         if notes_val:
             audit_note += f" ({notes_val})"
@@ -1960,7 +2316,6 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
         """, (settle_date, pay_method, audit_note, audit_note, entry_id))
         conn.commit()
 
-        # Recalculate customer balance
         cursor.execute("SELECT COALESCE(SUM(amount), 0) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (entry["customer_id"],))
         updated_balance = float(cursor.fetchone()[0] or 0.0)
 
@@ -1993,7 +2348,7 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
 
 @app.post("/api/customers/{customer_id}/settle-all")
 def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
-    """Settles all or partial customer balance across pending invoices (FIFO)."""
+    """Settles all or partial customer balance across pending invoices (FIFO) or queues for admin approval if staff."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM customers WHERE id = ?", (customer_id,))
@@ -2017,6 +2372,35 @@ def settle_all_customer_balance(customer_id: int, data: CustomerSettleAll):
     pay_amount = round(float(data.amount), 2) if (data.amount is not None and float(data.amount) > 0) else total_due
     if pay_amount > total_due:
         pay_amount = total_due
+
+    # If submitted by Staff, queue into staff_approval_requests
+    is_staff = bool(data.is_staff or ("Staff" in (data.added_by or "")))
+    if is_staff:
+        settle_payload = json.dumps({
+            "customer_id": customer_id,
+            "amount": pay_amount,
+            "payment_method": pay_method,
+            "notes": notes_val,
+            "settled_at": settle_date
+        })
+        details_txt = f"Settle Balance for {customer['name']} • Amount: Rs. {pay_amount:,.2f} via {pay_method}"
+        if notes_val:
+            details_txt += f" • Notes: {notes_val}"
+
+        cursor.execute("""
+            INSERT INTO staff_approval_requests (request_type, customer_id, customer_name, reference_id, amount, payment_method, details, notes, payload_json, status, added_by)
+            VALUES ('SETTLE_ALL', ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', 'Staff (Counter)')
+        """, (customer_id, customer["name"], customer_id, pay_amount, pay_method, details_txt, notes_val, settle_payload))
+        conn.commit()
+        conn.close()
+
+        return {
+            "success": True,
+            "pending_approval": True,
+            "customer_id": customer_id,
+            "settled_amount": pay_amount,
+            "message": f"Settlement request of Rs. {pay_amount:,.2f} for {customer['name']} sent to Admin for approval."
+        }
 
     is_partial = (pay_amount < total_due)
     remaining_to_pay = pay_amount
@@ -2195,11 +2579,288 @@ def get_customer_khata_weekly_report():
         "summary": {
             "total_given_week": total_given,
             "total_recovered_week": total_recovered,
+            "total_given_period": total_given,
+            "total_recovered_period": total_recovered,
             "total_outstanding": total_outstanding,
             "debtor_count": len(debtors)
         },
         "debtors": debtors,
         "recent_transactions": recent_transactions
+    }
+
+@app.get("/api/customer-khata/monthly-report")
+def get_customer_khata_monthly_report():
+    """Returns monthly audit report of credit given, recoveries, and list of debtors for current calendar month."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    today = date.today()
+    today_str = today.isoformat()
+    first_of_month = today.replace(day=1).isoformat()
+
+    cursor.execute("""
+        SELECT k.*, c.name as customer_name, c.phone as customer_phone
+        FROM customer_khata k
+        JOIN customers c ON k.customer_id = c.id
+        WHERE k.date >= ? OR (k.is_settled = 1 AND k.settled_at >= ?)
+        ORDER BY k.date DESC, k.id DESC
+    """, (first_of_month, first_of_month))
+    recent_transactions = [dict(r) for r in cursor.fetchall()]
+
+    cursor.execute("""
+        SELECT 
+            c.id, c.name, c.phone, c.address, c.credit_limit,
+            COALESCE(SUM(CASE WHEN k.is_settled = 0 THEN k.amount ELSE 0 END), 0) as current_balance,
+            COALESCE(SUM(CASE WHEN k.is_settled = 0 THEN 1 ELSE 0 END), 0) as pending_count
+        FROM customers c
+        LEFT JOIN customer_khata k ON c.id = k.customer_id
+        GROUP BY c.id
+        HAVING current_balance > 0
+        ORDER BY current_balance DESC
+    """)
+    debtors = [dict(r) for r in cursor.fetchall()]
+    conn.close()
+
+    total_given = sum(t["amount"] for t in recent_transactions if t["date"] >= first_of_month)
+    total_recovered = sum(t["amount"] for t in recent_transactions if t["is_settled"] == 1 and t.get("settled_at", "") >= first_of_month)
+    total_outstanding = sum(d["current_balance"] for d in debtors)
+
+    return {
+        "period": f"{first_of_month} to {today_str} (Current Month)",
+        "summary": {
+            "total_given_week": total_given,
+            "total_recovered_week": total_recovered,
+            "total_given_period": total_given,
+            "total_recovered_period": total_recovered,
+            "total_outstanding": total_outstanding,
+            "debtor_count": len(debtors)
+        },
+        "debtors": debtors,
+        "recent_transactions": recent_transactions
+    }
+
+# =========================================================================
+# HOME DELIVERY SYSTEM ENDPOINTS
+# =========================================================================
+
+class DeliveryCheckRiderRequest(BaseModel):
+    phone: str
+    name: Optional[str] = ""
+
+class DeliveryDispatchRequest(BaseModel):
+    rider_type: Optional[str] = "EXISTING"  # "EXISTING" or "NEW"
+    staff_id: Optional[int] = None
+    rider_name: Optional[str] = None
+    rider_phone: Optional[str] = None
+    rider_pin: str
+    customer_name: str
+    customer_phone: str
+    customer_address: Optional[str] = None
+    delivery_address: Optional[str] = None
+    invoice_no: Optional[str] = None
+    bill_amount: float
+    delivery_charges: Optional[float] = 0.0
+    payment_method: Optional[str] = "Cash on Delivery"
+    notes: Optional[str] = ""
+    is_new_rider: Optional[bool] = False
+
+class DeliveryReturnRequest(BaseModel):
+    rider_pin: str
+
+class DeliveryReconcileRequest(BaseModel):
+    action: str  # "APPROVE" or "REJECT" or "REOPEN"
+    rejection_reason: Optional[str] = ""
+    approved_by: Optional[str] = "Admin"
+
+class StaffConvertRiderRequest(BaseModel):
+    designation: Optional[str] = "Delivery Incharge"
+    monthly_salary: Optional[float] = 0.0
+    shift_id: Optional[int] = 1
+    daily_hours: Optional[float] = 8.0
+    allowed_leaves: Optional[int] = 2
+    cnic: Optional[str] = ""
+    address: Optional[str] = ""
+
+@app.post("/api/deliveries/check-rider")
+def check_or_preview_rider(data: DeliveryCheckRiderRequest):
+    """
+    Checks if a phone belongs to existing staff.
+    If not, previews PIN (last 4 digits) and flags as temporary rider candidate.
+    """
+    clean_p = (data.phone or "").strip()
+    digits = re.sub(r"\D", "", clean_p)
+    pin = digits[-4:] if len(digits) >= 4 else "0000"
+
+    res = register_or_get_delivery_staff(name=data.name or "Rider", phone=clean_p)
+    return {
+        "staff_id": res["staff_id"],
+        "name": res["name"],
+        "phone": res["phone"],
+        "pin": pin,
+        "is_new": res.get("is_new", False),
+        "is_temp": res.get("is_temp", False)
+    }
+
+@app.post("/api/deliveries/dispatch")
+def dispatch_delivery(data: DeliveryDispatchRequest):
+    """
+    Real-time dispatch:
+    - Auto-registers rider if new (or missing staff_id)
+    - Verifies 4-digit rider PIN
+    - Dispatches WhatsApp alerts for Admin & Customer
+    - Marks status OUT_FOR_DELIVERY, financial approval_status PENDING
+    - Returns delivery details + direct WhatsApp links
+    """
+    staff_id = data.staff_id
+    rider_name = (data.rider_name or "").strip()
+    rider_phone = (data.rider_phone or "").strip()
+
+    if data.is_new_rider or data.rider_type == "NEW" or not staff_id:
+        reg = register_or_get_delivery_staff(rider_name, rider_phone)
+        staff_id = reg["staff_id"]
+        rider_name = reg["name"]
+        rider_phone = reg["phone"]
+    elif staff_id and not rider_name:
+        st = get_staff_by_id(staff_id)
+        if st:
+            rider_name = st["name"]
+            rider_phone = st["phone"]
+
+    # Verify PIN
+    ok, pin_msg = verify_rider_pin(staff_id=staff_id, pin=data.rider_pin)
+    if not ok:
+        raise HTTPException(status_code=400, detail=pin_msg)
+
+    # Clean invoice
+    clean_invoice = (data.invoice_no or "").strip()
+    if not clean_invoice:
+        clean_invoice = f"INV-{random.randint(10000, 99999)}"
+
+    # Determine address
+    clean_address = (data.customer_address or data.delivery_address or "").strip()
+
+    # Create delivery
+    delivery = create_delivery(
+        staff_id=staff_id,
+        delivery_person_name=rider_name,
+        delivery_person_phone=rider_phone,
+        customer_name=data.customer_name.strip(),
+        customer_phone=data.customer_phone.strip(),
+        customer_address=clean_address,
+        invoice_no=clean_invoice,
+        bill_amount=float(data.bill_amount or 0.0),
+        payment_method=data.payment_method or "Cash on Delivery",
+        notes=data.notes or "",
+        dispatch_pin_verified=1,
+        admin_wa_sent=1,
+        customer_wa_sent=1
+    )
+
+    admin_phone = get_setting("admin_whatsapp_number") or "03001234567"
+    wa_alerts = whatsapp_service.dispatch_delivery_alerts(delivery, admin_phone=admin_phone)
+
+    return {
+        "success": True,
+        "delivery": delivery,
+        "whatsapp": wa_alerts,
+        "admin_wa_link": wa_alerts.get("admin_link", ""),
+        "customer_wa_link": wa_alerts.get("customer_link", ""),
+        "message": f"Delivery for invoice #{clean_invoice} dispatched successfully."
+    }
+
+@app.get("/api/deliveries/active")
+def list_active_deliveries():
+    """Returns deliveries currently OUT_FOR_DELIVERY for Staff Portal return selection."""
+    return get_active_deliveries_for_return()
+
+@app.post("/api/deliveries/{delivery_id}/return")
+def confirm_delivery_return(delivery_id: int, data: DeliveryReturnRequest):
+    """
+    Rider Return confirmation:
+    - Verifies 4-digit PIN against rider
+    - Marks operational status DELIVERED
+    - Keeps financial approval_status PENDING
+    - Sends Return WhatsApp alert to Admin with cash collected
+    """
+    try:
+        updated = complete_delivery_return(delivery_id=delivery_id, rider_pin=data.rider_pin, return_wa_sent=1)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    admin_phone = get_setting("admin_whatsapp_number") or "03001234567"
+    wa_return = whatsapp_service.dispatch_delivery_return_alert(updated, admin_phone=admin_phone)
+
+    return {
+        "success": True,
+        "delivery": updated,
+        "whatsapp": wa_return,
+        "message": f"Rider returned for invoice #{updated['invoice_no']}. Status updated to DELIVERED."
+    }
+
+@app.get("/api/deliveries")
+def list_deliveries(
+    status: Optional[str] = None,
+    approval_status: Optional[str] = None,
+    date: Optional[str] = None,
+    search: Optional[str] = None,
+    limit: int = 200
+):
+    """Admin endpoint: lists deliveries with filters."""
+    return get_deliveries_list(
+        status=status,
+        approval_status=approval_status,
+        date_str=date,
+        search=search,
+        limit=limit
+    )
+
+@app.get("/api/deliveries/stats")
+def delivery_stats_today(date: Optional[str] = None):
+    """Returns today's aggregated delivery metrics."""
+    return get_delivery_stats_today(date_str=date)
+
+@app.get("/api/deliveries/{delivery_id}")
+def get_delivery_details(delivery_id: int):
+    """Returns detailed information for a single delivery."""
+    deliv = get_delivery_by_id(delivery_id)
+    if not deliv:
+        raise HTTPException(status_code=404, detail="Delivery record not found")
+    return deliv
+
+@app.post("/api/deliveries/{delivery_id}/reconcile")
+def admin_reconcile_delivery_endpoint(delivery_id: int, data: DeliveryReconcileRequest):
+    """Admin End-of-Day reconciliation: APPROVE or REJECT with reason."""
+    try:
+        deliv = reconcile_delivery(
+            delivery_id=delivery_id,
+            action=data.action,
+            approved_by=data.approved_by or "Admin",
+            rejection_reason=data.rejection_reason or ""
+        )
+        return {
+            "success": True,
+            "delivery": deliv,
+            "message": f"Delivery #{deliv['invoice_no']} {deliv['approval_status'].lower()} successfully."
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.put("/api/staff/{staff_id}/convert-rider")
+def convert_rider_endpoint(staff_id: int, data: StaffConvertRiderRequest):
+    """Converts a temporary rider into permanent staff."""
+    updated = convert_temp_rider_to_permanent(
+        staff_id=staff_id,
+        designation=data.designation or "Delivery Incharge",
+        monthly_salary=float(data.monthly_salary or 0.0),
+        shift_id=data.shift_id or 1,
+        cnic=data.cnic or "",
+        address=data.address or ""
+    )
+    if not updated:
+        raise HTTPException(status_code=404, detail="Staff member not found")
+    return {
+        "success": True,
+        "staff": updated,
+        "message": f"{updated['name']} successfully converted to permanent staff."
     }
 
 # Mount static files for the frontend UI

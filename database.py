@@ -7,6 +7,7 @@ advance salary records, and month-end payroll sheets.
 import sqlite3
 import os
 import uuid
+import re
 from datetime import datetime, date, timedelta
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "mumtaz_attendance.db")
@@ -83,6 +84,10 @@ def init_db():
     if "pin" not in existing_staff_cols:
         cursor.execute("ALTER TABLE staff ADD COLUMN pin TEXT DEFAULT '1001'")
         cursor.execute("UPDATE staff SET pin = printf('%04d', 1000 + id) WHERE pin IS NULL OR pin = '' OR pin = '1001'")
+    if "is_temp_delivery_staff" not in existing_staff_cols:
+        cursor.execute("ALTER TABLE staff ADD COLUMN is_temp_delivery_staff INTEGER DEFAULT 0")
+    if "source_note" not in existing_staff_cols:
+        cursor.execute("ALTER TABLE staff ADD COLUMN source_note TEXT DEFAULT ''")
 
     # 3. Attendance Logs Table
     cursor.execute("""
@@ -218,6 +223,10 @@ def init_db():
         address TEXT DEFAULT '',
         credit_limit REAL DEFAULT 15000.0,
         is_active INTEGER DEFAULT 1,
+        added_by TEXT DEFAULT 'Admin',
+        approval_status TEXT DEFAULT 'APPROVED',
+        approved_by TEXT DEFAULT '',
+        approved_at TEXT DEFAULT '',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
     """)
@@ -235,10 +244,46 @@ def init_db():
         settled_at TEXT DEFAULT '',
         payment_method TEXT DEFAULT '',
         notes TEXT DEFAULT '',
+        added_by TEXT DEFAULT 'Admin',
+        approval_status TEXT DEFAULT 'APPROVED',
+        approved_by TEXT DEFAULT '',
+        approved_at TEXT DEFAULT '',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (customer_id) REFERENCES customers (id)
     );
     """)
+
+    # 8b. Unified Staff Approval Requests Table (New Customers, Credit Purchases, Settlements)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS staff_approval_requests (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        request_type TEXT NOT NULL,
+        customer_id INTEGER,
+        customer_name TEXT,
+        reference_id INTEGER,
+        amount REAL DEFAULT 0.0,
+        payment_method TEXT DEFAULT 'Cash',
+        details TEXT DEFAULT '',
+        notes TEXT DEFAULT '',
+        payload_json TEXT DEFAULT '',
+        status TEXT DEFAULT 'PENDING',
+        added_by TEXT DEFAULT 'Staff (Counter)',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        approved_by TEXT DEFAULT '',
+        approved_at TEXT DEFAULT ''
+    );
+    """)
+
+    cursor.execute("PRAGMA table_info(customers)")
+    existing_cust_cols = {row[1] for row in cursor.fetchall()}
+    if "added_by" not in existing_cust_cols:
+        cursor.execute("ALTER TABLE customers ADD COLUMN added_by TEXT DEFAULT 'Admin'")
+    if "approval_status" not in existing_cust_cols:
+        cursor.execute("ALTER TABLE customers ADD COLUMN approval_status TEXT DEFAULT 'APPROVED'")
+    if "approved_by" not in existing_cust_cols:
+        cursor.execute("ALTER TABLE customers ADD COLUMN approved_by TEXT DEFAULT ''")
+    if "approved_at" not in existing_cust_cols:
+        cursor.execute("ALTER TABLE customers ADD COLUMN approved_at TEXT DEFAULT ''")
 
     cursor.execute("PRAGMA table_info(customer_khata)")
     existing_ck_cols = {row[1] for row in cursor.fetchall()}
@@ -250,6 +295,14 @@ def init_db():
         cursor.execute("ALTER TABLE customer_khata ADD COLUMN payment_method TEXT DEFAULT ''")
     if "notes" not in existing_ck_cols:
         cursor.execute("ALTER TABLE customer_khata ADD COLUMN notes TEXT DEFAULT ''")
+    if "added_by" not in existing_ck_cols:
+        cursor.execute("ALTER TABLE customer_khata ADD COLUMN added_by TEXT DEFAULT 'Admin'")
+    if "approval_status" not in existing_ck_cols:
+        cursor.execute("ALTER TABLE customer_khata ADD COLUMN approval_status TEXT DEFAULT 'APPROVED'")
+    if "approved_by" not in existing_ck_cols:
+        cursor.execute("ALTER TABLE customer_khata ADD COLUMN approved_by TEXT DEFAULT ''")
+    if "approved_at" not in existing_ck_cols:
+        cursor.execute("ALTER TABLE customer_khata ADD COLUMN approved_at TEXT DEFAULT ''")
 
     # Migration: leave_type in leaves table
     cursor.execute("PRAGMA table_info(leaves)")
@@ -319,7 +372,53 @@ def init_db():
     if "master_pin_attempts" not in existing_otp_cols:
         cursor.execute("ALTER TABLE otp_verifications ADD COLUMN master_pin_attempts INTEGER DEFAULT 0")
 
+    # 12. Deliveries Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS deliveries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        staff_id INTEGER,
+        delivery_person_name TEXT NOT NULL,
+        delivery_person_phone TEXT NOT NULL,
+        is_guest_delivery INTEGER DEFAULT 0,
+        customer_name TEXT NOT NULL,
+        customer_phone TEXT NOT NULL,
+        customer_address TEXT NOT NULL,
+        invoice_no TEXT NOT NULL,
+        bill_amount REAL NOT NULL,
+        payment_method TEXT DEFAULT 'Cash on Delivery',
+        notes TEXT DEFAULT '',
+        status TEXT DEFAULT 'PENDING',       -- PENDING, APPROVED, OUT_FOR_DELIVERY, DELIVERED, REJECTED, CANCELLED
+        approval_status TEXT DEFAULT 'PENDING',
+        approved_by TEXT DEFAULT '',
+        approved_at TEXT DEFAULT '',
+        rejection_reason TEXT DEFAULT '',
+        dispatch_pin_verified INTEGER DEFAULT 1,
+        admin_wa_sent INTEGER DEFAULT 0,
+        customer_wa_sent INTEGER DEFAULT 0,
+        return_pin_verified INTEGER DEFAULT 0,
+        return_wa_sent INTEGER DEFAULT 0,
+        dispatched_at TEXT DEFAULT '',
+        delivered_at TEXT DEFAULT '',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (staff_id) REFERENCES staff (id)
+    );
+    """)
+
+    cursor.execute("PRAGMA table_info(deliveries)")
+    existing_deliv_cols = {row[1] for row in cursor.fetchall()}
+    if "rejection_reason" not in existing_deliv_cols:
+        cursor.execute("ALTER TABLE deliveries ADD COLUMN rejection_reason TEXT DEFAULT ''")
+    if "return_pin_verified" not in existing_deliv_cols:
+        cursor.execute("ALTER TABLE deliveries ADD COLUMN return_pin_verified INTEGER DEFAULT 0")
+    if "return_wa_sent" not in existing_deliv_cols:
+        cursor.execute("ALTER TABLE deliveries ADD COLUMN return_wa_sent INTEGER DEFAULT 0")
+
     # High-Performance Indexes for Zero Table-Scans & Instant Query Processing
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_deliveries_status ON deliveries(status)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_deliveries_approval ON deliveries(approval_status)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_deliveries_created ON deliveries(created_at DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_deliveries_invoice ON deliveries(invoice_no)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_deliveries_staff ON deliveries(staff_id)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_attendance_date ON attendance_logs(date)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_attendance_staff_date ON attendance_logs(staff_id, date)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_attendance_status ON attendance_logs(status)")
@@ -873,6 +972,395 @@ def get_pin_otp_audit_logs(date_str: str = None, limit: int = 100):
         result.append(item)
     return result
 
+# =====================================================================
+# HOME DELIVERY SYSTEM DATABASE HELPERS
+# =====================================================================
+
+def register_or_get_delivery_staff(name: str, phone: str) -> dict:
+    """
+    Finds existing staff by phone or creates a new temporary delivery staff record.
+    PIN is automatically set to the last 4 digits of the phone number.
+    Tagged with is_temp_delivery_staff=1 so Admin can review in Staff Tab.
+    """
+    clean_digits = re.sub(r'[^0-9]', '', phone or '')
+    default_pin = clean_digits[-4:] if len(clean_digits) >= 4 else "1234"
+    clean_phone = phone.strip()
+    clean_name = name.strip()
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Check if staff with this phone already exists
+    phone_candidates = [clean_phone]
+    if len(clean_digits) >= 10:
+        phone_candidates.append(f"0{clean_digits[-10:]}")
+        phone_candidates.append(clean_digits[-10:])
+    placeholders = " OR ".join(["phone = ?" for _ in phone_candidates])
+    cursor.execute(f"SELECT * FROM staff WHERE {placeholders} LIMIT 1", tuple(phone_candidates))
+    existing = cursor.fetchone()
+
+    if existing:
+        res = dict(existing)
+        conn.close()
+        return {
+            "staff_id": res["id"],
+            "name": res["name"],
+            "phone": res["phone"],
+            "pin": res["pin"] or default_pin,
+            "is_new": False,
+            "is_temp": bool(res.get("is_temp_delivery_staff", 0))
+        }
+
+    # Fetch default shift id (Morning shift or id 1)
+    cursor.execute("SELECT id FROM shifts ORDER BY id ASC LIMIT 1")
+    shift_row = cursor.fetchone()
+    shift_id = shift_row["id"] if shift_row else 1
+
+    cursor.execute("""
+        INSERT INTO staff (
+            name, phone, role, designation, monthly_salary, shift_id,
+            pin, is_temp_delivery_staff, source_note, is_active
+        ) VALUES (?, ?, 'Delivery Staff', 'Delivery Rider (Temporary)', 0.0, ?, ?, 1, 'Auto-registered via Delivery Portal', 1)
+    """, (clean_name, clean_phone, shift_id, default_pin))
+    new_staff_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+
+    log_activity(
+        category="STAFF",
+        action_type="STAFF_ADDED",
+        title=f"New Delivery Staff: {clean_name}",
+        description=f"Auto-registered via Delivery Form • PIN: {default_pin} • Review in Staff Tab",
+        staff_name=clean_name
+    )
+
+    return {
+        "staff_id": new_staff_id,
+        "name": clean_name,
+        "phone": clean_phone,
+        "pin": default_pin,
+        "is_new": True,
+        "is_temp": True
+    }
+
+def verify_rider_pin(staff_id: int = None, phone: str = None, pin: str = "") -> tuple:
+    """Verifies 4-digit PIN against the staff record."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if staff_id:
+        cursor.execute("SELECT id, name, pin, is_active FROM staff WHERE id = ?", (staff_id,))
+    elif phone:
+        clean_phone = phone.strip()
+        clean_digits = re.sub(r'[^0-9]', '', clean_phone)
+        cursor.execute("SELECT id, name, pin, is_active FROM staff WHERE phone = ? OR phone = ?", 
+                       (clean_phone, f"0{clean_digits[-10:]}" if len(clean_digits) >= 10 else clean_phone))
+    else:
+        conn.close()
+        return False, "Staff ID or phone required"
+    
+    row = cursor.fetchone()
+    conn.close()
+    if not row:
+        return False, "Rider staff record not found"
+    if not row["is_active"]:
+        return False, "Staff member is inactive"
+    
+    actual_pin = str(row["pin"] or "").strip()
+    provided_pin = str(pin or "").strip()
+    if actual_pin and actual_pin == provided_pin:
+        return True, "PIN verified successfully"
+    return False, "Invalid 4-digit PIN for selected rider"
+
+def get_delivery_by_id(delivery_id: int) -> dict:
+    """Returns single delivery with joined staff details."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT d.*, 
+               s.name as staff_name,
+               s.role as staff_role,
+               s.designation as staff_designation,
+               s.is_temp_delivery_staff
+        FROM deliveries d
+        LEFT JOIN staff s ON d.staff_id = s.id
+        WHERE d.id = ?
+    """, (delivery_id,))
+    row = cursor.fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+def create_delivery(
+    staff_id: int,
+    delivery_person_name: str,
+    delivery_person_phone: str,
+    customer_name: str,
+    customer_phone: str,
+    customer_address: str,
+    invoice_no: str,
+    bill_amount: float,
+    payment_method: str = "Cash on Delivery",
+    notes: str = "",
+    is_guest_delivery: int = 0,
+    dispatch_pin_verified: int = 1,
+    admin_wa_sent: int = 1,
+    customer_wa_sent: int = 1
+) -> dict:
+    """Inserts a new delivery order. Dispatched immediately with status OUT_FOR_DELIVERY and approval_status PENDING."""
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO deliveries (
+            staff_id, delivery_person_name, delivery_person_phone, is_guest_delivery,
+            customer_name, customer_phone, customer_address, invoice_no, bill_amount,
+            payment_method, notes, status, approval_status, dispatch_pin_verified,
+            admin_wa_sent, customer_wa_sent, return_pin_verified, return_wa_sent,
+            dispatched_at, delivered_at
+        ) VALUES (
+            ?, ?, ?, ?,
+            ?, ?, ?, ?, ?,
+            ?, ?, 'OUT_FOR_DELIVERY', 'PENDING', ?,
+            ?, ?, 0, 0,
+            ?, ''
+        )
+    """, (
+        staff_id, delivery_person_name, delivery_person_phone, is_guest_delivery,
+        customer_name, customer_phone, customer_address, invoice_no, float(bill_amount or 0.0),
+        payment_method, notes, dispatch_pin_verified,
+        admin_wa_sent, customer_wa_sent,
+        now_str
+    ))
+    new_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+
+    log_activity(
+        category="DELIVERY",
+        action_type="DISPATCHED",
+        title=f"Delivery Dispatched: {invoice_no}",
+        description=f"Rider {delivery_person_name} dispatched to {customer_name} • Rs. {float(bill_amount or 0.0):,.0f} ({payment_method})",
+        staff_name=delivery_person_name,
+        amount=float(bill_amount or 0.0)
+    )
+
+    return get_delivery_by_id(new_id)
+
+def complete_delivery_return(delivery_id: int, rider_pin: str, return_wa_sent: int = 1) -> dict:
+    """Verifies rider PIN and marks delivery as DELIVERED while leaving financial approval_status as PENDING."""
+    deliv = get_delivery_by_id(delivery_id)
+    if not deliv:
+        raise ValueError("Delivery record not found")
+    
+    if deliv.get("status") == "DELIVERED":
+        return deliv
+
+    staff_id = deliv.get("staff_id")
+    if staff_id:
+        ok, msg = verify_rider_pin(staff_id=staff_id, pin=rider_pin)
+        if not ok:
+            raise ValueError(msg)
+    
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE deliveries
+        SET status = 'DELIVERED',
+            delivered_at = ?,
+            return_pin_verified = 1,
+            return_wa_sent = ?
+        WHERE id = ?
+    """, (now_str, return_wa_sent, delivery_id))
+    conn.commit()
+    conn.close()
+
+    log_activity(
+        category="DELIVERY",
+        action_type="DELIVERED",
+        title=f"Delivery Returned: {deliv['invoice_no']}",
+        description=f"Rider {deliv['delivery_person_name']} returned • Invoice {deliv['invoice_no']} • Cash Collected: Rs. {float(deliv.get('bill_amount', 0)):,.0f}",
+        staff_name=deliv["delivery_person_name"],
+        amount=float(deliv.get("bill_amount", 0))
+    )
+
+    return get_delivery_by_id(delivery_id)
+
+def reconcile_delivery(delivery_id: int, action: str, approved_by: str = "Admin", rejection_reason: str = "") -> dict:
+    """Admin End-of-Day audit reconciliation: marks APPROVED or REJECTED with reason."""
+    deliv = get_delivery_by_id(delivery_id)
+    if not deliv:
+        raise ValueError("Delivery record not found")
+    
+    action_upper = action.upper().strip()
+    if action_upper not in ["APPROVE", "REJECT", "REOPEN"]:
+        raise ValueError("Invalid action. Must be APPROVE, REJECT, or REOPEN")
+    
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if action_upper == "APPROVE":
+        new_approval_status = "APPROVED"
+        clean_reason = ""
+    elif action_upper == "REJECT":
+        new_approval_status = "REJECTED"
+        clean_reason = rejection_reason.strip()
+    else:  # REOPEN
+        new_approval_status = "PENDING"
+        clean_reason = ""
+        approved_by = None
+        now_str = None
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE deliveries
+        SET approval_status = ?,
+            approved_by = ?,
+            approved_at = ?,
+            rejection_reason = ?
+        WHERE id = ?
+    """, (new_approval_status, approved_by, now_str, clean_reason, delivery_id))
+    conn.commit()
+    conn.close()
+
+    action_text = "Approved" if new_approval_status == "APPROVED" else f"Rejected ({clean_reason})"
+    log_activity(
+        category="DELIVERY",
+        action_type=f"RECONCILE_{new_approval_status}",
+        title=f"Delivery {new_approval_status.title()}: {deliv['invoice_no']}",
+        description=f"Admin {approved_by} marked {action_text} for Invoice #{deliv['invoice_no']} • Rs. {float(deliv.get('bill_amount', 0)):,.0f}",
+        staff_name=deliv["delivery_person_name"],
+        amount=float(deliv.get("bill_amount", 0))
+    )
+
+    return get_delivery_by_id(delivery_id)
+
+def get_deliveries_list(
+    status: str = None, 
+    approval_status: str = None,
+    date_str: str = None, 
+    search: str = None, 
+    limit: int = 200
+) -> list:
+    """Returns list of deliveries with optional filters for operational status, approval status, date, and search."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = """
+        SELECT d.*, 
+               s.name as staff_name,
+               s.role as staff_role,
+               s.designation as staff_designation,
+               s.is_temp_delivery_staff
+        FROM deliveries d
+        LEFT JOIN staff s ON d.staff_id = s.id
+        WHERE 1=1
+    """
+    params = []
+
+    if status and status.upper() != "ALL":
+        query += " AND d.status = ?"
+        params.append(status.upper())
+
+    if approval_status and approval_status.upper() != "ALL":
+        query += " AND d.approval_status = ?"
+        params.append(approval_status.upper())
+
+    if date_str:
+        query += " AND (date(d.created_at) = ? OR d.created_at LIKE ?)"
+        params.extend([date_str, f"{date_str}%"])
+
+    if search:
+        s_pattern = f"%{search.strip()}%"
+        query += " AND (d.invoice_no LIKE ? OR d.customer_name LIKE ? OR d.customer_phone LIKE ? OR d.delivery_person_name LIKE ? OR d.customer_address LIKE ?)"
+        params.extend([s_pattern, s_pattern, s_pattern, s_pattern, s_pattern])
+
+    query += " ORDER BY d.id DESC LIMIT ?"
+    params.append(limit)
+
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def get_active_deliveries_for_return() -> list:
+    """Returns all deliveries currently OUT_FOR_DELIVERY waiting for rider return."""
+    return get_deliveries_list(status="OUT_FOR_DELIVERY", limit=100)
+
+def get_delivery_stats_today(date_str: str = None) -> dict:
+    """Returns aggregated KPIs for today's deliveries."""
+    if not date_str:
+        date_str = datetime.now().strftime("%Y-%m-%d")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT 
+            COUNT(*) as total_today,
+            SUM(CASE WHEN status = 'OUT_FOR_DELIVERY' THEN 1 ELSE 0 END) as out_for_delivery,
+            SUM(CASE WHEN status = 'DELIVERED' THEN 1 ELSE 0 END) as delivered_today,
+            SUM(CASE WHEN approval_status = 'PENDING' THEN 1 ELSE 0 END) as pending_approval,
+            SUM(CASE WHEN approval_status = 'APPROVED' THEN 1 ELSE 0 END) as approved_today,
+            SUM(CASE WHEN approval_status = 'REJECTED' THEN 1 ELSE 0 END) as rejected_today,
+            COALESCE(SUM(CASE WHEN approval_status = 'APPROVED' THEN bill_amount ELSE 0 END), 0) as total_reconciled_cash,
+            COALESCE(SUM(CASE WHEN status = 'DELIVERED' THEN bill_amount ELSE 0 END), 0) as total_delivered_amount,
+            COALESCE(SUM(bill_amount), 0) as total_order_amount
+        FROM deliveries
+        WHERE date(created_at) = ? OR created_at LIKE ?
+    """, (date_str, f"{date_str}%"))
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if row:
+        res = dict(row)
+        for k in res:
+            if res[k] is None:
+                res[k] = 0
+        return res
+    return {
+        "total_today": 0, "out_for_delivery": 0, "delivered_today": 0,
+        "pending_approval": 0, "approved_today": 0, "rejected_today": 0,
+        "total_reconciled_cash": 0.0, "total_delivered_amount": 0.0, "total_order_amount": 0.0
+    }
+
+def convert_temp_rider_to_permanent(
+    staff_id: int, 
+    designation: str = "Delivery Incharge", 
+    monthly_salary: float = 0.0, 
+    shift_id: int = 1, 
+    cnic: str = "", 
+    address: str = ""
+) -> dict:
+    """Converts a temporary rider into permanent staff."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE staff
+        SET is_temp_delivery_staff = 0,
+            designation = ?,
+            monthly_salary = ?,
+            shift_id = ?,
+            cnic = COALESCE(NULLIF(?, ''), cnic),
+            address = COALESCE(NULLIF(?, ''), address)
+        WHERE id = ?
+    """, (designation, monthly_salary, shift_id, cnic, address, staff_id))
+    conn.commit()
+    cursor.execute("SELECT * FROM staff WHERE id = ?", (staff_id,))
+    row = cursor.fetchone()
+    conn.close()
+
+    if row:
+        log_activity(
+            category="STAFF",
+            action_type="STAFF_UPDATED",
+            title=f"Staff Made Permanent: {row['name']}",
+            description=f"Converted from Temporary Rider to {designation} • Monthly Salary: Rs. {monthly_salary:,.0f}",
+            staff_name=row['name']
+        )
+        return dict(row)
+    return {}
+
 if __name__ == "__main__":
     init_db()
     print("Mumtaz Pharmacy Attendance Database initialized successfully.")
+

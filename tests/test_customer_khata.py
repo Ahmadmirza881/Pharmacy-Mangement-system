@@ -248,6 +248,172 @@ class TestCustomerKhataModule(unittest.TestCase):
         self.assertEqual(ledger['summary']['total_credit'], 3600.0) # 2000 + 1600
         self.assertEqual(ledger['summary']['total_settled'], 2600.0) # 600 + 2000
 
+    def test_9_staff_approval_workflow(self):
+        # 1. Create a customer
+        c_res = client.post('/api/customers', json={
+            'name': 'Testing Approval Client',
+            'phone': '0300-8889900',
+            'credit_limit': 25000.0
+        })
+        cust_id = c_res.json()['id']
+
+        # 2. Staff adds entry -> should be PENDING
+        p_res = client.post('/api/customer-khata', json={
+            'customer_id': cust_id,
+            'invoice_no': 'INV-STAFF-101',
+            'date': '2026-09-17',
+            'item_description': 'Amoxicillin 500mg, Flagyl 400mg',
+            'amount': 1850.0,
+            'added_by': 'Staff (Counter)',
+            'approval_status': 'PENDING'
+        })
+        self.assertEqual(p_res.status_code, 200)
+        entry_id = p_res.json()['id']
+
+        # 3. Check in ledger that entry has PENDING status and added_by Staff
+        ledger = client.get(f'/api/customers/{cust_id}/ledger').json()
+        entry = next((e for e in ledger['ledger'] if e['id'] == entry_id), None)
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry['approval_status'], 'PENDING')
+        self.assertEqual(entry['added_by'], 'Staff (Counter)')
+
+        # 4. Admin approves the entry
+        appr_res = client.post(f'/api/customer-khata/{entry_id}/approve', json={
+            'approved_by': 'Admin'
+        })
+        self.assertEqual(appr_res.status_code, 200)
+        appr_data = appr_res.json()
+        self.assertTrue(appr_data['success'])
+        self.assertEqual(appr_data['approval_status'], 'APPROVED')
+
+        # 5. Verify ledger reflects APPROVED status
+        ledger_after = client.get(f'/api/customers/{cust_id}/ledger').json()
+        entry_after = next((e for e in ledger_after['ledger'] if e['id'] == entry_id), None)
+        self.assertIsNotNone(entry_after)
+        self.assertEqual(entry_after['approval_status'], 'APPROVED')
+        self.assertEqual(entry_after['approved_by'], 'Admin')
+
+    def test_10_monthly_report(self):
+        res = client.get('/api/customer-khata/monthly-report')
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        self.assertIn('period', data)
+        self.assertIn('summary', data)
+        self.assertIn('debtors', data)
+        self.assertTrue('Month' in data['period'] or 'Sep' in data['period'] or '2026' in data['period'])
+
+    def test_11_staff_request_and_batch_approval(self):
+        # 1. Staff registers a new customer
+        cust_res = client.post('/api/customers', json={
+            'name': 'Staff Added Test Customer',
+            'phone': '0300-9988776',
+            'address': 'DHA Lahore',
+            'credit_limit': 20000.0,
+            'is_staff': True,
+            'added_by': 'Counter Staff'
+        })
+        self.assertEqual(cust_res.status_code, 200)
+        cust_data = cust_res.json()
+        self.assertTrue(cust_data['success'])
+        self.assertEqual(cust_data.get('status'), 'PENDING')
+        cust_id = cust_data['id']
+
+        # 2. Staff adds a credit purchase
+        khata_res = client.post('/api/customer-khata', json={
+            'customer_id': cust_id,
+            'invoice_no': 'INV-STAFF-1',
+            'date': '2026-09-17',
+            'item_description': 'Insulin & Syringes',
+            'amount': 3500.0,
+            'notes': 'Staff counter entry',
+            'added_by': 'Counter Staff',
+            'approval_status': 'PENDING'
+        })
+        self.assertEqual(khata_res.status_code, 200)
+        khata_data = khata_res.json()
+        self.assertTrue(khata_data['success'])
+        entry_id = khata_data['id']
+
+        # 3. Check pending requests endpoint
+        pending_res = client.get('/api/admin/pending-requests')
+        self.assertEqual(pending_res.status_code, 200)
+        p_data = pending_res.json()
+        self.assertTrue(p_data['success'])
+        pending_reqs = p_data['requests']
+        req_ids = [r['id'] for r in pending_reqs if r['customer_id'] == cust_id]
+        self.assertGreaterEqual(len(req_ids), 2)
+
+        # 4. Batch approve all staff requests for this customer
+        batch_res = client.post('/api/admin/pending-requests/approve-all', json={
+            'request_ids': req_ids,
+            'approved_by': 'Admin'
+        })
+        self.assertEqual(batch_res.status_code, 200)
+        b_data = batch_res.json()
+        self.assertTrue(b_data['success'])
+        self.assertEqual(b_data['approved_count'], len(req_ids))
+
+        # Verify customer is now APPROVED and ledger has approved entry
+        ledger = client.get(f'/api/customers/{cust_id}/ledger').json()
+        self.assertEqual(ledger['customer']['approval_status'], 'APPROVED')
+        self.assertEqual(ledger['ledger'][0]['approval_status'], 'APPROVED')
+
+    def test_12_staff_settlement_approval_and_rejection(self):
+        # Create customer directly as admin
+        cust_res = client.post('/api/customers', json={
+            'name': 'Staff Settle Test Customer',
+            'phone': '0311-5544332',
+            'address': 'Gulberg Lahore',
+            'credit_limit': 10000.0
+        })
+        cust_id = cust_res.json()['id']
+
+        # Add invoice
+        inv_res = client.post('/api/customer-khata', json={
+            'customer_id': cust_id,
+            'invoice_no': 'INV-SETTLE-ST',
+            'date': '2026-09-17',
+            'item_description': 'Panadol Box',
+            'amount': 1200.0,
+            'approval_status': 'APPROVED'
+        })
+        entry_id = inv_res.json()['id']
+
+        # Staff records settlement -> queues for admin approval
+        settle_res = client.post(f'/api/customer-khata/{entry_id}/settle', json={
+            'amount': 1200.0,
+            'settled_at': '2026-09-17',
+            'payment_method': 'Cash',
+            'notes': 'Paid at counter',
+            'is_staff': True,
+            'added_by': 'Counter Staff'
+        })
+        self.assertEqual(settle_res.status_code, 200)
+        s_data = settle_res.json()
+        self.assertTrue(s_data['pending_approval'])
+
+        # Check that invoice is NOT settled yet
+        ledger_before = client.get(f'/api/customers/{cust_id}/ledger').json()
+        self.assertEqual(ledger_before['ledger'][0]['is_settled'], 0)
+
+        # Find pending request
+        p_res = client.get('/api/admin/pending-requests').json()
+        matching_reqs = [r for r in p_res['requests'] if r['customer_id'] == cust_id and r['request_type'] == 'SETTLEMENT']
+        self.assertEqual(len(matching_reqs), 1)
+        req_id = matching_reqs[0]['id']
+
+        # Admin approves the settlement
+        appr_res = client.post(f'/api/admin/pending-requests/{req_id}/approve', json={
+            'approved_by': 'Admin'
+        })
+        self.assertEqual(appr_res.status_code, 200)
+        self.assertTrue(appr_res.json()['success'])
+
+        # Now invoice MUST be settled
+        ledger_after = client.get(f'/api/customers/{cust_id}/ledger').json()
+        self.assertEqual(ledger_after['ledger'][0]['is_settled'], 1)
+        self.assertEqual(ledger_after['summary']['current_balance'], 0.0)
+
     @classmethod
     def tearDownClass(cls):
         conn = database.get_db_connection()
@@ -259,9 +425,13 @@ class TestCustomerKhataModule(unittest.TestCase):
             'Testing Update Client',
             'Testing Update Client (Renamed)',
             'Testing Partial Payment Client',
-            'Naveed Iqbal Test'
+            'Testing Approval Client',
+            'Naveed Iqbal Test',
+            'Staff Added Test Customer',
+            'Staff Settle Test Customer'
         ]
         for name in test_names:
+            c.execute('DELETE FROM staff_approval_requests WHERE customer_name = ?', (name,))
             c.execute('DELETE FROM customer_khata WHERE customer_id IN (SELECT id FROM customers WHERE name = ?)', (name,))
             c.execute('DELETE FROM customers WHERE name = ?', (name,))
         c.execute('DELETE FROM customer_khata WHERE customer_id IN (SELECT id FROM customers WHERE name = ? AND id != 5)', ('Dr. Farooq Sheikh',))

@@ -8,3 +8,5 @@ venv/
 *.log
 *.db-shm
 *.db-wal
+scratch/
+original_pharmacy.db
