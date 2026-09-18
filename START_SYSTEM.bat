@@ -1,32 +1,33 @@
 @echo off
 title Mumtaz Pharmacy - Attendance & Payroll System
 cd /d "%~dp0"
+color 0A
 
-echo ========================================================
-echo    MUMTAZ PHARMACY - ATTENDANCE & PAYROLL SYSTEM
-echo ========================================================
-echo.
-
-where python >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [ERROR] Python install nahi hai ya PATH me shamil nahi hai!
-    echo Barah-e-karam https://www.python.org se Python install karein
-    echo aur setup me "Add python.exe to PATH" ko lazmi tick karein.
-    echo.
-    pause
-    exit /b
+:: Detect local LAN IP
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr /c:"IPv4 Address" /c:"IP Address"') do (
+    set IP=%%a
+    goto :found_ip
 )
+:found_ip
+set IP=%IP: =%
+if "%IP%"=="" set IP=127.0.0.1
 
-echo [1/3] Checking dependencies...
-python -m pip install -r requirements.txt --quiet --disable-pip-version-check
-
-echo [2/3] Opening browser at http://localhost:8000 ...
-start "" cmd /c "timeout /t 2 /nobreak >nul && start http://localhost:8000"
-
-echo [3/3] Server chal raha hai...
-echo NOTE: Is window (black screen) ko band mat kijiyega jab tak system use ho raha ho.
-echo Band karne k liye Ctrl + C press karein ya window close karein.
+cls
+echo =====================================================================
+echo           MUMTAZ PHARMACY SYSTEM - SERVER CHAL RAHA HAI
+echo =====================================================================
 echo.
-python main.py
+echo  [1] Is Main PC (Server) par chalane k liye:
+echo      http://localhost:8000
+echo.
+echo  [2] Dosre Counter PCs (LAN) par chalane k liye ye URL dalein:
+echo      http://%IP%:8000
+echo.
+echo =====================================================================
+echo  NOTE: Is black window ko band mat kijiyega jab tak kaam chal raha ho.
+echo =====================================================================
+echo.
 
+start "" cmd /c "timeout /t 2 /nobreak >nul && start http://localhost:8000"
+python main.py
 pause

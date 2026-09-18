@@ -10,21 +10,31 @@ def setup_db():
     init_db()
 
 def test_check_and_register_temp_rider():
+    test_phone = "03007771122"
     conn = get_db_connection()
-    conn.execute("DELETE FROM staff WHERE phone = '03009876543'")
-    conn.commit()
-    conn.close()
+    try:
+        conn.execute("DELETE FROM deliveries WHERE delivery_person_phone = ? OR staff_id IN (SELECT id FROM staff WHERE phone = ?)", (test_phone, test_phone))
+        conn.execute("DELETE FROM attendance_logs WHERE staff_id IN (SELECT id FROM staff WHERE phone = ?)", (test_phone,))
+        conn.execute("DELETE FROM leaves WHERE staff_id IN (SELECT id FROM staff WHERE phone = ?)", (test_phone,))
+        conn.execute("DELETE FROM leave_requests WHERE staff_id IN (SELECT id FROM staff WHERE phone = ?)", (test_phone,))
+        conn.execute("DELETE FROM advance_salaries WHERE staff_id IN (SELECT id FROM staff WHERE phone = ?)", (test_phone,))
+        conn.execute("DELETE FROM payroll_records WHERE staff_id IN (SELECT id FROM staff WHERE phone = ?)", (test_phone,))
+        conn.execute("DELETE FROM otp_verifications WHERE staff_id IN (SELECT id FROM staff WHERE phone = ?)", (test_phone,))
+        conn.execute("DELETE FROM staff WHERE phone = ?", (test_phone,))
+        conn.commit()
+    finally:
+        conn.close()
 
     payload = {
-        "phone": "03009876543",
+        "phone": test_phone,
         "name": "Kashif Rider"
     }
     resp = client.post("/api/deliveries/check-rider", json=payload)
     assert resp.status_code == 200
     data = resp.json()
     assert data["name"] == "Kashif Rider"
-    assert data["phone"] == "03009876543"
-    assert data["pin"] == "6543" # Last 4 digits of phone
+    assert data["phone"] == test_phone
+    assert data["pin"] == "1122" # Last 4 digits of phone
     assert data["is_temp"] is True
     assert data["staff_id"] is not None
 

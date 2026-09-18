@@ -326,60 +326,71 @@ class WhatsAppService:
         rider = delivery.get("delivery_person_name") or delivery.get("rider_name") or "Rider"
         rider_phone = delivery.get("delivery_person_phone") or delivery.get("rider_phone") or ""
 
+        res_type = (delivery.get("delivery_result") or ("RETURNED" if delivery.get("status") == "RETURNED" else "DELIVERED")).upper().strip()
+        is_delivered = (res_type == "DELIVERED")
+
+        delivery_charges = float(delivery.get("delivery_charges") or 0.0)
+        net_total = amount + delivery_charges
+        paid_amt = float(delivery.get("paid_amount") or net_total) if is_delivered else 0.0
+        bal_amt = float(delivery.get("balance_amount") or 0.0)
+        pay_status = delivery.get("payment_status", "FULL")
+        ret_reason = delivery.get("return_reason") or "Customer Cancelled / Unavailable"
+        ret_notes = (delivery.get("return_notes") or "").strip()
+        notes_str = f"📝 *Return Notes:* {ret_notes}\n" if ret_notes else ""
+
+        if not is_delivered:
+            # Dedicated RETURNED Order WhatsApp Alert (Zero cash, Return reason, Returned status)
+            return (
+                f"❌ *MUMTAZ PHARMACY — ORDER RETURNED*\n"
+                f"━━━━━━━━━━━━━━━━━━━━\n"
+                f"🛵 *Rider:* {rider} ({rider_phone}) has returned to the pharmacy.\n"
+                f"🧾 *Invoice:* #{invoice}\n"
+                f"👤 *Customer:* {cust_name} ({cust_phone})\n"
+                f"📍 *Address:* {address}\n"
+                f"💵 *Cash Collected:* Rs. 0 (Order Cancelled / Returned)\n"
+                f"⚠️ *Return Reason:* {ret_reason}\n"
+                f"{notes_str}"
+                f"⏰ *Return Time:* {time_str}\n"
+                f"━━━━━━━━━━━━━━━━━━━━\n"
+                f"📋 *Status:* Operational RETURNED • Stock returned to shelf. Please verify hisaab & click Approve in Admin Portal."
+            )
+
+        # Delivered orders: Check if custom template exists
         try:
             from database import get_delivery_wa_templates
             tmpl = get_delivery_wa_templates().get("admin_return")
         except Exception:
             tmpl = None
 
-        if tmpl:
+        if tmpl and "{amount}" in tmpl:
             return self._safe_format(tmpl, {
                 "invoice": invoice,
                 "customer_name": cust_name,
                 "customer_phone": cust_phone,
                 "address": address,
-                "amount": f"{amount:,.0f}",
+                "amount": f"{paid_amt:,.0f}",
                 "payment_method": payment_method,
                 "rider_name": rider,
                 "rider_phone": rider_phone,
                 "time": time_str
             })
 
-        res_type = delivery.get("delivery_result") or ("RETURNED" if delivery.get("status") == "RETURNED" else "DELIVERED")
-        is_delivered = (res_type == "DELIVERED")
-        status_header = "✅ *MUMTAZ PHARMACY — DELIVERY COMPLETED*" if is_delivered else "❌ *MUMTAZ PHARMACY — ORDER RETURNED*"
-
-        delivery_charges = float(delivery.get("delivery_charges") or 0.0)
-        paid_amt = float(delivery.get("paid_amount") or (amount if is_delivered else 0.0))
-        bal_amt = float(delivery.get("balance_amount") or 0.0)
-        pay_status = delivery.get("payment_status", "FULL")
-        ret_reason = delivery.get("return_reason", "")
-
-        msg = (
-            f"{status_header}\n"
+        return (
+            f"✅ *MUMTAZ PHARMACY — DELIVERY COMPLETED*\n"
             f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"🛵 *Rider:* {rider} ({rider_phone}) has returned to the pharmacy.\n"
             f"🧾 *Invoice:* #{invoice}\n"
-            f"🛵 *Rider:* {rider} ({rider_phone})\n"
             f"👤 *Customer:* {cust_name} ({cust_phone})\n"
             f"📍 *Address:* {address}\n"
             f"💵 *Medicine Bill:* Rs. {amount:,.0f}\n"
             f"🚚 *Delivery Charges:* Rs. {delivery_charges:,.0f}\n"
-            f"💰 *Net Total:* Rs. {(amount + delivery_charges):,.0f}\n"
-        )
-        if is_delivered:
-            msg += (
-                f"💳 *Payment Method:* {payment_method}\n"
-                f"📊 *Payment Status:* {pay_status} (Paid: Rs. {paid_amt:,.0f} | Remaining: Rs. {bal_amt:,.0f})\n"
-            )
-        else:
-            msg += f"⚠️ *Return Reason:* {ret_reason}\n"
-
-        msg += (
+            f"💰 *Net Total:* Rs. {net_total:,.0f}\n"
+            f"💳 *Payment Method:* {payment_method}\n"
+            f"📊 *Payment Status:* {pay_status} (Paid: Rs. {paid_amt:,.0f} | Remaining: Rs. {bal_amt:,.0f})\n"
             f"⏰ *Return Time:* {time_str}\n"
             f"━━━━━━━━━━━━━━━━━━━━\n"
-            f"📋 *Action Required:* Please verify hisaab in Admin Portal."
+            f"📋 *Status:* Operational DELIVERED • Please verify hisaab & click Approve in Admin Portal."
         )
-        return msg
 
     def dispatch_delivery_alerts(self, delivery: Dict[str, Any], admin_phone: str = "") -> Dict[str, Any]:
         """Dispatches dispatch alerts for both Admin and Customer and returns WhatsApp direct links."""

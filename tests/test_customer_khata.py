@@ -277,21 +277,23 @@ class TestCustomerKhataModule(unittest.TestCase):
         self.assertEqual(entry['approval_status'], 'PENDING')
         self.assertEqual(entry['added_by'], 'Staff (Counter)')
 
-        # 4. Admin approves the entry
+        # 4. Admin approves the entry with assigned staff
         appr_res = client.post(f'/api/customer-khata/{entry_id}/approve', json={
-            'approved_by': 'Admin'
+            'approved_by': 'Admin',
+            'assigned_staff': 'Tariq Jameel'
         })
         self.assertEqual(appr_res.status_code, 200)
         appr_data = appr_res.json()
         self.assertTrue(appr_data['success'])
         self.assertEqual(appr_data['approval_status'], 'APPROVED')
 
-        # 5. Verify ledger reflects APPROVED status
+        # 5. Verify ledger reflects APPROVED status and assigned staff
         ledger_after = client.get(f'/api/customers/{cust_id}/ledger').json()
         entry_after = next((e for e in ledger_after['ledger'] if e['id'] == entry_id), None)
         self.assertIsNotNone(entry_after)
         self.assertEqual(entry_after['approval_status'], 'APPROVED')
         self.assertEqual(entry_after['approved_by'], 'Admin')
+        self.assertEqual(entry_after['added_by'], 'Tariq Jameel')
 
     def test_10_monthly_report(self):
         res = client.get('/api/customer-khata/monthly-report')
@@ -414,6 +416,57 @@ class TestCustomerKhataModule(unittest.TestCase):
         self.assertEqual(ledger_after['ledger'][0]['is_settled'], 1)
         self.assertEqual(ledger_after['summary']['current_balance'], 0.0)
 
+    def test_13_reassign_customer_staff_and_bills(self):
+        # 1. Create a customer with added_by = 'Former Staff'
+        cust_res = client.post('/api/customers', json={
+            'name': 'Reassign Staff Test Customer',
+            'phone': '0300-8877665',
+            'address': 'Johar Town Lahore',
+            'credit_limit': 15000.0,
+            'added_by': 'Former Staff'
+        })
+        self.assertEqual(cust_res.status_code, 200)
+        cust_id = cust_res.json()['id']
+
+        # 2. Add an unsettled bill
+        bill_res = client.post('/api/customer-khata', json={
+            'customer_id': cust_id,
+            'invoice_no': 'INV-REASSIGN-1',
+            'date': '2026-09-18',
+            'item_description': 'Omega-3 Fish Oil',
+            'amount': 2200.0,
+            'added_by': 'Former Staff',
+            'approval_status': 'APPROVED'
+        })
+        self.assertEqual(bill_res.status_code, 200)
+        entry_id = bill_res.json()['id']
+
+        # 3. Reassign customer responsibility to 'Tariq Jameel' with reassign_bills=True
+        reassign_res = client.put(f'/api/customers/{cust_id}/reassign-staff', json={
+            'new_staff': 'Tariq Jameel',
+            'reassign_bills': True
+        })
+        self.assertEqual(reassign_res.status_code, 200)
+        r_data = reassign_res.json()
+        self.assertTrue(r_data['success'])
+        self.assertEqual(r_data['new_staff'], 'Tariq Jameel')
+        self.assertEqual(r_data['bills_updated'], 1)
+
+        # 4. Verify customer ledger reflects new staff on customer and bill
+        ledger = client.get(f'/api/customers/{cust_id}/ledger').json()
+        self.assertEqual(ledger['customer']['added_by'], 'Tariq Jameel')
+        self.assertEqual(ledger['ledger'][0]['added_by'], 'Tariq Jameel')
+
+        # 5. Test single bill reassignment to 'Ahmed Khan'
+        bill_reassign_res = client.put(f'/api/customer-khata/{entry_id}/reassign-staff', json={
+            'new_staff': 'Ahmed Khan'
+        })
+        self.assertEqual(bill_reassign_res.status_code, 200)
+        self.assertTrue(bill_reassign_res.json()['success'])
+
+        ledger_after = client.get(f'/api/customers/{cust_id}/ledger').json()
+        self.assertEqual(ledger_after['ledger'][0]['added_by'], 'Ahmed Khan')
+
     @classmethod
     def tearDownClass(cls):
         conn = database.get_db_connection()
@@ -428,7 +481,8 @@ class TestCustomerKhataModule(unittest.TestCase):
             'Testing Approval Client',
             'Naveed Iqbal Test',
             'Staff Added Test Customer',
-            'Staff Settle Test Customer'
+            'Staff Settle Test Customer',
+            'Reassign Staff Test Customer'
         ]
         for name in test_names:
             c.execute('DELETE FROM staff_approval_requests WHERE customer_name = ?', (name,))

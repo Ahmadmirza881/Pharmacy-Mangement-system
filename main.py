@@ -4,7 +4,7 @@ FastAPI application providing endpoints for biometric punches, live roster,
 shift scheduling, staff advance khata, and 1-click month-end payroll.
 """
 
-from fastapi import FastAPI, HTTPException, Query, File, UploadFile, Response
+from fastapi import FastAPI, HTTPException, Query, File, UploadFile, Response, Body
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,13 +31,18 @@ from database import (
     reconcile_delivery, get_deliveries_list, get_active_deliveries_for_return,
     get_delivery_stats_today, convert_temp_rider_to_permanent,
     get_delivery_wa_templates, save_delivery_wa_templates,
-    create_leave_request, get_leave_requests_by_staff_pin, get_pending_leave_requests, review_leave_request
+    create_leave_request, get_leave_requests_by_staff_pin, get_pending_leave_requests, review_leave_request,
+    reassign_customer_staff, reassign_khata_bill_staff
 )
 from payroll_engine import process_punch, calculate_monthly_payroll, calculate_custom_range_payroll
 from biometric_service import biometric_service
 from whatsapp_service import whatsapp_service
+from license_manager import get_license_state, is_system_blocked, check_remote_sheet, start_license_monitor
 
 from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 app = FastAPI(title="Mumtaz Pharmacy Attendance & Payroll System")
 
@@ -52,10 +57,33 @@ app.add_middleware(
 # Enable high-speed compression for HTML, JS, JSON responses (>1KB)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-# Startup: Initialize DB
+class LicenseEnforcementMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+        # Allow static files, home page, and license API endpoints even if locked
+        if path.startswith("/static") or path == "/" or path.startswith("/api/license"):
+            return await call_next(request)
+
+        # If system is blocked by developer, reject mutating requests
+        if request.method in ["POST", "PUT", "DELETE", "PATCH"] and is_system_blocked():
+            license_info = get_license_state()
+            return JSONResponse(
+                status_code=403,
+                content={
+                    "detail": license_info.get("message", "System License Locked"),
+                    "license_blocked": True,
+                    "developer_contact": license_info.get("developer_contact", "")
+                }
+            )
+        return await call_next(request)
+
+app.add_middleware(LicenseEnforcementMiddleware)
+
+# Startup: Initialize DB and Remote License Monitor
 @app.on_event("startup")
 def on_startup():
     init_db()
+    start_license_monitor()
 
 # --- Request Models ---
 class PunchRequest(BaseModel):
@@ -100,6 +128,8 @@ class WhatsAppTestRequest(BaseModel):
     message: Optional[str] = None
 
 class LeaveRequestCreate(BaseModel):
+    staff_id: Optional[int] = None
+    staff_name: Optional[str] = None
     pin: str
     leave_date: str
     leave_type: Optional[str] = "FULL_DAY"
@@ -206,6 +236,14 @@ class CustomerUpdate(BaseModel):
     address: Optional[str] = None
     credit_limit: Optional[float] = None
     is_active: Optional[int] = None
+    added_by: Optional[str] = None
+
+class CustomerReassignStaff(BaseModel):
+    new_staff: str
+    reassign_bills: Optional[bool] = True
+
+class KhataBillReassignStaff(BaseModel):
+    new_staff: str
 
 class CustomerKhataCreate(BaseModel):
     customer_id: int
@@ -237,6 +275,7 @@ class CustomerSettleAll(BaseModel):
 class BatchApproveRequest(BaseModel):
     request_ids: Optional[List[int]] = None
     approve_all: Optional[bool] = False
+    staff_assignments: Optional[Dict[str, str]] = None
 
 # --- API Endpoints ---
 
@@ -848,11 +887,33 @@ def apply_leave_request(req: LeaveRequestCreate):
     """Staff submits leave request via 4-digit PIN."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name, pin FROM staff WHERE pin = ? AND is_active = 1", (req.pin.strip(),))
-    staff = cursor.fetchone()
+    
+    if req.staff_id:
+        cursor.execute("SELECT id, name, pin FROM staff WHERE id = ? AND is_active = 1", (req.staff_id,))
+        staff = cursor.fetchone()
+        if not staff:
+            conn.close()
+            raise HTTPException(status_code=400, detail="Selected staff member nahi mila.")
+        if staff["pin"] != req.pin.strip():
+            conn.close()
+            raise HTTPException(status_code=400, detail="Ghalat 4-digit Secret PIN! Selected staff member ke PIN se match nahi ho raha.")
+    elif req.staff_name and req.staff_name.strip():
+        cursor.execute("SELECT id, name, pin FROM staff WHERE name = ? AND is_active = 1", (req.staff_name.strip(),))
+        staff = cursor.fetchone()
+        if not staff:
+            conn.close()
+            raise HTTPException(status_code=400, detail="Selected staff member nahi mila.")
+        if staff["pin"] != req.pin.strip():
+            conn.close()
+            raise HTTPException(status_code=400, detail="Ghalat 4-digit Secret PIN! Selected staff member ke PIN se match nahi ho raha.")
+    else:
+        cursor.execute("SELECT id, name, pin FROM staff WHERE pin = ? AND is_active = 1", (req.pin.strip(),))
+        staff = cursor.fetchone()
+        if not staff:
+            conn.close()
+            raise HTTPException(status_code=400, detail="Ghalat 4-digit Secret PIN! Leave request submit nahi ho saki.")
+    
     conn.close()
-    if not staff:
-        raise HTTPException(status_code=400, detail="Ghalat 4-digit Secret PIN! Leave request submit nahi ho saki.")
     
     leave_rec = create_leave_request(
         staff_id=staff["id"],
@@ -877,13 +938,12 @@ def apply_leave_request(req: LeaveRequestCreate):
     }
 
 @app.get("/api/staff/leave-requests")
-def get_staff_leave_requests(pin: str = Query(...)):
-    """Staff checks their leave requests via 4-digit PIN."""
-    requests = get_leave_requests_by_staff_pin(pin)
-    return {
-        "success": True,
-        "leave_requests": requests
-    }
+def get_staff_leave_requests(pin: str = Query(...), staff_id: Optional[int] = Query(None)):
+    """Staff checks their leave requests via selected staff member and 4-digit PIN."""
+    result = get_leave_requests_by_staff_pin(pin, staff_id)
+    if isinstance(result, dict) and "error" in result:
+        raise HTTPException(status_code=400, detail=result.get("detail", "Invalid PIN or staff member not found"))
+    return result
 
 @app.get("/api/admin/leave-requests/pending")
 def get_admin_pending_leave_requests():
@@ -1922,15 +1982,55 @@ def update_customer(customer_id: int, data: CustomerUpdate):
     new_address = data.address.strip() if data.address is not None else existing["address"]
     new_limit = data.credit_limit if data.credit_limit is not None else existing["credit_limit"]
     new_active = data.is_active if data.is_active is not None else existing["is_active"]
+    new_staff = data.added_by.strip() if data.added_by is not None else existing["added_by"]
 
     cursor.execute("""
         UPDATE customers
-        SET name = ?, phone = ?, address = ?, credit_limit = ?, is_active = ?
+        SET name = ?, phone = ?, address = ?, credit_limit = ?, is_active = ?, added_by = ?
         WHERE id = ?
-    """, (new_name, new_phone, new_address, new_limit, new_active, customer_id))
+    """, (new_name, new_phone, new_address, new_limit, new_active, new_staff, customer_id))
     conn.commit()
     conn.close()
     return {"success": True, "message": f"Customer '{new_name}' updated successfully."}
+
+@app.put("/api/customers/{customer_id}/reassign-staff")
+def reassign_customer_staff_endpoint(customer_id: int, data: CustomerReassignStaff):
+    """Admin transfers customer khata responsibility to another staff member."""
+    try:
+        res = reassign_customer_staff(
+            customer_id=customer_id,
+            new_staff=data.new_staff.strip(),
+            reassign_bills=bool(data.reassign_bills)
+        )
+        log_activity(
+            category="CUSTOMER_KHATA",
+            action_type="STAFF_REASSIGNED",
+            title=f"Khata Responsibility Reassigned: {res['customer_name']}",
+            description=f"Assigned staff changed from '{res['old_staff']}' to '{res['new_staff']}' ({res['bills_updated']} bills updated)",
+            staff_name=res['new_staff']
+        )
+        return res
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@app.put("/api/customer-khata/{entry_id}/reassign-staff")
+def reassign_khata_bill_staff_endpoint(entry_id: int, data: KhataBillReassignStaff):
+    """Admin changes the handling staff member for an individual credit invoice."""
+    try:
+        res = reassign_khata_bill_staff(
+            entry_id=entry_id,
+            new_staff=data.new_staff.strip()
+        )
+        log_activity(
+            category="CUSTOMER_KHATA",
+            action_type="BILL_STAFF_REASSIGNED",
+            title=f"Bill Staff Changed: #{res['invoice_no']}",
+            description=f"Invoice #{res['invoice_no']} staff changed from '{res['old_staff']}' to '{res['new_staff']}'",
+            staff_name=res['new_staff']
+        )
+        return res
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 @app.get("/api/customers/{customer_id}/ledger")
 def get_customer_ledger(customer_id: int):
@@ -1990,7 +2090,7 @@ def add_customer_khata(data: CustomerKhataCreate):
         invoice_no = f"INV-{1000 + max_id + 1}"
 
     added_by = (data.added_by or "Admin").strip()
-    is_staff = bool(data.is_staff or ("Staff" in added_by))
+    is_staff = bool(data.is_staff or (added_by and added_by.lower() != "admin"))
     if data.approval_status:
         approval_status = data.approval_status.strip()
     else:
@@ -2056,7 +2156,7 @@ def add_customer_khata(data: CustomerKhataCreate):
     }
 
 @app.post("/api/customer-khata/{entry_id}/approve")
-def approve_customer_khata(entry_id: int):
+def approve_customer_khata(entry_id: int, data: Optional[Dict[str, Any]] = Body(None)):
     """Admin approves a customer khata entry submitted by staff."""
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -2068,16 +2168,19 @@ def approve_customer_khata(entry_id: int):
 
     entry = dict(entry_row)
     now_str = datetime.now().isoformat()
+    staff_to_use = (data.get("assigned_staff") if isinstance(data, dict) else None) or entry.get("added_by") or "Staff (Counter)"
+    staff_to_use = str(staff_to_use).strip()
+
     cursor.execute("""
         UPDATE customer_khata
-        SET approval_status = 'APPROVED', approved_by = 'Admin', approved_at = ?
+        SET added_by = ?, approval_status = 'APPROVED', approved_by = 'Admin', approved_at = ?
         WHERE id = ?
-    """, (now_str, entry_id))
+    """, (staff_to_use, now_str, entry_id))
     cursor.execute("""
         UPDATE staff_approval_requests
-        SET status = 'APPROVED', approved_by = 'Admin', approved_at = ?
+        SET status = 'APPROVED', added_by = ?, approved_by = 'Admin', approved_at = ?
         WHERE request_type = 'CREDIT_PURCHASE' AND reference_id = ?
-    """, (now_str, entry_id))
+    """, (staff_to_use, now_str, entry_id))
     conn.commit()
 
     cursor.execute("SELECT SUM(amount) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (entry["customer_id"],))
@@ -2121,7 +2224,7 @@ def get_pending_staff_requests():
     return {"success": True, "requests": rows}
 
 @app.post("/api/admin/pending-requests/{request_id}/approve")
-def approve_staff_request(request_id: int):
+def approve_staff_request(request_id: int, data: Optional[Dict[str, Any]] = Body(None)):
     """Admin approves a staff request and executes the corresponding action."""
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -2134,20 +2237,22 @@ def approve_staff_request(request_id: int):
     req = dict(row)
     now_str = datetime.now().isoformat()
     req_type = req["request_type"]
+    staff_to_use = (data.get("assigned_staff") if isinstance(data, dict) else None) or req.get("added_by") or "Staff (Counter)"
+    staff_to_use = str(staff_to_use).strip()
 
     if req_type == "NEW_CUSTOMER":
         cursor.execute("""
             UPDATE customers
-            SET approval_status = 'APPROVED', approved_by = 'Admin', approved_at = ?
+            SET added_by = ?, approval_status = 'APPROVED', approved_by = 'Admin', approved_at = ?
             WHERE id = ?
-        """, (now_str, req["reference_id"]))
+        """, (staff_to_use, now_str, req["reference_id"]))
 
     elif req_type == "CREDIT_PURCHASE":
         cursor.execute("""
             UPDATE customer_khata
-            SET approval_status = 'APPROVED', approved_by = 'Admin', approved_at = ?
+            SET added_by = ?, approval_status = 'APPROVED', approved_by = 'Admin', approved_at = ?
             WHERE id = ?
-        """, (now_str, req["reference_id"]))
+        """, (staff_to_use, now_str, req["reference_id"]))
 
     elif req_type == "SETTLEMENT":
         payload = json.loads(req["payload_json"] or "{}")
@@ -2169,24 +2274,24 @@ def approve_staff_request(request_id: int):
                     audit_note += f" ({notes_val})"
                 cursor.execute("""
                     UPDATE customer_khata
-                    SET amount = ?, is_settled = 1, settled_at = ?, payment_method = ?,
+                    SET amount = ?, is_settled = 1, settled_at = ?, payment_method = ?, added_by = ?,
                         notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
                     WHERE id = ?
-                """, (paid_amt, settle_date, pay_method, audit_note, audit_note, entry_id))
+                """, (paid_amt, settle_date, pay_method, staff_to_use, audit_note, audit_note, entry_id))
                 cursor.execute("""
-                    INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes, approval_status, approved_by, approved_at)
-                    VALUES (?, ?, ?, ?, ?, 0, ?, 'APPROVED', 'Admin', ?)
-                """, (entry["customer_id"], f"{entry['invoice_no']}-REM", entry["date"], f"{entry['item_description']} (Baqaya)", rem_amt, f"Remaining baqaya from {entry['invoice_no']}", now_str))
+                    INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes, added_by, approval_status, approved_by, approved_at)
+                    VALUES (?, ?, ?, ?, ?, 0, ?, ?, 'APPROVED', 'Admin', ?)
+                """, (entry["customer_id"], f"{entry['invoice_no']}-REM", entry["date"], f"{entry['item_description']} (Baqaya)", rem_amt, f"Remaining baqaya from {entry['invoice_no']}", staff_to_use, now_str))
             else:
                 audit_note = f"Full payment on {settle_date} via {pay_method}"
                 if notes_val:
                     audit_note += f" ({notes_val})"
                 cursor.execute("""
                     UPDATE customer_khata
-                    SET is_settled = 1, settled_at = ?, payment_method = ?,
+                    SET is_settled = 1, settled_at = ?, payment_method = ?, added_by = ?,
                         notes = CASE WHEN notes != '' THEN notes || ' | ' || ? ELSE ? END
                     WHERE id = ?
-                """, (settle_date, pay_method, audit_note, audit_note, entry_id))
+                """, (settle_date, pay_method, staff_to_use, audit_note, audit_note, entry_id))
 
     elif req_type == "SETTLE_ALL":
         payload = json.loads(req["payload_json"] or "{}")
@@ -2206,30 +2311,30 @@ def approve_staff_request(request_id: int):
             if remaining_to_allocate >= item_amt:
                 cursor.execute("""
                     UPDATE customer_khata
-                    SET is_settled = 1, settled_at = ?, payment_method = ?,
+                    SET is_settled = 1, settled_at = ?, payment_method = ?, added_by = ?,
                         notes = CASE WHEN notes != '' THEN notes || ' | Settle-All' ELSE 'Settle-All Payment' END
                     WHERE id = ?
-                """, (settle_date, pay_method, item["id"]))
+                """, (settle_date, pay_method, staff_to_use, item["id"]))
                 remaining_to_allocate -= item_amt
             else:
                 rem_amt = round(item_amt - remaining_to_allocate, 2)
                 cursor.execute("""
                     UPDATE customer_khata
-                    SET amount = ?, is_settled = 1, settled_at = ?, payment_method = ?,
+                    SET amount = ?, is_settled = 1, settled_at = ?, payment_method = ?, added_by = ?,
                         notes = CASE WHEN notes != '' THEN notes || ' | Partial Settle-All' ELSE 'Partial Settle-All' END
                     WHERE id = ?
-                """, (remaining_to_allocate, settle_date, pay_method, item["id"]))
+                """, (remaining_to_allocate, settle_date, pay_method, staff_to_use, item["id"]))
                 cursor.execute("""
-                    INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes, approval_status, approved_by, approved_at)
-                    VALUES (?, ?, ?, ?, ?, 0, ?, 'APPROVED', 'Admin', ?)
-                """, (cust_id, f"{item['invoice_no']}-REM", item["date"], f"{item['item_description']} (Baqaya)", rem_amt, f"Remaining baqaya from {item['invoice_no']}", now_str))
+                    INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, notes, added_by, approval_status, approved_by, approved_at)
+                    VALUES (?, ?, ?, ?, ?, 0, ?, ?, 'APPROVED', 'Admin', ?)
+                """, (cust_id, f"{item['invoice_no']}-REM", item["date"], f"{item['item_description']} (Baqaya)", rem_amt, f"Remaining baqaya from {item['invoice_no']}", staff_to_use, now_str))
                 remaining_to_allocate = 0
 
     cursor.execute("""
         UPDATE staff_approval_requests
-        SET status = 'APPROVED', approved_by = 'Admin', approved_at = ?
+        SET status = 'APPROVED', added_by = ?, approved_by = 'Admin', approved_at = ?
         WHERE id = ?
-    """, (now_str, request_id))
+    """, (staff_to_use, now_str, request_id))
     conn.commit()
     conn.close()
 
@@ -2286,9 +2391,12 @@ def batch_approve_staff_requests(data: BatchApproveRequest):
     conn.close()
 
     approved_count = 0
+    staff_map = data.staff_assignments or {}
     for req_id in ids:
         try:
-            res = approve_staff_request(req_id)
+            assigned = staff_map.get(str(req_id)) or staff_map.get(req_id)
+            body_arg = {"assigned_staff": assigned} if assigned else None
+            res = approve_staff_request(req_id, body_arg)
             if res.get("success"):
                 approved_count += 1
         except Exception as e:
@@ -2322,7 +2430,8 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
     orig_amount = float(entry["amount"])
 
     # If submitted by Staff, queue into staff_approval_requests
-    is_staff = bool(data.is_staff or ("Staff" in (data.added_by or "")))
+    added_by_val = (data.added_by or "Admin").strip()
+    is_staff = bool(data.is_staff or (added_by_val and added_by_val.lower() != "admin"))
     if is_staff:
         cursor.execute("SELECT name FROM customers WHERE id = ?", (entry["customer_id"],))
         c_row = cursor.fetchone()
@@ -2344,7 +2453,7 @@ def settle_customer_khata(entry_id: int, data: CustomerKhataSettle):
         cursor.execute("""
             INSERT INTO staff_approval_requests (request_type, customer_id, customer_name, reference_id, amount, payment_method, details, notes, payload_json, status, added_by)
             VALUES ('SETTLEMENT', ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', ?)
-        """, (entry["customer_id"], cust_name, entry_id, paid_amt, pay_method, details_txt, notes_val, settle_payload, (data.added_by or 'Staff (Counter)')))
+        """, (entry["customer_id"], cust_name, entry_id, paid_amt, pay_method, details_txt, notes_val, settle_payload, added_by_val))
         conn.commit()
         conn.close()
 
@@ -3097,9 +3206,10 @@ def get_staff_completed_deliveries_today():
                s.phone as rider_phone
         FROM deliveries d
         LEFT JOIN staff s ON d.staff_id = s.id
-        WHERE date(d.created_at) = ? AND d.status IN ('DELIVERED', 'RETURNED', 'REJECTED')
-        ORDER BY d.created_at DESC
-    """, (today_str,))
+        WHERE ((date(d.created_at) = ? OR date(d.delivered_at) = ?) OR d.created_at LIKE ? OR d.delivered_at LIKE ?)
+          AND (d.status IN ('DELIVERED', 'RETURNED', 'REJECTED') OR d.delivery_result IN ('DELIVERED', 'RETURNED'))
+        ORDER BY d.id DESC
+    """, (today_str, today_str, f"{today_str}%", f"{today_str}%"))
     rows = cursor.fetchall()
     conn.close()
 
@@ -3449,9 +3559,54 @@ def convert_rider_endpoint(staff_id: int, data: StaffConvertRiderRequest):
         "message": f"{updated['name']} successfully converted to permanent staff."
     }
 
-# Mount static files for the frontend UI
-static_dir = os.path.join(os.path.dirname(__file__), "static")
+# =====================================================================
+# REMOTE LICENSE & KILL-SWITCH API ENDPOINTS
+# =====================================================================
+
+class LicenseConfigRequest(BaseModel):
+    sheet_url: Optional[str] = None
+    dev_contact: Optional[str] = None
+
+@app.get("/api/license/status")
+def get_license_status_endpoint():
+    """Returns current licensing state (blocked flag, message, developer contact)."""
+    return get_license_state()
+
+@app.post("/api/license/sync")
+def sync_license_endpoint():
+    """Triggers immediate Google Sheet remote check."""
+    result = check_remote_sheet(timeout=6)
+    state = get_license_state()
+    return {
+        "sync_result": result,
+        "state": state
+    }
+
+@app.post("/api/license/config")
+def config_license_endpoint(data: LicenseConfigRequest):
+    """Configures Google Sheet CSV URL and Developer contact phone number."""
+    if data.sheet_url is not None:
+        set_setting("google_sheet_csv_url", data.sheet_url.strip())
+    if data.dev_contact is not None:
+        set_setting("license_dev_contact", data.dev_contact.strip())
+    return {
+        "success": True,
+        "message": "License configuration updated successfully.",
+        "state": get_license_state()
+    }
+
+# Mount static files for the frontend UI (PyInstaller & Development safe)
+import sys
+if getattr(sys, 'frozen', False):
+    base_dir = getattr(sys, '_MEIPASS', os.path.dirname(sys.executable))
+    static_dir = os.path.join(base_dir, "static")
+    if not os.path.exists(static_dir):
+        static_dir = os.path.join(os.path.dirname(sys.executable), "static")
+else:
+    static_dir = os.path.join(os.path.dirname(__file__), "static")
+
 if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static_dir")
     app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
 
 if __name__ == "__main__":
@@ -3476,5 +3631,6 @@ if __name__ == "__main__":
     print(f" -> Dosre PCs (LAN) par:  http://{local_ip}:8000")
     print("=" * 60 + "\n")
 
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    # When bundled as EXE or standalone, reload must be False
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 

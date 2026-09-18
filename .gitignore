@@ -10,3 +10,8 @@ venv/
 *.db-wal
 scratch/
 original_pharmacy.db
+build/
+dist/
+READY_FOR_CLIENT/
+*.spec
+test_server_out.txt

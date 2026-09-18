@@ -64,341 +64,33 @@
     // ==========================================
     const USE_DUMMY_DATA = window.location.protocol.startsWith('file:'); // Real backend on HTTP, mock fallback if offline or file://
 
-    const MOCK_STAFF = [
-      {
-        id: 1,
-        name: "Ali Raza",
-        phone: "0300-1234567",
-        cnic: "35202-1234567-1",
-        role: "Senior Pharmacist",
-        designation: "Senior Pharmacist & Head Pharmacist",
-        monthly_salary: 45000,
-        shift_id: 1,
-        shift_name: "Morning Shift",
-        start_time: "09:00",
-        end_time: "17:00",
-        joining_date: "2025-01-15",
-        daily_hours: 8,
-        allowed_leaves: 2,
-        address: "House 14, St 3, Model Town, Lahore",
-        police_report: 1,
-        is_active: 1,
-        pin: "1001"
-      },
-      {
-        id: 2,
-        name: "Bilal Ahmed",
-        phone: "0321-7654321",
-        cnic: "35202-7654321-3",
-        role: "Counter Sales & Billing",
-        designation: "Counter Sales & Billing Incharge",
-        monthly_salary: 15000,
-        shift_id: 1,
-        shift_name: "Morning Shift",
-        start_time: "09:00",
-        end_time: "17:00",
-        joining_date: "2025-05-10",
-        daily_hours: 8,
-        allowed_leaves: 2,
-        address: "Plot 88, Block B, Faisal Town, Lahore",
-        police_report: 1,
-        is_active: 1,
-        pin: "1002"
-      },
-      {
-        id: 3,
-        name: "Usman Tariq",
-        phone: "0333-9876543",
-        cnic: "35202-9876543-5",
-        role: "Store Runner & Dispenser",
-        designation: "Store Runner & Medicine Dispenser",
-        monthly_salary: 26000,
-        shift_id: 2,
-        shift_name: "Evening Shift",
-        start_time: "17:00",
-        end_time: "01:00",
-        joining_date: "2025-11-20",
-        daily_hours: 8,
-        allowed_leaves: 1,
-        address: "Main Bazar, Kot Lakhpat, Lahore",
-        police_report: 0,
-        is_active: 1,
-        pin: "1003"
-      },
-      {
-        id: 4,
-        name: "Hamza Farooq",
-        phone: "0312-4455667",
-        cnic: "35201-4455667-7",
-        role: "Assistant Pharmacist",
-        designation: "Assistant Pharmacist",
-        monthly_salary: 40000,
-        shift_id: 1,
-        shift_name: "Morning Shift",
-        start_time: "09:00",
-        end_time: "17:00",
-        joining_date: "2025-08-01",
-        daily_hours: 8,
-        allowed_leaves: 2,
-        address: "St 8, Gulberg III, Lahore",
-        police_report: 1,
-        is_active: 1,
-        pin: "1004"
-      },
-      {
-        id: 5,
-        name: "Zainab Bibi",
-        phone: "0345-8899001",
-        cnic: "35202-8899001-2",
-        role: "Cashier & Inventory",
-        designation: "Cashier & Inventory Specialist",
-        monthly_salary: 30000,
-        shift_id: 1,
-        shift_name: "Morning Shift",
-        start_time: "09:00",
-        end_time: "17:00",
-        joining_date: "2026-02-15",
-        daily_hours: 8,
-        allowed_leaves: 2,
-        address: "Allama Iqbal Town, Lahore",
-        police_report: 1,
-        is_active: 1,
-        pin: "1005"
-      },
-      {
-        id: 6,
-        name: "Tariq Mehmood",
-        phone: "0308-3344556",
-        cnic: "35202-3344556-9",
-        role: "Night Shift Dispenser",
-        designation: "Night Shift Dispenser",
-        monthly_salary: 28000,
-        shift_id: 2,
-        shift_name: "Evening Shift",
-        start_time: "21:00",
-        end_time: "06:00",
-        joining_date: "2026-04-01",
-        daily_hours: 8,
-        allowed_leaves: 2,
-        address: "Sector B, Township, Lahore",
-        police_report: 0,
-        is_active: 1,
-        pin: "1006"
-      },
-      {
-        id: 7,
-        name: "Muhammad Kashif",
-        phone: "0302-5566778",
-        cnic: "35202-5566778-4",
-        role: "Helper & Delivery Boy",
-        designation: "Helper & Fast Delivery Rider",
-        monthly_salary: 22000,
-        shift_id: 1,
-        shift_name: "Morning Shift",
-        start_time: "09:00",
-        end_time: "17:00",
-        joining_date: "2026-05-01",
-        daily_hours: 8,
-        allowed_leaves: 2,
-        address: "St 5, Samanabad, Lahore",
-        police_report: 1,
-        is_active: 1,
-        pin: "1007"
-      }
-    ];
+    const MOCK_STAFF = [];
 
     const MOCK_ATTENDANCE_DATA = {
       date: new Date().toISOString().split('T')[0],
-      total_staff: 7,
-      present_count: 4,
-      late_count: 1,
+      total_staff: 0,
+      present_count: 0,
+      late_count: 0,
       absent_count: 0,
-      leave_count: 1,
-      pending_count: 2,
-      roster: [
-        { id: 1, name: "Ali Raza", role: "Senior Pharmacist", shift_name: "Morning Shift", time_in: "08:52:14", time_out: null, status: "ON_TIME", late_minutes: 0, worked_minutes: 360, required_minutes: 480, target_out: "17:00", monthly_salary: 45000 },
-        { id: 2, name: "Bilal Ahmed", role: "Counter Sales & Billing", shift_name: "Morning Shift", time_in: "08:58:30", time_out: null, status: "ON_TIME", late_minutes: 0, worked_minutes: 350, required_minutes: 480, target_out: "17:00", monthly_salary: 15000 },
-        { id: 3, name: "Usman Tariq", role: "Store Runner & Dispenser", shift_name: "Evening Shift", time_in: null, time_out: null, status: "PENDING", late_minutes: 0, worked_minutes: 0, required_minutes: 480, target_out: "01:00", monthly_salary: 26000 },
-        { id: 4, name: "Hamza Farooq", role: "Assistant Pharmacist", shift_name: "Morning Shift", time_in: "08:45:00", time_out: "17:05:00", status: "COMPLETED", late_minutes: 0, worked_minutes: 500, required_minutes: 480, target_out: "17:00", monthly_salary: 40000 },
-        { id: 5, name: "Zainab Bibi", role: "Cashier & Inventory", shift_name: "Morning Shift", time_in: null, time_out: null, status: "LEAVE", late_minutes: 0, worked_minutes: 0, required_minutes: 480, target_out: "—", leave_reason: "Family Function (Approved)", monthly_salary: 30000 },
-        { id: 6, name: "Tariq Mehmood", role: "Night Shift Dispenser", shift_name: "Evening Shift", time_in: null, time_out: null, status: "PENDING", late_minutes: 0, worked_minutes: 0, required_minutes: 480, target_out: "06:00", monthly_salary: 28000 },
-        { id: 7, name: "Muhammad Kashif", role: "Helper & Delivery Boy", shift_name: "Morning Shift", time_in: "09:20:00", time_out: null, status: "LATE", late_minutes: 20, worked_minutes: 320, required_minutes: 480, target_out: "17:20", monthly_salary: 22000 }
-      ]
+      leave_count: 0,
+      pending_count: 0,
+      roster: []
     };
 
-    const MOCK_PUNCHES_INITIAL = [
-      { name: "Muhammad Kashif", type: "IN", time: "09:20:00", status: "LATE", message: "Time-IN recorded (20m Late)" },
-      { name: "Bilal Ahmed", type: "IN", time: "08:58:30", status: "ON_TIME", message: "Time-IN recorded" },
-      { name: "Ali Raza", type: "IN", time: "08:52:14", status: "ON_TIME", message: "Time-IN recorded" },
-      { name: "Hamza Farooq", type: "OUT", time: "17:05:00", status: "COMPLETED", message: "Time-OUT recorded (Shift Completed)" }
-    ];
+    const MOCK_PUNCHES_INITIAL = [];
 
-    const MOCK_CUSTOMERS = [
-      {
-        id: 1,
-        name: "Haji Abdul Rehman",
-        phone: "0300-5551234",
-        address: "House 12, St 4, Model Town, Lahore",
-        credit_limit: 50000,
-        current_balance: 32400,
-        pending_invoices_count: 3,
-        last_payment_date: "2026-09-08",
-        status: "ACTIVE"
-      },
-      {
-        id: 2,
-        name: "Dr. Tariq Clinic & Maternity Home",
-        phone: "0321-4445566",
-        address: "Shop 4, Main Commercial Market, Faisal Town, Lahore",
-        credit_limit: 100000,
-        current_balance: 58900,
-        pending_invoices_count: 5,
-        last_payment_date: "2026-09-12",
-        status: "ACTIVE"
-      },
-      {
-        id: 3,
-        name: "Chaudhry Munir Ahmed",
-        phone: "0313-7778899",
-        address: "Bungalow 71, Block G, Gulberg III, Lahore",
-        credit_limit: 30000,
-        current_balance: 28500,
-        pending_invoices_count: 2,
-        last_payment_date: "2026-08-30",
-        status: "ACTIVE"
-      },
-      {
-        id: 4,
-        name: "Al-Shifa Family Care Hospital",
-        phone: "0333-8889911",
-        address: "12-A Jail Road, Near Shadman, Lahore",
-        credit_limit: 150000,
-        current_balance: 44100,
-        pending_invoices_count: 4,
-        last_payment_date: "2026-09-10",
-        status: "ACTIVE"
-      },
-      {
-        id: 5,
-        name: "Malik Zubair Auto Workshop",
-        phone: "0301-2223344",
-        address: "Lorry Adda Road, Badami Bagh, Lahore",
-        credit_limit: 25000,
-        current_balance: 18850,
-        pending_invoices_count: 2,
-        last_payment_date: "2026-08-08",
-        status: "OVERDUE"
-      },
-      {
-        id: 6,
-        name: "Rana Kamran Akhtar",
-        phone: "0345-6667788",
-        address: "Street 19, Sector C, DHA Phase 5, Lahore",
-        credit_limit: 40000,
-        current_balance: 0,
-        pending_invoices_count: 0,
-        last_payment_date: "2026-09-11",
-        status: "CLEARED"
-      },
-      {
-        id: 7,
-        name: "Mian Nawazish Ali",
-        phone: "0312-3334455",
-        address: "Flat 2, Civic Centre, Johar Town, Lahore",
-        credit_limit: 35000,
-        current_balance: 0,
-        pending_invoices_count: 0,
-        last_payment_date: "2026-09-05",
-        status: "CLEARED"
-      },
-      {
-        id: 8,
-        name: "Sheikh Irfan Medical Store",
-        phone: "0322-9990011",
-        address: "Main Circular Road, Shah Alam Market, Lahore",
-        credit_limit: 80000,
-        current_balance: 0,
-        pending_invoices_count: 0,
-        last_payment_date: "2026-09-09",
-        status: "CLEARED"
-      },
-      {
-        id: 9,
-        name: "Begum Shahnaz Akhtar",
-        phone: "0306-1112233",
-        address: "House 55, Block B, Garden Town, Lahore",
-        credit_limit: 20000,
-        current_balance: 2000,
-        pending_invoices_count: 1,
-        last_payment_date: "2026-09-04",
-        status: "ACTIVE"
-      },
-      {
-        id: 10,
-        name: "Master Aslam Tailors",
-        phone: "0334-4443322",
-        address: "Moon Market, Allama Iqbal Town, Lahore",
-        credit_limit: 15000,
-        current_balance: 0,
-        pending_invoices_count: 0,
-        last_payment_date: "2026-09-01",
-        status: "CLEARED"
-      }
-    ];
+    const MOCK_CUSTOMERS = [];
 
     const MOCK_CUSTOMER_KPIS = {
-      total_outstanding: 184750,
-      this_week_credit: 42000,
-      this_week_recovered: 28500,
-      active_debtors_count: 6,
-      total_customers_count: 10,
-      since_date: "2026-09-06"
+      total_outstanding: 0,
+      this_week_credit: 0,
+      this_week_recovered: 0,
+      active_debtors_count: 0,
+      total_customers_count: 0,
+      since_date: new Date().toISOString().split('T')[0]
     };
 
-    const MOCK_ADVANCES = [
-      {
-        id: 101,
-        staff_id: 4,
-        staff_name: "Bilal Ahmed",
-        amount: 10000,
-        remaining_amount: 5000,
-        reason: "Family Medical Support",
-        created_at: "2026-09-04 11:20:00",
-        status: "PARTIAL"
-      },
-      {
-        id: 102,
-        staff_id: 7,
-        staff_name: "Hamza Malik",
-        amount: 8000,
-        remaining_amount: 4000,
-        reason: "Eid Shopping Advance",
-        created_at: "2026-09-06 15:40:00",
-        status: "PARTIAL"
-      },
-      {
-        id: 103,
-        staff_id: 8,
-        staff_name: "Sanaullah Riaz",
-        amount: 5000,
-        remaining_amount: 0,
-        reason: "Motorcycle Tyre Repair",
-        created_at: "2026-08-25 10:15:00",
-        status: "SETTLED"
-      },
-      {
-        id: 104,
-        staff_id: 3,
-        staff_name: "Muhammad Usman",
-        amount: 15000,
-        remaining_amount: 15000,
-        reason: "House Rent Advance",
-        created_at: "2026-09-10 14:00:00",
-        status: "ACTIVE"
-      }
-    ];
-
-    // Dummy data mode is permanent per user request
+    const MOCK_ADVANCES = [];
 
 
     tailwind.config = {
@@ -1247,6 +939,14 @@
           <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
         </button>
 
+        <!-- STAFF LEAVE DESK TAB (STAFF PORTAL ONLY) -->
+        <button onclick="switchTab('staff-leaves')" id="side-tab-staff-leaves"
+          class="staff-only-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
+          <i data-lucide="calendar-heart" class="w-4 h-4 text-emerald-400"></i>
+          <span>Staff Leave Desk</span>
+          <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-auto opacity-40"></i>
+        </button>
+
         <!-- PIN & OTP AUDIT LOG TAB (ADMIN ONLY) -->
         <button onclick="switchTab('audit-log')" id="side-tab-audit-log"
           class="admin-only-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer">
@@ -1819,6 +1519,8 @@
                 <i data-lucide="bell" class="w-3.5 h-3.5"></i>
                 <span>Pending Requests</span>
                 <span id="admin-pending-leaves-badge" class="px-1.5 py-0.5 rounded-full bg-white text-amber-900 font-black text-[10px] shadow-2xs">0</span>
+                <span id="dot-pending-leaves-pulse" class="hidden absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 rounded-full border-2 border-white animate-ping"></span>
+                <span id="dot-pending-leaves-solid" class="hidden absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-600 rounded-full border-2 border-white"></span>
               </button>
               <button onclick="exportLeavesExcel()"
                 class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white text-xs font-bold px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer"
@@ -2490,6 +2192,11 @@
                   <span>Active Deliveries / Return</span>
                   <span id="badge-active-deliveries-count" class="ml-1 px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded-full text-[10px] font-black">0</span>
                 </button>
+                <button type="button" id="delivery-subtab-btn-completed" onclick="switchDeliveryStaffSubtab('completed')"
+                  class="py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer text-slate-600 hover:text-slate-900">
+                  <i data-lucide="check-circle-2" class="w-3.5 h-3.5 text-emerald-600"></i>
+                  <span>Today's Completed Orders</span>
+                </button>
               </div>
             </div>
 
@@ -2519,16 +2226,6 @@
                       </div>
                     </div>
 
-                    <!-- Bill Amount -->
-                    <div>
-                      <label class="block text-xs font-bold text-slate-700 mb-1">Bill Amount (Rs.) *</label>
-                      <div class="relative">
-                        <span class="absolute left-3 top-2 text-xs font-bold text-slate-400">Rs.</span>
-                        <input type="number" id="deliv-bill-amount" required min="1" step="any" placeholder="1850"
-                          class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
-                      </div>
-                    </div>
-
                     <!-- Customer Name -->
                     <div>
                       <label class="block text-xs font-bold text-slate-700 mb-1">Customer Full Name *</label>
@@ -2541,6 +2238,32 @@
                       <label class="block text-xs font-bold text-slate-700 mb-1">Customer WhatsApp Phone *</label>
                       <input type="text" id="deliv-cust-phone" required placeholder="0300-1234567"
                         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    </div>
+
+                    <!-- Bill Amount -->
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1">Medicine Bill (Rs.) *</label>
+                      <div class="relative">
+                        <span class="absolute left-3 top-2 text-xs font-bold text-slate-400">Rs.</span>
+                        <input type="number" id="deliv-bill-amount" required min="1" step="any" placeholder="1850" oninput="updateDeliveryNetTotalMath()"
+                          class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+                      </div>
+                    </div>
+
+                    <!-- Delivery Charges Field -->
+                    <div>
+                      <label class="block text-xs font-bold text-slate-700 mb-1">Delivery Charges (Rs.)</label>
+                      <div class="relative">
+                        <span class="absolute left-3 top-2 text-xs font-bold text-slate-400">Rs.</span>
+                        <input type="number" id="deliv-delivery-charges" min="0" step="any" value="0" oninput="updateDeliveryNetTotalMath()"
+                          class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+                      </div>
+                    </div>
+
+                    <!-- Live Math Summary -->
+                    <div class="col-span-full p-2.5 bg-emerald-50/80 border border-emerald-200 rounded-xl flex items-center justify-between text-xs font-bold text-emerald-900">
+                      <span class="flex items-center gap-1.5"><i data-lucide="calculator" class="w-4 h-4 text-emerald-600"></i> Net Total Payable:</span>
+                      <span id="deliv-net-total-display" class="text-xs sm:text-sm font-black text-emerald-800 font-mono">Rs. 0</span>
                     </div>
                   </div>
 
@@ -2688,6 +2411,47 @@
                 <!-- Injected dynamically via renderActiveDeliveriesGrid() -->
               </div>
             </div>
+
+            <!-- SUBTAB 3: TODAY'S COMPLETED ORDERS (READ-ONLY FOR STAFF) -->
+            <div id="delivery-subtab-completed" class="hidden space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                    <span>Today's Completed Deliveries</span>
+                  </h4>
+                  <p class="text-xs text-slate-500">Delivered &amp; settled orders dispatched today (Read-only summary)</p>
+                </div>
+                <button type="button" onclick="loadStaffCompletedDeliveriesToday()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 self-start sm:self-auto cursor-pointer transition">
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+                  <span>Refresh Completed</span>
+                </button>
+              </div>
+
+              <!-- Completed Deliveries Table -->
+              <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs text-slate-600">
+                    <thead class="bg-slate-50 border-b border-slate-200 text-[11px] font-black uppercase text-slate-600">
+                      <tr>
+                        <th class="px-3.5 py-3">Invoice / Time</th>
+                        <th class="px-3.5 py-3">Customer</th>
+                        <th class="px-3.5 py-3">Rider</th>
+                        <th class="px-3.5 py-3 text-right">Bill Amt</th>
+                        <th class="px-3.5 py-3 text-right">Charges</th>
+                        <th class="px-3.5 py-3 text-right">Collected</th>
+                        <th class="px-3.5 py-3 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="staff-completed-deliveries-tbody" class="divide-y divide-slate-100 font-medium">
+                      <tr>
+                        <td colspan="7" class="px-3.5 py-8 text-center text-slate-400">Loading today's completed orders...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 2. ADMIN PORTAL VIEW (EXECUTIVE KPI, AUDIT TABLE & RECONCILIATION) -->
@@ -2793,6 +2557,7 @@
                   <option value="ALL">Operational: All</option>
                   <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
                   <option value="DELIVERED">Delivered</option>
+                  <option value="RETURNED">Returned Orders</option>
                 </select>
 
                 <!-- Financial Approval Filter -->
@@ -2802,10 +2567,15 @@
                   <option value="PENDING" selected>Pending Approval</option>
                   <option value="APPROVED">Approved</option>
                   <option value="REJECTED">Rejected</option>
+                  <option value="RETURNED">Returned Parcels</option>
                 </select>
               </div>
 
               <div class="flex items-center gap-2">
+                <a href="/api/deliveries/reports/all-time" target="_blank" download="Mumtaz_Deliveries_All_Time.xlsx" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition" title="Download Complete All-Time Deliveries Excel Report">
+                  <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+                  <span>Export All Deliveries (.xlsx)</span>
+                </a>
                 <button type="button" onclick="openWATemplatesModal()" class="px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs transition" title="Edit WhatsApp Message Templates (Admin Only)">
                   <i data-lucide="settings" class="w-3.5 h-3.5 text-emerald-600"></i>
                   <span>WhatsApp Templates</span>
@@ -2858,9 +2628,335 @@
                 <p class="text-xs text-slate-400 mt-1">Try changing the date, search term, or status filters.</p>
               </div>
             </div>
+
+            <!-- PARTIAL & PENDING DELIVERY BALANCES CARD -->
+            <div class="bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
+              <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-amber-50/40">
+                <div>
+                  <h4 class="text-xs font-black uppercase text-amber-900 tracking-wider flex items-center gap-2">
+                    <i data-lucide="scale" class="w-4 h-4 text-amber-600"></i>
+                    <span>Partial &amp; Pending Delivery Balances (Customer Due)</span>
+                  </h4>
+                  <p class="text-[11px] text-slate-500 mt-0.5">Orders where rider collected partial cash or customer promised to pay later. 1-click transfer to Customer Khata ledger.</p>
+                </div>
+                <div id="deliv-pending-balances-counter" class="text-xs font-mono font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg">
+                  0 Pending
+                </div>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-50/80 text-[11px] uppercase font-bold text-slate-500 border-b border-slate-100 tracking-wider">
+                      <th class="py-3 px-4">Invoice</th>
+                      <th class="py-3 px-4">Customer &amp; Phone</th>
+                      <th class="py-3 px-4 text-right">Net Bill</th>
+                      <th class="py-3 px-4 text-right">Cash Paid</th>
+                      <th class="py-3 px-4 text-right font-black text-rose-600">Balance Due</th>
+                      <th class="py-3 px-4">Notes / Preset</th>
+                      <th class="py-3 px-4 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="deliv-pending-balances-tbody" class="divide-y divide-slate-100 text-xs">
+                    <tr>
+                      <td colspan="7" class="px-4 py-8 text-center text-slate-400">Loading pending delivery balances...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
         </section>
+
+        <!-- ================================================================= -->
+        <!-- TAB: STAFF LEAVE DESK (DEDICATED PORTAL TAB FOR STAFF LEAVES)     -->
+        <!-- ================================================================= -->
+        <section id="view-staff-leaves" class="space-y-6 hidden">
+          <!-- Top Card: Executive Header & Subtab Switcher -->
+          <div class="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200/80 shadow-2xs">
+                <i data-lucide="calendar-heart" class="w-6 h-6 text-emerald-600"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
+                  <span>Staff Leave Desk</span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100/70 text-emerald-800 border border-emerald-200">Self-Service</span>
+                </h3>
+                <p class="text-xs text-slate-500 mt-0.5">Submit new leave requests or track real-time approval status using staff-specific 4-digit PIN verification</p>
+              </div>
+            </div>
+
+            <!-- Segmented Sub-tab Switcher -->
+            <div class="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/80 self-start sm:self-auto shadow-inner">
+              <button type="button" id="staff-leave-tab-apply-btn" onclick="switchStaffLeaveDeskTab('apply')"
+                class="py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer bg-white text-emerald-900 shadow-xs border border-emerald-200">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5 text-emerald-600"></i>
+                <span>Submit New Leave</span>
+              </button>
+              <button type="button" id="staff-leave-tab-status-btn" onclick="switchStaffLeaveDeskTab('status')"
+                class="py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer text-slate-600 hover:text-slate-900">
+                <i data-lucide="clock-4" class="w-3.5 h-3.5 text-amber-600"></i>
+                <span>My Requests &amp; Status History</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUBVIEW 1: SUBMIT NEW LEAVE REQUEST (2-COLUMN EXECUTIVE FORM) -->
+          <div id="staff-leave-desk-apply" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Left Column: Application Details (NO PIN ASKED INITIALLY) -->
+            <div class="lg:col-span-7 bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs space-y-4">
+              <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-2">
+                    <i data-lucide="file-text" class="w-4 h-4 text-emerald-600"></i>
+                    <span>Leave Application Details</span>
+                  </h4>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Fill in your request details. Your 4-digit PIN will be requested securely upon clicking Send.</p>
+                </div>
+                <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Step 1 of 2</span>
+              </div>
+
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Select Staff Member *</label>
+                  <select id="staff-leave-input-staff" required onchange="updateStaffLeaveApplyPreview()"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                    <option value="" disabled selected>-- Select Your Name --</option>
+                  </select>
+                  <p class="text-[10px] text-slate-400 mt-0.5">Muntakhab karein ke yeh application kis staff member ki taraf se hai</p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Leave Date *</label>
+                    <input type="date" id="staff-leave-input-date" required onchange="updateStaffLeaveApplyPreview()"
+                      class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Leave Duration Type</label>
+                    <select id="staff-leave-input-type" onchange="updateStaffLeaveApplyPreview()"
+                      class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                      <option value="FULL_DAY" selected>Full Day (1.0 Day)</option>
+                      <option value="HALF_DAY">Half Day (0.5 Day)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Quick Reason Chips -->
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <label class="block text-xs font-bold text-slate-700">Quick Reason Chips</label>
+                    <span class="text-[10px] text-slate-400 font-medium">Click chip to insert</span>
+                  </div>
+                  <div class="flex flex-wrap gap-1.5">
+                    <button type="button" onclick="selectLeaveReasonChip('Family Function / Wedding Event')"
+                      class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300 border border-slate-200 transition cursor-pointer">
+                      👨‍👩‍👧 Family Function
+                    </button>
+                    <button type="button" onclick="selectLeaveReasonChip('Medical Emergency / Sick Leave')"
+                      class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300 border border-slate-200 transition cursor-pointer">
+                      🏥 Medical / Sick Leave
+                    </button>
+                    <button type="button" onclick="selectLeaveReasonChip('Doctor Appointment & Medical Checkup')"
+                      class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300 border border-slate-200 transition cursor-pointer">
+                      🩺 Doctor Appointment
+                    </button>
+                    <button type="button" onclick="selectLeaveReasonChip('Urgent Domestic Work / Personal Affair')"
+                      class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300 border border-slate-200 transition cursor-pointer">
+                      ⚡ Urgent Domestic Work
+                    </button>
+                    <button type="button" onclick="selectLeaveReasonChip('Religious Obligation / Funeral')"
+                      class="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-emerald-50 hover:text-emerald-800 hover:border-emerald-300 border border-slate-200 transition cursor-pointer">
+                      🕌 Religious / Funeral
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Reason for Leave *</label>
+                  <textarea id="staff-leave-input-reason" rows="3" required oninput="updateStaffLeaveApplyPreview()"
+                    placeholder="Wajah tafseel se likhein (e.g. Urgent family matter / Fever & medical rest)..."
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"></textarea>
+                </div>
+              </div>
+
+              <!-- Next Step: Prompt for PIN Authorization -->
+              <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-[11px] text-slate-500 font-medium">Clicking button opens secure 4-digit PIN verification</span>
+                <button type="button" onclick="openStaffLeavePinAuthorizationModal()" id="btn-open-leave-pin-modal"
+                  class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-black py-2.5 px-5 rounded-xl shadow-xs transition flex items-center gap-2 cursor-pointer text-xs">
+                  <i data-lucide="shield-check" class="w-4 h-4"></i>
+                  <span>Review &amp; Send Request</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Column: Live Summary & Leave Policy Preview -->
+            <div class="lg:col-span-5 space-y-4">
+              <!-- Live Preview Card -->
+              <div class="bg-gradient-to-br from-emerald-500/10 via-slate-50 to-white rounded-2xl p-5 border border-emerald-200/70 shadow-2xs space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-emerald-100">
+                  <div class="flex items-center gap-2 text-emerald-900 font-black text-xs uppercase tracking-wider">
+                    <i data-lucide="eye" class="w-4 h-4 text-emerald-600"></i>
+                    <span>Live Request Preview</span>
+                  </div>
+                  <span class="text-[10px] font-bold text-slate-400">Real-Time</span>
+                </div>
+
+                <div class="space-y-2.5 text-xs">
+                  <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100">
+                    <span class="text-slate-500">Applicant:</span>
+                    <strong id="staff-leave-preview-staff" class="text-slate-900 font-bold">-- Not Selected --</strong>
+                  </div>
+
+                  <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100">
+                    <span class="text-slate-500">Target Date:</span>
+                    <strong id="staff-leave-preview-date" class="text-emerald-800 font-mono font-bold">--</strong>
+                  </div>
+
+                  <div class="flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100">
+                    <span class="text-slate-500">Duration:</span>
+                    <span id="staff-leave-preview-duration" class="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-900">Full Day (1.0)</span>
+                  </div>
+
+                  <div class="bg-white p-2.5 rounded-xl border border-slate-100">
+                    <span class="text-slate-500 block text-[10px] uppercase font-bold tracking-wider mb-1">Reason:</span>
+                    <p id="staff-leave-preview-reason" class="text-slate-700 italic text-[11px] break-words">Koi reason darj nahi ki gai.</p>
+                  </div>
+                </div>
+
+                <div class="p-3 bg-emerald-100/50 rounded-xl border border-emerald-200/80 text-[11px] text-emerald-900 flex items-start gap-2">
+                  <i data-lucide="lock" class="w-4 h-4 text-emerald-700 shrink-0 mt-0.5"></i>
+                  <span><strong>Security Step:</strong> Click karne ke baad aapse 4-digit PIN pucha jaye ga. PIN verify hote hi request instant Admin ko submit ho jaye gi.</span>
+                </div>
+              </div>
+
+              <!-- Leave Quota & Policy Notice -->
+              <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-2xs space-y-2 text-xs">
+                <div class="flex items-center gap-2 font-bold text-slate-800">
+                  <i data-lucide="info" class="w-4 h-4 text-blue-600"></i>
+                  <span>Mumtaz Pharmacy Leave Rules</span>
+                </div>
+                <ul class="text-[11px] text-slate-600 space-y-1 list-disc list-inside">
+                  <li>Har staff member ko maheene mein <strong>2 Paid Leaves</strong> allowed hain.</li>
+                  <li>Half Day chutti <strong>0.5 quota</strong> count ki jati hai.</li>
+                  <li>Quota se ziada li gai chutti salary se per-day deduct hoti hai.</li>
+                  <li>Admin approval ke foran baad aap ka status live update ho jata hai.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUBVIEW 2: MY LEAVE REQUESTS & STATUS HISTORY -->
+          <div id="staff-leave-desk-status" class="hidden bg-white rounded-2xl p-6 border border-slate-200 shadow-2xs space-y-5">
+            <!-- Search & Staff Identification Filter Bar -->
+            <div class="pb-4 border-b border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h4 class="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-2">
+                  <i data-lucide="history" class="w-4 h-4 text-amber-500"></i>
+                  <span>My Leave Requests &amp; Real-Time Approval Status</span>
+                </h4>
+                <p class="text-[11px] text-slate-400 mt-0.5">Pehle apna naam select karein, phir apna 4-digit PIN enter karein to sirf aap ka record show ho ga</p>
+              </div>
+
+              <!-- Staff Dropdown + PIN Filter -->
+              <div class="flex flex-wrap items-center gap-2.5">
+                <div class="w-48 sm:w-56">
+                  <select id="staff-leave-search-staff"
+                    class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer">
+                    <option value="" disabled selected>-- 1. Select Your Name --</option>
+                  </select>
+                </div>
+
+                <div class="w-32">
+                  <input type="password" id="staff-leave-search-pin" maxlength="4" placeholder="2. PIN..."
+                    class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono font-black text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center tracking-widest">
+                </div>
+
+                <button type="button" onclick="loadDedicatedStaffLeaveStatus()"
+                  class="bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold text-xs px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-xs">
+                  <i data-lucide="search" class="w-3.5 h-3.5"></i>
+                  <span>Check Status</span>
+                </button>
+
+                <button type="button" onclick="resetStaffLeaveDeskPrivacy()" title="Privacy Reset (Clear Name & PIN)"
+                  class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs p-2 rounded-xl transition cursor-pointer flex items-center gap-1">
+                  <i data-lucide="lock" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Status Cards List Container -->
+            <div id="dedicated-staff-leave-cards" class="space-y-3 pt-1">
+              <div class="p-8 text-center bg-slate-50 rounded-xl border border-slate-100">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
+                  <i data-lucide="lock" class="w-5 h-5"></i>
+                </div>
+                <h5 class="text-xs font-bold text-slate-700">Identity Protected Leave History</h5>
+                <p class="text-[11px] text-slate-400 mt-0.5 max-w-sm mx-auto">Pehle upar se apna naam select karein aur apna 4-digit PIN darj kar ke "Check Status" click karein.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- MODAL: STAFF LEAVE 2-STEP PIN AUTHORIZATION                       -->
+        <!-- ================================================================= -->
+        <div id="staff-leave-pin-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+          <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative border border-slate-200">
+            <button onclick="closeStaffLeavePinModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="text-center pb-3 border-b border-slate-100">
+              <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto mb-2 border border-emerald-200 shadow-2xs">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+              </div>
+              <h3 class="text-base font-black text-slate-900">Authorize Leave Request</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Enter your secret 4-digit PIN to confirm identity</p>
+            </div>
+
+            <!-- Request Summary Preview -->
+            <div class="my-4 p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-500">Applicant:</span>
+                <strong id="staff-leave-pin-preview-staff" class="text-slate-900 font-bold">--</strong>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-500">Date &amp; Type:</span>
+                <span id="staff-leave-pin-preview-date" class="font-mono font-bold text-emerald-800">--</span>
+              </div>
+              <div class="flex justify-between items-start pt-1 border-t border-slate-200/60">
+                <span class="text-slate-500">Reason:</span>
+                <span id="staff-leave-pin-preview-reason" class="text-slate-700 italic text-right max-w-[200px] truncate">--</span>
+              </div>
+            </div>
+
+            <!-- PIN Input -->
+            <form onsubmit="confirmAndSendStaffLeaveRequest(event)" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-center text-slate-700 mb-2">4-Digit Security PIN</label>
+                <input type="password" id="staff-leave-modal-pin" maxlength="4" placeholder="••••" required autofocus
+                  class="w-40 mx-auto block bg-slate-50 border-2 border-emerald-300 rounded-xl px-4 py-2.5 text-xl font-mono font-black text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-500/20 text-center tracking-[0.4em]">
+                <p id="staff-leave-modal-pin-error" class="text-[11px] text-rose-600 font-bold text-center mt-1.5 hidden"></p>
+              </div>
+
+              <div class="flex gap-2">
+                <button type="submit" id="btn-confirm-leave-pin"
+                  class="flex-1 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow cursor-pointer transition">
+                  <i data-lucide="check" class="w-4 h-4"></i> Confirm &amp; Submit
+                </button>
+                <button type="button" onclick="closeStaffLeavePinModal()"
+                  class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer">
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
 
         <!-- ================================================================= -->
         <!-- TAB 4: STAFF ATTENDANCE KIOSK (PIN + WHATSAPP OTP)                -->
@@ -2887,61 +2983,21 @@
             </div>
           </div>
 
-          <!-- STAFF LEAVE DESK (PIN-BASED SUBMISSION & STATUS CHECK) -->
-          <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-              <div>
-                <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
-                  <i data-lucide="calendar-heart" class="w-4 h-4 text-emerald-600"></i>
-                  <span>Staff Leave Desk</span>
-                </h4>
-                <p class="text-xs text-slate-500 mt-0.5">Submit leave applications or check real-time status using your 4-digit PIN</p>
-              </div>
-              <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
-                <button onclick="switchKioskLeaveTab('apply')" id="kiosk-leave-tab-apply" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-2xs cursor-pointer">📝 Apply Leave</button>
-                <button onclick="switchKioskLeaveTab('status')" id="kiosk-leave-tab-status" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer">🔍 Check Status</button>
-              </div>
-            </div>
-
-            <!-- VIEW 1: APPLY LEAVE -->
-            <div id="kiosk-leave-view-apply" class="space-y-3">
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Leave Date *</label>
-                  <input type="date" id="kiosk-leave-date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Leave Type</label>
-                  <select id="kiosk-leave-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    <option value="FULL_DAY">Full Day (1.0)</option>
-                    <option value="HALF_DAY">Half Day (0.5)</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Your 4-Digit PIN *</label>
-                  <input type="password" id="kiosk-leave-pin" maxlength="4" placeholder="e.g. 1234" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center tracking-widest">
-                </div>
+          <!-- LEAVE DESK SHORTCUT BANNER -->
+          <div class="bg-emerald-50/70 border border-emerald-200/90 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0">
+                <i data-lucide="calendar-heart" class="w-5 h-5"></i>
               </div>
               <div>
-                <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Reason for Leave *</label>
-                <input type="text" id="kiosk-leave-reason" placeholder="e.g. Urgent family matter / Fever..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-              </div>
-              <button onclick="submitStaffLeaveRequest()" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5">
-                <i data-lucide="send" class="w-3.5 h-3.5"></i>
-                <span>Submit Leave Application</span>
-              </button>
-            </div>
-
-            <!-- VIEW 2: CHECK STATUS -->
-            <div id="kiosk-leave-view-status" class="space-y-3 hidden">
-              <div class="flex items-center gap-3">
-                <input type="password" id="kiosk-status-pin" maxlength="4" placeholder="Enter your 4-digit PIN..." class="w-48 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-center tracking-widest">
-                <button onclick="checkStaffLeaveStatus()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-4 py-2 rounded-xl cursor-pointer">Search My Requests</button>
-              </div>
-              <div id="kiosk-leave-status-list" class="space-y-2">
-                <p class="text-xs text-slate-400">Apna 4-digit PIN enter kar ke "Search My Requests" click karein.</p>
+                <h4 class="text-xs font-black uppercase text-emerald-950 tracking-wider">Need Leave? Staff Leave Desk Available</h4>
+                <p class="text-xs text-emerald-700 mt-0.5">Submit full/half day leave applications or track approval status securely via PIN</p>
               </div>
             </div>
+            <button onclick="switchTab('staff-leaves')" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 active:scale-95 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-2 cursor-pointer self-start sm:self-auto shrink-0">
+              <i data-lucide="arrow-right-circle" class="w-4 h-4"></i>
+              <span>Open Leave Desk</span>
+            </button>
           </div>
 
           <!-- ATTENDANCE QUICK PULSE (MINIMALIST & READ-ONLY FOR STAFF) -->
@@ -5128,6 +5184,15 @@
             class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38]">
         </div>
 
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Khata In-Charge / Handled By Staff</label>
+          <select id="customer-form-staff"
+            class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#156D38] cursor-pointer">
+            <option value="Admin">Admin (Owner)</option>
+          </select>
+          <span class="text-[10px] text-slate-400">Assign responsibility of this customer's account to a staff member or Admin</span>
+        </div>
+
         <div class="flex gap-3 pt-3">
           <button type="submit"
             class="flex-1 bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
@@ -5309,6 +5374,27 @@
             <span class="text-slate-300">•</span>
             <span id="ledger-modal-address" class="text-xs text-slate-500">House 22, Model Town, Lahore</span>
           </div>
+
+          <!-- KHATA IN-CHARGE / STAFF REASSIGNMENT (ADMIN CONTROL) -->
+          <div class="mt-2.5 flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+            <span class="text-xs font-semibold text-slate-600 flex items-center gap-1.5">
+              <i data-lucide="user-check" class="w-3.5 h-3.5 text-indigo-600"></i>
+              <span>Khata In-Charge:</span>
+              <strong id="ledger-modal-assigned-staff" class="text-indigo-900 font-bold bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">Admin</strong>
+            </span>
+
+            <!-- Admin Reassignment Bar -->
+            <div id="ledger-staff-reassign-control" class="inline-flex items-center gap-1.5">
+              <select id="ledger-reassign-staff-select" title="Reassign Customer Khata In-Charge to another staff member"
+                class="bg-white border border-indigo-200 text-slate-800 rounded-lg px-2 py-1 text-[11px] font-bold focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-2xs">
+                <option value="" disabled selected>-- Reassign Khata In-Charge --</option>
+              </select>
+              <button type="button" onclick="reassignCustomerLedgerStaff()" title="Reassign this customer's account and unsettled bills to selected staff"
+                class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold px-2.5 py-1 rounded-lg text-[11px] flex items-center gap-1 shadow-xs cursor-pointer transition">
+                <i data-lucide="user-cog" class="w-3 h-3"></i> Reassign Khata
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="flex items-center gap-4">
@@ -5364,7 +5450,7 @@
           </span>
           <span class="text-[11px] text-slate-500 font-medium">Record a credit invoice directly to ledger</span>
         </div>
-        <form onsubmit="submitInlineLedgerBill(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+        <form onsubmit="submitInlineLedgerBill(event)" class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
           <div class="sm:col-span-2">
             <input type="date" id="inline-ledger-date" required title="Bill Date"
               class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#156D38]">
@@ -5374,9 +5460,15 @@
               title="Invoice Number (Optional)"
               class="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#156D38]">
           </div>
-          <div class="sm:col-span-4">
+          <div class="sm:col-span-3">
             <input type="text" id="inline-ledger-items" required placeholder="Medicines / Items description..."
               class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#156D38]">
+          </div>
+          <div class="sm:col-span-2">
+            <select id="inline-ledger-staff" required title="Select Staff Member"
+              class="w-full bg-white border border-amber-300 rounded-lg px-2 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#156D38] cursor-pointer">
+              <option value="" disabled selected>-- Staff --</option>
+            </select>
           </div>
           <div class="sm:col-span-2">
             <div class="relative">
@@ -5385,10 +5477,12 @@
                 class="w-full pl-8 pr-2.5 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-rose-600 focus:outline-none focus:ring-1 focus:ring-[#156D38]">
             </div>
           </div>
-          <div class="sm:col-span-2">
+          <div class="sm:col-span-1">
             <button type="submit"
-              class="w-full bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold py-2 px-2 rounded-lg text-xs flex items-center justify-center gap-1 shadow-sm cursor-pointer transition">
-              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add Bill
+              class="w-full bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold py-2 px-1 rounded-lg text-xs flex items-center justify-center gap-1 shadow-sm cursor-pointer transition"
+              title="Record Quick Credit Bill">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span class="sm:hidden">Add Bill</span>
             </button>
           </div>
         </form>
@@ -5412,6 +5506,57 @@
           </tbody>
         </table>
       </div>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- MODAL: REASSIGN SINGLE KHATA BILL STAFF (ADMIN CONTROL)           -->
+  <!-- ================================================================= -->
+  <div id="reassign-single-bill-modal"
+    class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative border border-slate-200">
+      <button onclick="closeReassignSingleBillModal()"
+        class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100">
+          <i data-lucide="user-cog" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-800">Reassign Bill Staff</h3>
+          <p class="text-xs text-slate-500">Change staff handler for this credit bill</p>
+        </div>
+      </div>
+
+      <form onsubmit="submitReassignSingleBill(event)" class="space-y-3">
+        <input type="hidden" id="reassign-bill-entry-id" value="">
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs space-y-1">
+          <div class="text-slate-500">Invoice: <strong id="reassign-bill-inv-label" class="text-slate-800 font-mono">INV-1001</strong></div>
+          <div class="text-slate-500">Current Staff: <strong id="reassign-bill-curr-staff-label" class="text-indigo-700 font-bold">Staff Member</strong></div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">New Staff Member *</label>
+          <select id="reassign-bill-new-staff-select" required
+            class="w-full bg-white border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+            <option value="" disabled selected>-- Select New Staff --</option>
+          </select>
+          <p class="text-[10px] text-slate-400 mt-1">Is invoice ki zimedari aur record naye staff ko transfer ho jaye gi.</p>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="submit"
+            class="flex-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold py-2 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition">
+            <i data-lucide="check" class="w-4 h-4"></i> Save Reassignment
+          </button>
+          <button type="button" onclick="closeReassignSingleBillModal()"
+            class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-lg text-xs cursor-pointer">
+            Cancel
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -6724,16 +6869,19 @@
         </button>
       </div>
 
-      <!-- Outcome Selector -->
-      <div class="space-y-3">
-        <label class="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider">Delivery Outcome *</label>
-        <div class="grid grid-cols-2 gap-2">
-          <button type="button" onclick="setReturnOutcome('DELIVERED')" id="outcome-btn-delivered" class="py-2.5 px-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs">
-            <span>✅ Delivered</span>
-          </button>
-          <button type="button" onclick="setReturnOutcome('RETURNED')" id="outcome-btn-returned" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold flex items-center justify-center gap-1.5">
-            <span>❌ Returned</span>
-          </button>
+      <!-- STEP 1: FORM INPUTS -->
+      <div id="return-settle-step-1" class="space-y-3">
+        <!-- Outcome Selector -->
+        <div>
+          <label class="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-1">Delivery Outcome *</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="setReturnOutcome('DELIVERED')" id="outcome-btn-delivered" class="py-2.5 px-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-900 text-xs font-black flex items-center justify-center gap-1.5 shadow-2xs">
+              <span>✅ Delivered</span>
+            </button>
+            <button type="button" onclick="setReturnOutcome('RETURNED')" id="outcome-btn-returned" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-bold flex items-center justify-center gap-1.5">
+              <span>❌ Returned</span>
+            </button>
+          </div>
         </div>
 
         <!-- DELIVERED OPTIONS -->
@@ -6775,14 +6923,35 @@
           </div>
           <input type="text" id="return-reason-input" placeholder="Or enter custom return reason..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800">
         </div>
+
+        <div class="pt-3 flex items-center justify-end gap-2 border-t border-slate-100 mt-3">
+          <button type="button" onclick="closeDeliveryReturnSettleModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer">Cancel</button>
+          <button type="button" id="btn-submit-return-settle" onclick="submitDeliveryReturnSettle()" class="px-4 py-2 bg-[#156D38] hover:bg-[#0E4D27] text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="check" class="w-4 h-4"></i>
+            <span>Confirm Hisaab &amp; Prepare Alert</span>
+          </button>
+        </div>
       </div>
 
-      <div class="pt-3 flex items-center justify-end gap-2">
-        <button onclick="closeDeliveryReturnSettleModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl">Cancel</button>
-        <button onclick="submitDeliveryReturnSettle()" class="px-4 py-2 bg-[#156D38] hover:bg-[#0E4D27] text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5">
-          <i data-lucide="check" class="w-4 h-4"></i>
-          <span>Confirm Hisaab &amp; Notify Admin</span>
-        </button>
+      <!-- STEP 2: WHATSAPP DISPATCH & MARK DELIVERED COMPLETION -->
+      <div id="return-settle-step-2" class="space-y-4 text-center py-2 hidden">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-[#156D38] border border-emerald-200 flex items-center justify-center mx-auto shadow-2xs">
+          <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-600"></i>
+        </div>
+        <div>
+          <h4 id="return-succ-heading" class="text-base font-extrabold text-slate-900">Rider Hisaab Recorded!</h4>
+          <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">Pehle Admin ko WhatsApp confirmation bejhein, phir yahan Mark as Delivered button dabayein taake status update ho.</p>
+        </div>
+        <div class="pt-2 space-y-2.5">
+          <a id="btn-return-open-wa" href="#" target="_blank" class="w-full py-2.5 px-4 bg-[#25D366] hover:bg-[#1EBE5D] text-white font-black text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer">
+            <i data-lucide="message-circle" class="w-4 h-4"></i>
+            <span>Send WhatsApp Alert to Admin</span>
+          </a>
+          <button type="button" onclick="finishRiderReturnCompletion()" class="w-full py-2.5 px-4 bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-extrabold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <i data-lucide="check-check" class="w-4 h-4"></i>
+            <span>Mark as Delivered &amp; Finish</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -6794,6 +6963,23 @@
       const month = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    async function loadOtpExpirySetting() {
+      const inputEl = document.getElementById('otp-expiry-minutes-input');
+      if (!inputEl) return;
+      const cached = localStorage.getItem('mumtaz_otp_expiry');
+      if (cached) inputEl.value = cached;
+      try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+          const s = await res.json();
+          if (s && s.otp_expiry_minutes) {
+            inputEl.value = s.otp_expiry_minutes;
+            localStorage.setItem('mumtaz_otp_expiry', String(s.otp_expiry_minutes));
+          }
+        }
+      } catch(e) {}
     }
 
     async function saveOtpExpirySetting() {
@@ -6812,6 +6998,18 @@
         });
         if (res.ok) {
           localStorage.setItem('mumtaz_otp_expiry', String(val));
+          const btn = event?.target;
+          if (btn && btn.tagName === 'BUTTON') {
+            const originalText = btn.innerText;
+            btn.innerText = "Saved ✓";
+            btn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+            btn.classList.add('bg-emerald-800');
+            setTimeout(() => {
+              btn.innerText = originalText;
+              btn.classList.remove('bg-emerald-800');
+              btn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+            }, 1500);
+          }
           if (typeof showToast === 'function') showToast(`OTP Expiry ${val} minutes saved!`, "success");
           else alert(`OTP Expiry ${val} minutes saved!`);
         } else {
@@ -6822,42 +7020,155 @@
       }
     }
 
-    function switchKioskLeaveTab(tab) {
-      const applyView = document.getElementById('kiosk-leave-view-apply');
-      const statusView = document.getElementById('kiosk-leave-view-status');
-      const applyBtn = document.getElementById('kiosk-leave-tab-apply');
-      const statusBtn = document.getElementById('kiosk-leave-tab-status');
-
-      if (tab === 'apply') {
-        if (applyView) applyView.classList.remove('hidden');
-        if (statusView) statusView.classList.add('hidden');
-        if (applyBtn) applyBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-2xs cursor-pointer";
-        if (statusBtn) statusBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
-      } else {
-        if (applyView) applyView.classList.add('hidden');
-        if (statusView) statusView.classList.remove('hidden');
-        if (statusBtn) statusBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-900 shadow-2xs cursor-pointer";
-        if (applyBtn) applyBtn.className = "px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
+    // Dedicated Staff Leave Desk Controls
+    function initStaffLeaveDeskDate() {
+      const dateEl = document.getElementById('staff-leave-input-date');
+      if (dateEl && !dateEl.value) {
+        dateEl.value = getLocalTodayStr();
       }
     }
 
-    async function submitStaffLeaveRequest() {
-      const dateVal = document.getElementById('kiosk-leave-date').value;
-      const typeVal = document.getElementById('kiosk-leave-type').value;
-      const pinVal = document.getElementById('kiosk-leave-pin').value.trim();
-      const reasonVal = document.getElementById('kiosk-leave-reason').value.trim();
+    function switchStaffLeaveDeskTab(tab) {
+      const applyBox = document.getElementById('staff-leave-desk-apply');
+      const statusBox = document.getElementById('staff-leave-desk-status');
+      const btnApply = document.getElementById('staff-leave-tab-apply-btn');
+      const btnStatus = document.getElementById('staff-leave-tab-status-btn');
 
-      if (!dateVal) {
-        alert("Barah-e-karam Leave Date choose karein.");
+      const activeClass = "py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer bg-white text-emerald-900 shadow-xs border border-emerald-200";
+      const inactiveClass = "py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer text-slate-600 hover:text-slate-900";
+
+      if (tab === 'status') {
+        if (applyBox) applyBox.classList.add('hidden');
+        if (statusBox) statusBox.classList.remove('hidden');
+        if (btnStatus) btnStatus.className = activeClass;
+        if (btnApply) btnApply.className = inactiveClass;
+
+        const pin = (document.getElementById('staff-leave-search-pin')?.value || '').trim();
+        if (pin.length >= 4) {
+          loadDedicatedStaffLeaveStatus();
+        }
+      } else {
+        if (applyBox) applyBox.classList.remove('hidden');
+        if (statusBox) statusBox.classList.add('hidden');
+        if (btnApply) btnApply.className = activeClass;
+        if (btnStatus) btnStatus.className = inactiveClass;
+        initStaffLeaveDeskDate();
+      }
+      scheduleIconsRender();
+    }
+
+    function updateStaffLeaveApplyPreview() {
+      const staffSelect = document.getElementById('staff-leave-input-staff');
+      const selectedOption = staffSelect && staffSelect.selectedIndex >= 0 ? staffSelect.options[staffSelect.selectedIndex] : null;
+      const staffName = selectedOption && staffSelect.value ? (selectedOption.getAttribute('data-name') || selectedOption.text.split('(')[0].trim()) : '-- Not Selected --';
+
+      const dateVal = document.getElementById('staff-leave-input-date')?.value || '--';
+      const typeVal = document.getElementById('staff-leave-input-type')?.value || 'FULL_DAY';
+      const reasonVal = (document.getElementById('staff-leave-input-reason')?.value || '').trim();
+
+      const prevStaff = document.getElementById('staff-leave-preview-staff');
+      const prevDate = document.getElementById('staff-leave-preview-date');
+      const prevDuration = document.getElementById('staff-leave-preview-duration');
+      const prevReason = document.getElementById('staff-leave-preview-reason');
+
+      if (prevStaff) prevStaff.innerText = staffName;
+      if (prevDate) prevDate.innerText = dateVal;
+      if (prevDuration) {
+        prevDuration.innerText = typeVal === 'HALF_DAY' ? 'Half Day (0.5 Day)' : 'Full Day (1.0 Day)';
+      }
+      if (prevReason) {
+        prevReason.innerText = reasonVal || 'Koi reason darj nahi ki gai.';
+      }
+    }
+
+    function selectLeaveReasonChip(text) {
+      const reasonEl = document.getElementById('staff-leave-input-reason');
+      if (reasonEl) {
+        reasonEl.value = text;
+        updateStaffLeaveApplyPreview();
+      }
+    }
+
+    function openStaffLeavePinAuthorizationModal() {
+      const staffSelect = document.getElementById('staff-leave-input-staff');
+      const staffId = staffSelect ? staffSelect.value : '';
+      const selectedOption = staffSelect && staffSelect.selectedIndex >= 0 ? staffSelect.options[staffSelect.selectedIndex] : null;
+      const staffName = selectedOption ? (selectedOption.getAttribute('data-name') || selectedOption.text.split('(')[0].trim()) : '';
+
+      const dateVal = document.getElementById('staff-leave-input-date')?.value;
+      const typeVal = document.getElementById('staff-leave-input-type')?.value || 'FULL_DAY';
+      const reasonVal = (document.getElementById('staff-leave-input-reason')?.value || '').trim();
+
+      if (!staffId) {
+        alert("Barah-e-karam apna naam select karein.");
+        if (staffSelect) staffSelect.focus();
         return;
       }
-      if (!pinVal || pinVal.length < 4) {
-        alert("Barah-e-karam apna 4-digit secret PIN darj karein.");
+      if (!dateVal) {
+        alert("Barah-e-karam Leave Date muntakhab karein.");
+        document.getElementById('staff-leave-input-date')?.focus();
         return;
       }
       if (!reasonVal) {
-        alert("Barah-e-karam Chutti ki wajah (Reason) biyan karein.");
+        alert("Barah-e-karam Chutti ki wajah (Reason) likhein.");
+        document.getElementById('staff-leave-input-reason')?.focus();
         return;
+      }
+
+      // Populate preview in authorization modal
+      const modalStaff = document.getElementById('staff-leave-pin-preview-staff');
+      const modalDate = document.getElementById('staff-leave-pin-preview-date');
+      const modalReason = document.getElementById('staff-leave-pin-preview-reason');
+      const pinInp = document.getElementById('staff-leave-modal-pin');
+      const errBox = document.getElementById('staff-leave-modal-pin-error');
+
+      if (modalStaff) modalStaff.innerText = staffName;
+      if (modalDate) modalDate.innerText = `${dateVal} (${typeVal === 'HALF_DAY' ? 'Half Day' : 'Full Day'})`;
+      if (modalReason) modalReason.innerText = reasonVal;
+      if (pinInp) pinInp.value = '';
+      if (errBox) {
+        errBox.innerText = '';
+        errBox.classList.add('hidden');
+      }
+
+      const modal = document.getElementById('staff-leave-pin-modal');
+      if (modal) modal.classList.remove('hidden');
+      if (pinInp) setTimeout(() => pinInp.focus(), 150);
+      scheduleIconsRender();
+    }
+
+    function closeStaffLeavePinModal() {
+      const modal = document.getElementById('staff-leave-pin-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function confirmAndSendStaffLeaveRequest(e) {
+      if (e) e.preventDefault();
+      const staffSelect = document.getElementById('staff-leave-input-staff');
+      const staffId = staffSelect ? staffSelect.value : '';
+      const selectedOption = staffSelect && staffSelect.selectedIndex >= 0 ? staffSelect.options[staffSelect.selectedIndex] : null;
+      const staffName = selectedOption ? (selectedOption.getAttribute('data-name') || selectedOption.text.split('(')[0].trim()) : '';
+
+      const dateVal = document.getElementById('staff-leave-input-date')?.value;
+      const typeVal = document.getElementById('staff-leave-input-type')?.value || 'FULL_DAY';
+      const reasonVal = (document.getElementById('staff-leave-input-reason')?.value || '').trim();
+      const pinVal = (document.getElementById('staff-leave-modal-pin')?.value || '').trim();
+      const errBox = document.getElementById('staff-leave-modal-pin-error');
+      const btn = document.getElementById('btn-confirm-leave-pin');
+
+      if (!pinVal || pinVal.length < 4) {
+        if (errBox) {
+          errBox.innerText = "Barah-e-karam apna 4-digit PIN darj karein.";
+          errBox.classList.remove('hidden');
+        }
+        document.getElementById('staff-leave-modal-pin')?.focus();
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Authorizing...</span>`;
+        scheduleIconsRender();
       }
 
       try {
@@ -6865,6 +7176,8 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            staff_id: parseInt(staffId),
+            staff_name: staffName,
             pin: pinVal,
             leave_date: dateVal,
             leave_type: typeVal,
@@ -6873,69 +7186,279 @@
         });
         const data = await res.json();
         if (!res.ok || !data.success) {
-          alert(data.detail || data.message || "Leave request submit nahi ho saki.");
+          if (errBox) {
+            errBox.innerText = data.detail || data.message || "Ghalat PIN! Barah-e-karam apna sahi 4-digit PIN enter karein.";
+            errBox.classList.remove('hidden');
+          }
+          const pinInp = document.getElementById('staff-leave-modal-pin');
+          if (pinInp) {
+            pinInp.value = '';
+            pinInp.focus();
+          }
           return;
         }
 
-        alert(data.message || "Leave request submitted successfully!");
-        document.getElementById('kiosk-leave-reason').value = '';
-        document.getElementById('kiosk-leave-pin').value = '';
-        
+        closeStaffLeavePinModal();
+        alert(data.message || "Leave request submitted successfully! Admin ko notification bejh di gai hai.");
+
+        // Clear reason in apply form
+        const reasonEl = document.getElementById('staff-leave-input-reason');
+        if (reasonEl) reasonEl.value = '';
+        updateStaffLeaveApplyPreview();
+
+        // Switch to status history view and pre-fill selected staff and PIN
+        const searchStaffEl = document.getElementById('staff-leave-search-staff');
+        const searchPinEl = document.getElementById('staff-leave-search-pin');
+        if (searchStaffEl) searchStaffEl.value = staffId;
+        if (searchPinEl) searchPinEl.value = pinVal;
+
+        switchStaffLeaveDeskTab('status');
+        loadDedicatedStaffLeaveStatus();
         checkAdminPendingLeavesBadge();
-      } catch(e) {
-        console.error("Error submitting leave request:", e);
-        alert("Network error. Leave request submit nahi ho saki.");
+      } catch (err) {
+        console.error("Error confirming leave request:", err);
+        if (errBox) {
+          errBox.innerText = "Network error. Barah-e-karam dobara koshish karein.";
+          errBox.classList.remove('hidden');
+        }
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i><span>Confirm &amp; Submit</span>`;
+          scheduleIconsRender();
+        }
       }
     }
 
-    async function checkStaffLeaveStatus() {
-      const pinVal = document.getElementById('kiosk-status-pin').value.trim();
-      const container = document.getElementById('kiosk-leave-status-list');
-      if (!pinVal || pinVal.length < 4) {
-        alert("Barah-e-karam apna 4-digit PIN enter karein.");
+    function resetStaffLeaveDeskPrivacy() {
+      const searchStaff = document.getElementById('staff-leave-search-staff');
+      if (searchStaff) searchStaff.value = '';
+      const searchPin = document.getElementById('staff-leave-search-pin');
+      if (searchPin) searchPin.value = '';
+      const inputReason = document.getElementById('staff-leave-input-reason');
+      if (inputReason) inputReason.value = '';
+      const inputStaff = document.getElementById('staff-leave-input-staff');
+      if (inputStaff) inputStaff.value = '';
+
+      updateStaffLeaveApplyPreview();
+
+      const cardsContainer = document.getElementById('dedicated-staff-leave-cards');
+      if (cardsContainer) {
+        cardsContainer.innerHTML = `
+          <div class="p-8 text-center bg-slate-50 rounded-xl border border-slate-100">
+            <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
+              <i data-lucide="lock" class="w-5 h-5"></i>
+            </div>
+            <h5 class="text-xs font-bold text-slate-700">Identity Protected Leave History</h5>
+            <p class="text-[11px] text-slate-400 mt-0.5 max-w-sm mx-auto">Pehle upar se apna naam select karein aur apna 4-digit PIN darj kar ke "Check Status" click karein.</p>
+          </div>
+        `;
+        if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+      }
+      if (typeof switchStaffLeaveDeskTab === 'function') {
+        switchStaffLeaveDeskTab('apply');
+      }
+    }
+
+    // Direct invocation wrapper
+    function submitDedicatedStaffLeaveRequest() {
+      openStaffLeavePinAuthorizationModal();
+    }
+
+    async function loadDedicatedStaffLeaveStatus() {
+      const staffSelect = document.getElementById('staff-leave-search-staff');
+      const staffId = staffSelect ? staffSelect.value : '';
+      const selectedOption = staffSelect && staffSelect.selectedIndex >= 0 ? staffSelect.options[staffSelect.selectedIndex] : null;
+      const staffName = selectedOption && staffId ? (selectedOption.getAttribute('data-name') || selectedOption.text.split('(')[0].trim()) : '';
+
+      const pinVal = (document.getElementById('staff-leave-search-pin')?.value || '').trim();
+      const container = document.getElementById('dedicated-staff-leave-cards');
+      if (!container) return;
+
+      if (!staffId) {
+        alert("Barah-e-karam pehle dropdown se apna naam select karein.");
+        if (staffSelect) staffSelect.focus();
         return;
       }
 
+      if (!pinVal || pinVal.length < 4) {
+        alert("Barah-e-karam apna 4-digit secret PIN enter karein.");
+        document.getElementById('staff-leave-search-pin')?.focus();
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="p-8 text-center text-slate-400">
+          <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2 text-emerald-600"></i>
+          <p class="text-xs font-semibold">Verifying identity and loading leave records for ${escapeHtml(staffName)}...</p>
+        </div>
+      `;
+      scheduleIconsRender();
+
       try {
-        const res = await fetch(`/api/staff/leave-requests?pin=${encodeURIComponent(pinVal)}`);
+        const res = await fetch(`/api/staff/leave-requests?pin=${encodeURIComponent(pinVal)}&staff_id=${encodeURIComponent(staffId)}`);
         const data = await res.json();
         if (!res.ok || !data.leave_requests) {
-          container.innerHTML = `<p class="text-xs text-rose-500 font-bold">Ghalat PIN ya koi record nahi mila.</p>`;
+          container.innerHTML = `
+            <div class="p-6 bg-rose-50 border-2 border-rose-200 rounded-2xl text-center space-y-2">
+              <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-1">
+                <i data-lucide="shield-alert" class="w-5 h-5"></i>
+              </div>
+              <h5 class="text-xs font-black text-rose-800 uppercase tracking-wider">Verification Failed</h5>
+              <p class="text-xs text-rose-700 font-bold max-w-md mx-auto">${escapeHtml(data.detail || "Muntakhab staff ka PIN darj shuda PIN se match nahi karta.")}</p>
+              <p class="text-[11px] text-slate-500">Sirf apne naam aur PIN ke zarye apni hi history dekh sakte hain.</p>
+            </div>
+          `;
+          scheduleIconsRender();
           return;
         }
 
         const list = data.leave_requests;
+        const currentStaffName = data.staff_name || staffName;
+        const quota = data.monthly_quota || {};
+
+        let html = '';
+
+        // Monthly Quota Status Summary Banner
+        html += `
+          <div class="p-4 bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <i data-lucide="user-check" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h4 class="text-sm font-black text-white flex items-center gap-2">
+                  <span>${escapeHtml(currentStaffName)}</span>
+                  ${data.designation ? `<span class="text-[10px] font-semibold text-emerald-300 bg-emerald-900/60 px-2 py-0.5 rounded-md border border-emerald-700/50">${escapeHtml(data.designation)}</span>` : ''}
+                </h4>
+                <p class="text-[11px] text-slate-300 mt-0.5">Verified Profile • Monthly Casual Leave Balance</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3 self-start md:self-auto">
+              <div class="px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 text-center min-w-[75px]">
+                <span class="block text-[10px] text-slate-300 font-medium">Allowed/Mo</span>
+                <strong class="text-sm font-mono font-bold text-white">${quota.allowed_leaves ?? 2}</strong>
+              </div>
+              <div class="px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 text-center min-w-[75px]">
+                <span class="block text-[10px] text-amber-300 font-medium">Taken</span>
+                <strong class="text-sm font-mono font-bold text-amber-300">${quota.taken_this_month ?? 0}</strong>
+              </div>
+              <div class="px-3 py-1.5 rounded-xl bg-emerald-500/20 border border-emerald-400/30 text-center min-w-[85px]">
+                <span class="block text-[10px] text-emerald-300 font-bold">Remaining</span>
+                <strong class="text-sm font-mono font-black text-emerald-300">${quota.remaining_quota ?? 2}</strong>
+              </div>
+            </div>
+          </div>
+        `;
+
         if (list.length === 0) {
-          container.innerHTML = `<p class="text-xs text-slate-500">Aap ki koi past leave requests nahi mili.</p>`;
+          html += `
+            <div class="p-8 text-center bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-1">
+                <i data-lucide="calendar-check" class="w-5 h-5"></i>
+              </div>
+              <h5 class="text-xs font-bold text-slate-800">Koi Leave Application Nahi Mili</h5>
+              <p class="text-xs text-slate-600">${escapeHtml(currentStaffName)} ke naam par filhal koi past application darj nahi hai.</p>
+              <p class="text-[11px] text-slate-400">Agar chutti darkar hai to "Submit New Leave" tab se application bejhein.</p>
+            </div>
+          `;
+          container.innerHTML = html;
+          scheduleIconsRender();
           return;
         }
 
-        let html = '';
+        html += `<div class="space-y-3 pt-2">`;
         list.forEach(req => {
-          let statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800">PENDING 🟡</span>';
+          let statusBadge = '<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-amber-100 text-amber-900 border border-amber-300"><span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>⏳ PENDING APPROVAL 🟡</span>';
+          let borderClass = 'border-amber-200 bg-amber-50/20';
+          let statusDesc = 'Awaiting review and decision by Admin';
+
           if (req.status === 'APPROVED') {
-            statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">APPROVED 🟢</span>';
+            statusBadge = '<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-900 border border-emerald-300">✅ APPROVED 🟢</span>';
+            borderClass = 'border-emerald-200 bg-emerald-50/20';
+            statusDesc = 'Leave application approved by Admin';
           } else if (req.status === 'REJECTED') {
-            statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-800">REJECTED 🔴</span>';
+            statusBadge = '<span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-rose-100 text-rose-900 border border-rose-300">❌ DECLINED 🔴</span>';
+            borderClass = 'border-rose-200 bg-rose-50/20';
+            statusDesc = 'Leave application declined by Admin';
           }
 
+          const typeLabel = req.leave_type === 'HALF_DAY' ? 'Half Day (0.5)' : 'Full Day (1.0)';
+          const submittedAt = req.created_at || 'Recently';
+          const cardStaffName = req.staff_name || currentStaffName;
+
           html += `
-            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs">
-              <div>
-                <div class="font-bold text-slate-900">${req.leave_date} (${req.leave_type === 'HALF_DAY' ? 'Half Day' : 'Full Day'})</div>
-                <div class="text-slate-500 text-[11px] mt-0.5">${req.reason}</div>
+            <div class="p-4 rounded-2xl border ${borderClass} space-y-3 transition-all hover:shadow-xs bg-white">
+              <!-- Top Row: Staff Member Badge & Status Badge -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 text-xs font-black border border-slate-200 shadow-2xs">
+                    <i data-lucide="user" class="w-3.5 h-3.5 text-emerald-600"></i>
+                    <span>Staff:</span>
+                    <strong class="text-emerald-950">${escapeHtml(cardStaffName)}</strong>
+                  </span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono">
+                    📅 ${escapeHtml(req.leave_date)}
+                  </span>
+                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700">
+                    ${typeLabel}
+                  </span>
+                </div>
+                <div>${statusBadge}</div>
               </div>
-              <div class="text-right">
-                ${statusBadge}
-                ${req.admin_notes ? `<div class="text-[10px] text-slate-400 mt-1">Note: ${req.admin_notes}</div>` : ''}
+
+              <!-- Point-to-Point Details Grid -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <!-- Left Details: Reason -->
+                <div class="p-3 bg-slate-50/70 rounded-xl border border-slate-100 space-y-1">
+                  <strong class="text-slate-500 text-[10px] uppercase tracking-wider block flex items-center gap-1">
+                    <i data-lucide="align-left" class="w-3 h-3 text-slate-400"></i> Reason for Leave:
+                  </strong>
+                  <p class="text-slate-800 font-medium text-xs leading-relaxed">${escapeHtml(req.reason)}</p>
+                  <p class="text-[10px] text-slate-400 pt-1">🕒 Applied: ${escapeHtml(submittedAt)}</p>
+                </div>
+
+                <!-- Right Details: Admin Decision / Remarks -->
+                <div class="p-3 bg-slate-50/70 rounded-xl border border-slate-100 space-y-1">
+                  <strong class="text-slate-500 text-[10px] uppercase tracking-wider block flex items-center gap-1">
+                    <i data-lucide="message-square" class="w-3 h-3 text-slate-400"></i> Admin Review &amp; Remarks:
+                  </strong>
+                  ${req.admin_notes ? `
+                    <p class="text-slate-800 font-medium text-xs leading-relaxed">${escapeHtml(req.admin_notes)}</p>
+                  ` : `
+                    <p class="text-slate-400 italic text-xs leading-relaxed">${escapeHtml(statusDesc)}</p>
+                  `}
+                  ${req.status === 'APPROVED' ? `
+                    <div class="pt-1 flex items-center gap-1 text-[10px] font-bold text-emerald-700">
+                      <i data-lucide="badge-check" class="w-3 h-3"></i>
+                      <span>Covered under monthly paid leave policy</span>
+                    </div>
+                  ` : ''}
+                </div>
               </div>
             </div>
           `;
         });
+        html += `</div>`;
+
         container.innerHTML = html;
+        scheduleIconsRender();
       } catch(e) {
-        console.error("Error fetching staff leave status:", e);
+        console.error("Error fetching dedicated staff leave status:", e);
+        container.innerHTML = '<p class="text-xs text-rose-500 p-4">Status load karne mein error aya.</p>';
       }
+    }
+
+    // Legacy wrappers for Kiosk Leave Desk compatibility
+    function switchKioskLeaveTab(tab) {
+      switchStaffLeaveDeskTab(tab);
+    }
+    function submitStaffLeaveRequest() {
+      submitDedicatedStaffLeaveRequest();
+    }
+    function checkStaffLeaveStatus() {
+      loadDedicatedStaffLeaveStatus();
     }
 
     async function checkAdminPendingLeavesBadge() {
@@ -6947,6 +7470,17 @@
         const badgeEl = document.getElementById('admin-pending-leaves-badge');
         if (badgeEl) {
           badgeEl.innerText = count;
+        }
+        const pulseDot = document.getElementById('dot-pending-leaves-pulse');
+        const solidDot = document.getElementById('dot-pending-leaves-solid');
+        if (pulseDot && solidDot) {
+          if (count > 0) {
+            pulseDot.classList.remove('hidden');
+            solidDot.classList.remove('hidden');
+          } else {
+            pulseDot.classList.add('hidden');
+            solidDot.classList.add('hidden');
+          }
         }
       } catch(e) {}
     }
@@ -7019,20 +7553,7 @@
       }
     }
 
-    function populateKhataStaffDropdowns() {
-      const staffSelect = document.getElementById('khata-staff-select');
-      const settleStaffSelect = document.getElementById('settle-khata-staff-select');
-      const list = getEffectiveStaffList();
-      if (!list || list.length === 0) return;
-
-      let opts = '<option value="" disabled selected>-- Select Staff Member --</option>';
-      list.forEach(s => {
-        opts += `<option value="${s.id}" data-name="${s.name}">${s.name} (${s.designation || s.role || 'Staff'})</option>`;
-      });
-
-      if (staffSelect) staffSelect.innerHTML = opts;
-      if (settleStaffSelect) settleStaffSelect.innerHTML = opts;
-    }
+    // Note: populateKhataStaffDropdowns is defined below with comprehensive multi-dropdown support
 
     function openCustomerImportModal() {
       const modal = document.getElementById('customer-import-modal');
@@ -7119,16 +7640,26 @@
       document.getElementById('return-settle-subtitle').innerText = `Invoice #${invoiceNo} • Net Total: Rs. ${netTotal.toLocaleString()}`;
       document.getElementById('return-paid-amount').value = netTotal;
 
+      const s1 = document.getElementById('return-settle-step-1');
+      const s2 = document.getElementById('return-settle-step-2');
+      if (s1) s1.classList.remove('hidden');
+      if (s2) s2.classList.add('hidden');
+
       setReturnOutcome('DELIVERED');
       setPaymentStatus('FULL');
 
       const modal = document.getElementById('delivery-return-settle-modal');
       if (modal) modal.classList.remove('hidden');
+      scheduleIconsRender();
     }
 
     function closeDeliveryReturnSettleModal() {
       const modal = document.getElementById('delivery-return-settle-modal');
       if (modal) modal.classList.add('hidden');
+      const s1 = document.getElementById('return-settle-step-1');
+      const s2 = document.getElementById('return-settle-step-2');
+      if (s1) s1.classList.remove('hidden');
+      if (s2) s2.classList.add('hidden');
     }
 
     function setReturnOutcome(outcome) {
@@ -7205,15 +7736,35 @@
           alert(data.detail || "Settlement failed.");
           return;
         }
-        closeDeliveryReturnSettleModal();
-        if (data.admin_wa_link) {
-          window.open(data.admin_wa_link, '_blank');
+
+        // Show Step 2 confirmation view in modal without premature closing
+        const s1 = document.getElementById('return-settle-step-1');
+        const s2 = document.getElementById('return-settle-step-2');
+        if (s1) s1.classList.add('hidden');
+        if (s2) s2.classList.remove('hidden');
+
+        const btnWa = document.getElementById('btn-return-open-wa');
+        if (btnWa) {
+          btnWa.href = data.admin_wa_link || '#';
         }
-        if (typeof loadAdminDeliveries === 'function') loadAdminDeliveries();
-        if (typeof loadActiveDeliveries === 'function') loadActiveDeliveries();
+        const heading = document.getElementById('return-succ-heading');
+        if (heading) {
+          heading.innerText = (_currentReturnOutcome === 'RETURNED') ? 'Order Return Recorded!' : 'Order Delivery Recorded!';
+        }
+        scheduleIconsRender();
       } catch(e) {
         console.error("Error submitting return settlement", e);
+        alert("Network or server error during settlement.");
       }
+    }
+
+    function finishRiderReturnCompletion() {
+      closeDeliveryReturnSettleModal();
+      if (typeof loadPendingDeliveryBalances === 'function') loadPendingDeliveryBalances();
+      if (typeof loadStaffCompletedDeliveriesToday === 'function') loadStaffCompletedDeliveriesToday();
+      if (typeof loadAdminDeliveriesTable === 'function') loadAdminDeliveriesTable();
+      if (typeof loadActiveDeliveriesForReturn === 'function') loadActiveDeliveriesForReturn(true);
+      if (typeof refreshDeliveryStats === 'function') refreshDeliveryStats();
     }
 
     async function transferDeliveryBalanceToKhata(deliveryId) {
@@ -7227,106 +7778,155 @@
           return;
         }
         alert(data.message || "Balance successfully transferred to Customer Khata!");
-        if (typeof loadAdminDeliveries === 'function') loadAdminDeliveries();
+        if (typeof loadPendingDeliveryBalances === 'function') loadPendingDeliveryBalances();
+        if (typeof loadAdminDeliveriesTable === 'function') loadAdminDeliveriesTable();
+        if (typeof loadCustomers === 'function') loadCustomers();
       } catch(e) {
         console.error("Error transferring delivery balance to khata", e);
       }
     }
 
-    function switchStaffDeliveryTab(tab) {
-      const dispatchBox = document.getElementById('staff-delivery-dispatch-box');
-      const activeBox = document.getElementById('staff-delivery-active-box');
-      const completedBox = document.getElementById('staff-delivery-completed-box');
+    async function loadPendingDeliveryBalances() {
+      const tbody = document.getElementById('deliv-pending-balances-tbody');
+      const counter = document.getElementById('deliv-pending-balances-counter');
+      if (!tbody) return;
 
-      const tab1 = document.getElementById('staff-deliv-tab-dispatch');
-      const tab2 = document.getElementById('staff-deliv-tab-active');
-      const tab3 = document.getElementById('staff-deliv-tab-completed');
+      try {
+        const res = await fetch('/api/deliveries?limit=200');
+        if (!res.ok) return;
+        const list = await res.json();
+        const pending = (list || []).filter(d => (parseFloat(d.balance_amount) > 0) || (d.payment_status === 'PARTIAL'));
 
-      if (tab === 'completed') {
-        if (dispatchBox) dispatchBox.classList.add('hidden');
-        if (activeBox) activeBox.classList.add('hidden');
-        if (completedBox) completedBox.classList.remove('hidden');
+        if (counter) counter.innerText = `${pending.length} Pending`;
 
-        if (tab3) tab3.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#156D38] text-white shadow-xs cursor-pointer";
-        if (tab1) tab1.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
-        if (tab2) tab2.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
+        if (pending.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="px-4 py-8 text-center text-slate-400 font-medium">No pending delivery balances found. All orders settled.</td></tr>`;
+          return;
+        }
 
-        loadStaffCompletedDeliveriesToday();
-      } else if (tab === 'active') {
-        if (dispatchBox) dispatchBox.classList.add('hidden');
-        if (activeBox) activeBox.classList.remove('hidden');
-        if (completedBox) completedBox.classList.add('hidden');
+        tbody.innerHTML = pending.map(d => {
+          const invNo = d.invoice_no || `DEL-#${d.id}`;
+          const net = (parseFloat(d.bill_amount) || 0) + (parseFloat(d.delivery_charges) || 0);
+          const paid = parseFloat(d.paid_amount) || 0;
+          const bal = parseFloat(d.balance_amount) || Math.max(0, net - paid);
+          const note = d.return_reason || d.notes || 'Partial cash collected';
 
-        if (tab2) tab2.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#156D38] text-white shadow-xs cursor-pointer";
-        if (tab1) tab1.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
-        if (tab3) tab3.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
-      } else {
-        if (dispatchBox) dispatchBox.classList.remove('hidden');
-        if (activeBox) activeBox.classList.add('hidden');
-        if (completedBox) completedBox.classList.add('hidden');
-
-        if (tab1) tab1.className = "px-3.5 py-2 rounded-xl text-xs font-bold bg-[#156D38] text-white shadow-xs cursor-pointer";
-        if (tab2) tab2.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
-        if (tab3) tab3.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 cursor-pointer";
+          return `
+            <tr class="hover:bg-amber-50/30 transition-colors">
+              <td class="py-3 px-4 font-mono font-bold text-slate-900">${escapeHtml(invNo)}</td>
+              <td class="py-3 px-4 font-semibold text-slate-800">${escapeHtml(d.customer_name)}<br><span class="text-[11px] text-slate-400 font-mono">${escapeHtml(d.customer_phone || '')}</span></td>
+              <td class="py-3 px-4 text-right font-mono font-semibold text-slate-700">Rs. ${net.toLocaleString()}</td>
+              <td class="py-3 px-4 text-right font-mono font-bold text-emerald-700">Rs. ${paid.toLocaleString()}</td>
+              <td class="py-3 px-4 text-right font-mono font-black text-rose-600">Rs. ${bal.toLocaleString()}</td>
+              <td class="py-3 px-4 text-slate-600 text-xs">${escapeHtml(note)}</td>
+              <td class="py-3 px-4 text-center">
+                <button type="button" onclick="transferDeliveryBalanceToKhata(${d.id})"
+                  class="px-3 py-1.5 bg-[#156D38] hover:bg-[#0E4D27] text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer flex items-center gap-1.5 mx-auto">
+                  <i data-lucide="arrow-right-left" class="w-3.5 h-3.5"></i>
+                  <span>Send to Khata</span>
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+        scheduleIconsRender();
+      } catch(e) {
+        console.error("Error loading pending delivery balances:", e);
       }
     }
 
-    async function loadStaffCompletedDeliveriesToday() {
-      const container = document.getElementById('staff-completed-deliveries-list');
-      if (!container) return;
+    function switchDeliveryStaffSubtab(tab) {
+      const dispatchBox = document.getElementById('delivery-subtab-dispatch');
+      const returnBox = document.getElementById('delivery-subtab-return');
+      const completedBox = document.getElementById('delivery-subtab-completed');
 
-      container.innerHTML = '<p class="text-xs text-slate-400 p-4">Loading today\'s completed orders...</p>';
+      const btnDispatch = document.getElementById('delivery-subtab-btn-dispatch');
+      const btnReturn = document.getElementById('delivery-subtab-btn-return');
+      const btnCompleted = document.getElementById('delivery-subtab-btn-completed');
+
+      const activeBtnClass = "py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer bg-white text-emerald-900 shadow-xs border border-emerald-200";
+      const inactiveBtnClass = "py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer text-slate-600 hover:text-slate-900";
+
+      if (tab === 'completed') {
+        if (dispatchBox) dispatchBox.classList.add('hidden');
+        if (returnBox) returnBox.classList.add('hidden');
+        if (completedBox) completedBox.classList.remove('hidden');
+
+        if (btnCompleted) btnCompleted.className = activeBtnClass;
+        if (btnDispatch) btnDispatch.className = inactiveBtnClass;
+        if (btnReturn) btnReturn.className = inactiveBtnClass;
+
+        loadStaffCompletedDeliveriesToday();
+      } else if (tab === 'return') {
+        if (dispatchBox) dispatchBox.classList.add('hidden');
+        if (returnBox) returnBox.classList.remove('hidden');
+        if (completedBox) completedBox.classList.add('hidden');
+
+        if (btnReturn) btnReturn.className = activeBtnClass;
+        if (btnDispatch) btnDispatch.className = inactiveBtnClass;
+        if (btnCompleted) btnCompleted.className = inactiveBtnClass;
+
+        if (typeof loadActiveDeliveriesForReturn === 'function') loadActiveDeliveriesForReturn(true);
+      } else {
+        if (dispatchBox) dispatchBox.classList.remove('hidden');
+        if (returnBox) returnBox.classList.add('hidden');
+        if (completedBox) completedBox.classList.add('hidden');
+
+        if (btnDispatch) btnDispatch.className = activeBtnClass;
+        if (btnReturn) btnReturn.className = inactiveBtnClass;
+        if (btnCompleted) btnCompleted.className = inactiveBtnClass;
+      }
+      scheduleIconsRender();
+    }
+
+    function switchStaffDeliveryTab(tab) {
+      switchDeliveryStaffSubtab(tab);
+    }
+
+    async function loadStaffCompletedDeliveriesToday() {
+      const tbody = document.getElementById('staff-completed-deliveries-tbody');
+      const legacyContainer = document.getElementById('staff-completed-deliveries-list');
+      if (!tbody && !legacyContainer) return;
+
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3.5 py-6 text-center text-slate-400 font-medium">Loading today\'s completed orders...</td></tr>';
+      }
 
       try {
         const res = await fetch('/api/deliveries/staff/completed-today');
         const data = await res.json();
         if (!res.ok || !data || data.length === 0) {
-          container.innerHTML = '<p class="text-xs text-slate-500 p-4 text-center">Aaj abhi tak koi order complete/returned nahi hua.</p>';
+          if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3.5 py-8 text-center text-slate-400 font-medium">Aaj abhi tak koi order complete/returned nahi hua.</td></tr>';
           return;
         }
 
-        let html = `
-          <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-50 text-[11px] font-bold text-slate-600 uppercase border-b border-slate-200">
-                  <th class="p-3">Invoice #</th>
-                  <th class="p-3">Customer</th>
-                  <th class="p-3">Rider</th>
-                  <th class="p-3">Result / Status</th>
-                  <th class="p-3">Net Total</th>
-                  <th class="p-3">Completed Time</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-        `;
+        if (tbody) {
+          tbody.innerHTML = data.map(d => {
+            let stBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">DELIVERED</span>';
+            if (d.status === 'RETURNED' || d.delivery_result === 'RETURNED') {
+              stBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-800">RETURNED</span>`;
+            }
+            const timeStr = d.delivered_at ? (d.delivered_at.split(' ')[1] || d.delivered_at) : (d.dispatched_at || '-');
+            const billAmt = parseFloat(d.bill_amount) || 0;
+            const charges = parseFloat(d.delivery_charges) || 0;
+            const collected = parseFloat(d.paid_amount) || 0;
 
-        data.forEach(d => {
-          let stBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">DELIVERED</span>';
-          if (d.status === 'RETURNED' || d.delivery_result === 'RETURNED') {
-            stBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-100 text-rose-800">RETURNED (${d.return_reason || 'Wapis'})</span>`;
-          }
-
-          html += `
-            <tr class="hover:bg-slate-50">
-              <td class="p-3 font-bold text-slate-900">#${d.invoice_no}</td>
-              <td class="p-3 font-semibold text-slate-800">${d.customer_name}<br><span class="text-[10px] text-slate-400">${d.customer_phone}</span></td>
-              <td class="p-3">${d.rider_name}</td>
-              <td class="p-3">${stBadge}</td>
-              <td class="p-3 font-bold text-[#156D38]">Rs. ${(d.net_total || 0).toLocaleString()}</td>
-              <td class="p-3 text-slate-400 text-[11px]">${d.delivered_at || '-'}</td>
-            </tr>
-          `;
-        });
-
-        html += `
-              </tbody>
-            </table>
-          </div>
-        `;
-        container.innerHTML = html;
+            return `
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="px-3.5 py-3 font-mono font-bold text-slate-900">#${escapeHtml(d.invoice_no)}<br><span class="text-[10px] text-slate-400 font-normal">${escapeHtml(timeStr)}</span></td>
+                <td class="px-3.5 py-3 font-semibold text-slate-800">${escapeHtml(d.customer_name)}<br><span class="text-[10px] text-slate-400">${escapeHtml(d.customer_phone || '')}</span></td>
+                <td class="px-3.5 py-3 font-medium text-slate-700">${escapeHtml(d.rider_name || d.delivery_person_name || 'Rider')}</td>
+                <td class="px-3.5 py-3 text-right font-mono font-semibold text-slate-700">Rs. ${billAmt.toLocaleString()}</td>
+                <td class="px-3.5 py-3 text-right font-mono text-slate-500">Rs. ${charges.toLocaleString()}</td>
+                <td class="px-3.5 py-3 text-right font-mono font-bold text-emerald-700">Rs. ${collected.toLocaleString()}</td>
+                <td class="px-3.5 py-3 text-center">${stBadge}</td>
+              </tr>
+            `;
+          }).join('');
+          scheduleIconsRender();
+        }
       } catch(e) {
-        container.innerHTML = '<p class="text-xs text-rose-500 p-4">Failed to load completed orders.</p>';
+        if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="px-3.5 py-8 text-center text-rose-500 font-medium">Failed to load completed orders.</td></tr>';
       }
     }
 
@@ -7357,8 +7957,8 @@
     let currentLoginTab = 'admin'; // 'admin' or 'staff'
 
     const ADMIN_ONLY_TABS = ['live', 'staff', 'payroll', 'advances', 'leaves', 'reports', 'settings', 'audit-log'];
-    const STAFF_ALLOWED_TABS = ['kiosk', 'customer-khata', 'delivery'];
-    const STAFF_ONLY_TABS = [];
+    const STAFF_ALLOWED_TABS = ['kiosk', 'staff-leaves', 'customer-khata', 'delivery'];
+    const STAFF_ONLY_TABS = ['staff-leaves'];
 
     function initPortalMode() {
       if (currentPortalMode === 'STAFF') {
@@ -7573,9 +8173,11 @@
       if (pendingSec) pendingSec.classList.add('hidden');
 
       const sideKiosk = document.getElementById('side-tab-kiosk');
+      const sideStaffLeaves = document.getElementById('side-tab-staff-leaves');
       const sideKhata = document.getElementById('side-tab-customer-khata');
       const sideDelivery = document.getElementById('side-tab-delivery');
       if (sideKiosk) sideKiosk.classList.remove('hidden');
+      if (sideStaffLeaves) sideStaffLeaves.classList.remove('hidden');
       if (sideKhata) sideKhata.classList.remove('hidden');
       if (sideDelivery) sideDelivery.classList.remove('hidden');
 
@@ -7626,9 +8228,11 @@
       document.querySelectorAll('.admin-only-portion').forEach(el => el.classList.remove('hidden'));
 
       const sideKiosk = document.getElementById('side-tab-kiosk');
+      const sideStaffLeaves = document.getElementById('side-tab-staff-leaves');
       const sideKhata = document.getElementById('side-tab-customer-khata');
       const sideDelivery = document.getElementById('side-tab-delivery');
       if (sideKiosk) sideKiosk.classList.remove('hidden');
+      if (sideStaffLeaves) sideStaffLeaves.classList.add('hidden');
       if (sideKhata) sideKhata.classList.remove('hidden');
       if (sideDelivery) sideDelivery.classList.remove('hidden');
 
@@ -7678,12 +8282,19 @@
       loadStaff();
       loadTodayAttendance();
       loadSettingsView();
+      loadOtpExpirySetting();
+      checkAdminPendingLeavesBadge();
       generatePayroll();
       loadAdvances();
       loadLeaves();
       loadCustomers();
       loadCustomerKpis();
       loadPendingStaffRequests();
+
+      // Periodic check for pending leave requests every 15 seconds
+      setInterval(() => {
+        checkAdminPendingLeavesBadge();
+      }, 15000);
 
       // Outside click listener for notification dropdown
       document.addEventListener('click', (e) => {
@@ -8170,7 +8781,15 @@
       if (currentPortalMode === 'STAFF' && ADMIN_ONLY_TABS.includes(tabId)) {
         tabId = 'kiosk';
       }
-      const allTabs = ['kiosk', 'live', 'payroll', 'advances', 'customer-khata', 'delivery', 'staff', 'leaves', 'reports', 'settings', 'audit-log'];
+
+      // Auto-clear & secure Staff Leave Desk privacy when switching away from it
+      if (tabId !== 'staff-leaves') {
+        if (typeof resetStaffLeaveDeskPrivacy === 'function') resetStaffLeaveDeskPrivacy();
+      } else {
+        if (typeof populateKhataStaffDropdowns === 'function') populateKhataStaffDropdowns();
+      }
+
+      const allTabs = ['kiosk', 'staff-leaves', 'live', 'payroll', 'advances', 'customer-khata', 'delivery', 'staff', 'leaves', 'reports', 'settings', 'audit-log'];
       allTabs.forEach(t => {
         const viewEl = document.getElementById(`view-${t}`);
         const sideEl = document.getElementById(`side-tab-${t}`);
@@ -8222,13 +8841,19 @@
           subtitleEl.innerText = 'Digital attendance — select your name and punch attendance';
           if (typeof loadTodayAttendance === 'function') loadTodayAttendance();
           if (typeof renderKioskStaffGrid === 'function') renderKioskStaffGrid();
+        } else if (tabId === 'staff-leaves') {
+          titleEl.innerText = 'Staff Leave Desk';
+          subtitleEl.innerText = 'Submit leave requests and check real-time approval status';
+          if (typeof initStaffLeaveDeskDate === 'function') initStaffLeaveDeskDate();
         } else if (tabId === 'audit-log') {
           titleEl.innerText = 'PIN & OTP Verification Audit Log';
           subtitleEl.innerText = 'Admin timing audit to compare PIN keyed-in time against WhatsApp OTP verification time';
+          if (typeof loadOtpExpirySetting === 'function') loadOtpExpirySetting();
           if (typeof loadAuditLog === 'function') loadAuditLog();
         } else if (tabId === 'leaves') {
           titleEl.innerText = 'Leave Management & Quotas';
           subtitleEl.innerText = 'Official staff leave register, 2-day monthly quotas & automatic salary deduction audit';
+          if (typeof checkAdminPendingLeavesBadge === 'function') checkAdminPendingLeavesBadge();
         } else if (tabId === 'staff') {
           titleEl.innerText = 'Staff Management';
           subtitleEl.innerText = 'Manage your pharmacy staff, profiles and employment details';
@@ -8249,6 +8874,7 @@
           subtitleEl.innerText = currentPortalMode === 'STAFF'
             ? 'Dispatch new delivery orders and confirm rider returns'
             : 'End-of-day reconciliation: review and approve or reject delivery hisaab';
+          if (typeof loadPendingDeliveryBalances === 'function') loadPendingDeliveryBalances();
         } else if (tabId === 'reports') {
           titleEl.innerText = 'Monthly Attendance Register';
           subtitleEl.innerText = 'Full 31-day biometric register with PDF & landscape print view';
@@ -8304,16 +8930,16 @@
           const res = await fetch('/api/staff');
           if (res.ok) {
             const apiStaff = await res.json();
-            if (Array.isArray(apiStaff) && apiStaff.length > 0) {
+            if (Array.isArray(apiStaff)) {
               staffList = apiStaff;
               loaded = true;
             }
           }
         } catch (e) {
-          console.warn("Backend /api/staff fetch fallback to memory:", e);
+          console.warn("Backend /api/staff fetch error:", e);
         }
-        if (!loaded || !staffList || staffList.length === 0) {
-          staffList = JSON.parse(JSON.stringify(MOCK_STAFF));
+        if (!loaded || !staffList) {
+          staffList = [];
         }
         allStaffList = staffList;
 
@@ -12821,6 +13447,18 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         const amtFormatted = r.amount ? `Rs. ${parseFloat(r.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '—';
         const timeStr = r.created_at ? r.created_at.replace('T', ' ').substring(0, 16) : 'Just now';
 
+        const effectiveStaff = getEffectiveStaffList();
+        let staffOptionsHtml = '';
+        if (Array.isArray(effectiveStaff)) {
+          effectiveStaff.forEach(s => {
+            const isSelected = (r.added_by && (r.added_by === s.name || r.added_by.includes(s.name))) ? 'selected' : '';
+            staffOptionsHtml += `<option value="${escapeHtml(s.name)}" ${isSelected}>${escapeHtml(s.name)}</option>`;
+          });
+        }
+        if (r.added_by && (!Array.isArray(effectiveStaff) || !effectiveStaff.some(s => s.name === r.added_by))) {
+          staffOptionsHtml = `<option value="${escapeHtml(r.added_by)}" selected>${escapeHtml(r.added_by)}</option>` + staffOptionsHtml;
+        }
+
         return `
           <tr class="hover:bg-amber-50/30 transition-colors ${isChecked ? 'bg-amber-50/40' : ''}">
             <td class="py-2.5 px-3.5 text-center">
@@ -12828,17 +13466,22 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
             </td>
             <td class="py-2.5 px-3">${typeBadge}</td>
             <td class="py-2.5 px-3">
-              <div class="font-bold text-slate-900">${r.customer_name || ('Customer #' + r.customer_id)}</div>
+              <div class="font-bold text-slate-900">${escapeHtml(r.customer_name || ('Customer #' + r.customer_id))}</div>
               <div class="text-[11px] text-slate-400 font-mono">ID: ${r.customer_id || '—'}</div>
             </td>
             <td class="py-2.5 px-3">
-              <div class="font-medium text-slate-700">${r.details || r.notes || '—'}</div>
-              ${r.payment_method ? `<div class="text-[10px] text-slate-400 font-medium">Method: ${r.payment_method}</div>` : ''}
+              <div class="font-medium text-slate-700">${escapeHtml(r.details || r.notes || '—')}</div>
+              ${r.payment_method ? `<div class="text-[10px] text-slate-400 font-medium">Method: ${escapeHtml(r.payment_method)}</div>` : ''}
             </td>
             <td class="py-2.5 px-3 font-black text-rose-700 font-mono text-xs">${amtFormatted}</td>
             <td class="py-2.5 px-3">
-              <div class="font-bold text-slate-700 text-[11px]">${r.added_by || 'Staff'}</div>
-              <div class="text-[10px] text-slate-400 font-mono">${timeStr}</div>
+              <div class="flex flex-col gap-1">
+                <select id="pending-staff-select-${r.id}" title="Select / reassign staff member"
+                  class="bg-white border border-amber-300 rounded-md px-1.5 py-1 text-[11px] font-bold text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#156D38] cursor-pointer shadow-2xs">
+                  ${staffOptionsHtml}
+                </select>
+                <div class="text-[10px] text-slate-400 font-mono">${timeStr}</div>
+              </div>
             </td>
             <td class="py-2.5 px-3 text-center">
               <div class="flex items-center justify-center gap-1.5">
@@ -12890,10 +13533,16 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
     async function approveStaffRequest(reqId) {
       try {
+        const staffDropdown = document.getElementById(`pending-staff-select-${reqId}`);
+        const assignedStaff = staffDropdown ? staffDropdown.value : null;
+
         const res = await fetch(`/api/admin/pending-requests/${reqId}/approve`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ approved_by: 'Admin' })
+          body: JSON.stringify({
+            approved_by: 'Admin',
+            assigned_staff: assignedStaff
+          })
         });
         const data = await res.json();
         if (data.success) {
@@ -12938,11 +13587,23 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
     async function approveSelectedStaffRequests() {
       if (selectedPendingRequestIds.size === 0) return;
       const ids = Array.from(selectedPendingRequestIds);
+      const staffAssignments = {};
+      ids.forEach(id => {
+        const el = document.getElementById(`pending-staff-select-${id}`);
+        if (el && el.value) {
+          staffAssignments[id] = el.value;
+        }
+      });
+
       try {
         const res = await fetch('/api/admin/pending-requests/approve-all', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ request_ids: ids, approved_by: 'Admin' })
+          body: JSON.stringify({
+            request_ids: ids,
+            approved_by: 'Admin',
+            staff_assignments: staffAssignments
+          })
         });
         const data = await res.json();
         if (data.success) {
@@ -12994,6 +13655,9 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       const phoneInp = document.getElementById('customer-form-phone');
       const addrInp = document.getElementById('customer-form-address');
       const limitInp = document.getElementById('customer-form-limit');
+      const staffSelect = document.getElementById('customer-form-staff');
+
+      populateKhataStaffDropdowns();
 
       if (customerId) {
         const c = allCustomers.find(x => x.id === customerId);
@@ -13004,6 +13668,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         phoneInp.value = c.phone;
         addrInp.value = c.address || '';
         limitInp.value = c.credit_limit || 15000;
+        if (staffSelect) staffSelect.value = c.added_by || 'Admin';
       } else {
         title.innerText = 'Register Credit Customer';
         formId.value = '';
@@ -13011,6 +13676,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         phoneInp.value = '';
         addrInp.value = '';
         limitInp.value = 15000;
+        if (staffSelect) staffSelect.value = currentPortalMode === 'STAFF' ? 'Staff' : 'Admin';
       }
 
       modal.classList.remove('hidden');
@@ -13027,6 +13693,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       const phone = document.getElementById('customer-form-phone').value.trim();
       const address = document.getElementById('customer-form-address').value.trim();
       const creditLimit = parseFloat(document.getElementById('customer-form-limit').value);
+      const staffVal = document.getElementById('customer-form-staff')?.value || (currentPortalMode === 'STAFF' ? 'Staff' : 'Admin');
 
       const url = id ? `/api/customers/${id}` : '/api/customers';
       const method = id ? 'PUT' : 'POST';
@@ -13036,11 +13703,11 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         name: name,
         phone: phone,
         address: address,
-        credit_limit: creditLimit
+        credit_limit: creditLimit,
+        added_by: staffVal
       };
       if (!id) {
         payload.is_staff = isStaffMode;
-        payload.added_by = isStaffMode ? 'Staff' : 'Admin';
       }
 
       try {
@@ -13056,6 +13723,9 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
           await loadCustomerKpis();
           if (currentPortalMode === 'ADMIN') {
             await loadPendingStaffRequests();
+          }
+          if (currentOpenLedgerCustomerId && currentOpenLedgerCustomerId == id) {
+            await openCustomerLedgerModal(id);
           }
           if (currentOpenLedgerCustomerId && parseInt(currentOpenLedgerCustomerId) === parseInt(id)) {
             await openCustomerLedgerModal(parseInt(id));
@@ -13173,6 +13843,85 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       warningBox.classList.add('hidden');
     }
 
+    function populateKhataStaffDropdowns() {
+      const list = getEffectiveStaffList();
+      const s1 = document.getElementById('khata-staff-select');
+      const s2 = document.getElementById('settle-khata-staff-select');
+      const s3 = document.getElementById('inline-ledger-staff');
+      const sCustForm = document.getElementById('customer-form-staff');
+      const sLedgerReassign = document.getElementById('ledger-reassign-staff-select');
+      const sBillReassign = document.getElementById('reassign-bill-new-staff-select');
+      const sLeave = document.getElementById('staff-leave-input-staff');
+      const sLeaveSearch = document.getElementById('staff-leave-search-staff');
+
+      const isStaffMode = currentPortalMode === 'STAFF';
+      let optionsHtml = '<option value="" disabled selected>-- Select Staff Member --</option>';
+      if (!isStaffMode) {
+        optionsHtml += '<option value="Admin">Admin (Owner)</option>';
+      }
+
+      if (Array.isArray(list)) {
+        list.forEach(s => {
+          optionsHtml += `<option value="${escapeHtml(s.name)}">${escapeHtml(s.name)} (${escapeHtml(s.designation || 'Staff')})</option>`;
+        });
+      }
+
+      if (s1) {
+        const val1 = s1.value;
+        s1.innerHTML = optionsHtml;
+        if (val1) s1.value = val1;
+      }
+      if (s2) {
+        const val2 = s2.value;
+        s2.innerHTML = optionsHtml;
+        if (val2) s2.value = val2;
+      }
+      if (s3) {
+        const val3 = s3.value;
+        s3.innerHTML = optionsHtml;
+        if (val3) s3.value = val3;
+      }
+      if (sCustForm) {
+        const valCust = sCustForm.value;
+        sCustForm.innerHTML = optionsHtml;
+        if (valCust) sCustForm.value = valCust;
+      }
+      if (sLedgerReassign) {
+        const valReassign = sLedgerReassign.value;
+        sLedgerReassign.innerHTML = '<option value="" disabled selected>-- Reassign Khata In-Charge --</option>' + optionsHtml.replace('<option value="" disabled selected>-- Select Staff Member --</option>', '');
+        if (valReassign) sLedgerReassign.value = valReassign;
+      }
+      if (sBillReassign) {
+        const valBillReassign = sBillReassign.value;
+        sBillReassign.innerHTML = '<option value="" disabled selected>-- Select New Staff --</option>' + optionsHtml.replace('<option value="" disabled selected>-- Select Staff Member --</option>', '');
+        if (valBillReassign) sBillReassign.value = valBillReassign;
+      }
+
+      if (sLeave) {
+        let leaveOpts = '<option value="" disabled selected>-- Select Your Name --</option>';
+        if (Array.isArray(list)) {
+          list.forEach(s => {
+            leaveOpts += `<option value="${s.id}" data-name="${escapeHtml(s.name)}">${escapeHtml(s.name)} (${escapeHtml(s.designation || 'Staff')})</option>`;
+          });
+        }
+        const valLeave = sLeave.value;
+        sLeave.innerHTML = leaveOpts;
+        if (valLeave) sLeave.value = valLeave;
+      }
+
+      if (sLeaveSearch) {
+        let leaveSearchOpts = '<option value="" disabled selected>-- 1. Select Your Name --</option>';
+        if (Array.isArray(list)) {
+          list.forEach(s => {
+            leaveSearchOpts += `<option value="${s.id}" data-name="${escapeHtml(s.name)}">${escapeHtml(s.name)} (${escapeHtml(s.designation || 'Staff')})</option>`;
+          });
+        }
+        const valSearch = sLeaveSearch.value;
+        sLeaveSearch.innerHTML = leaveSearchOpts;
+        if (valSearch) sLeaveSearch.value = valSearch;
+      }
+    }
+
     // Add Credit Purchase Modal (Supports both Existing & 1-Step New Customer)
     function openAddCustomerKhataModal(preSelectedCustomerId = null, fromLedger = false) {
       const modal = document.getElementById('add-customer-khata-modal');
@@ -13184,6 +13933,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
       if (searchInput) searchInput.value = '';
       populateCustomerDropdowns();
+      populateKhataStaffDropdowns();
 
       if (fromLedger && preSelectedCustomerId) {
         returnToLedgerCustomerId = preSelectedCustomerId;
@@ -13248,9 +13998,18 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       try {
         let customerId;
 
+        const staffSelect = document.getElementById('khata-staff-select');
+        const selectedStaff = (staffSelect ? staffSelect.value : '').trim();
+        if (!selectedStaff) {
+          alert("Barah-e-karam Authorized / Handled Staff Member select karein.");
+          if (submitBtn) submitBtn.disabled = false;
+          if (staffSelect) staffSelect.focus();
+          return;
+        }
+
         const isStaffMode = currentPortalMode === 'STAFF';
-        const addedBy = isStaffMode ? 'Staff (Counter)' : 'Admin';
-        const approvalStatus = isStaffMode ? 'PENDING' : 'APPROVED';
+        const addedBy = selectedStaff;
+        const approvalStatus = (isStaffMode || selectedStaff !== 'Admin') ? 'PENDING' : 'APPROVED';
 
         // 1-STEP WORKFLOW: If new customer mode, register customer first
         if (currentAddKhataMode === 'new') {
@@ -13273,7 +14032,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
               phone: newPhone,
               address: newAddr,
               credit_limit: newLimit,
-              is_staff: isStaffMode,
+              is_staff: isStaffMode || selectedStaff !== 'Admin',
               added_by: addedBy
             })
           });
@@ -13337,7 +14096,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
             await openCustomerLedgerModal(customerId);
           }
 
-          if (isStaffMode) {
+          if (approvalStatus === 'PENDING') {
             alert(khataData.message || "Credit purchase submitted for Admin approval! (Pending)");
           } else {
             alert(khataData.message || "Credit purchase successfully added to Series Khata!");
@@ -13419,6 +14178,24 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         document.getElementById('ledger-modal-total-settled').innerText = `Rs. ${summary.total_settled.toLocaleString()}`;
         document.getElementById('ledger-modal-limit').innerText = `Rs. ${(c.credit_limit || 0).toLocaleString()}`;
 
+        // Populate Assigned Staff & Reassign controls
+        const assignedStaffEl = document.getElementById('ledger-modal-assigned-staff');
+        if (assignedStaffEl) {
+          assignedStaffEl.innerText = c.added_by || 'Admin';
+        }
+        const reassignSelect = document.getElementById('ledger-reassign-staff-select');
+        if (reassignSelect && c.added_by) {
+          reassignSelect.value = c.added_by;
+        }
+        const reassignControl = document.getElementById('ledger-staff-reassign-control');
+        if (reassignControl) {
+          if (currentPortalMode === 'ADMIN') {
+            reassignControl.classList.remove('hidden');
+          } else {
+            reassignControl.classList.add('hidden');
+          }
+        }
+
         // Render Dynamic Alerts (Overdue Account & Limit Exceeded)
         const alertsContainer = document.getElementById('ledger-alerts-container');
         if (alertsContainer) {
@@ -13494,6 +14271,8 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         const inlineInv = document.getElementById('inline-ledger-invoice-no');
         if (inlineInv) inlineInv.value = '';
 
+        populateKhataStaffDropdowns();
+
         const settleAllBtn = document.getElementById('btn-ledger-settle-all');
         if (summary.current_balance <= 0) {
           settleAllBtn.classList.add('opacity-50', 'pointer-events-none');
@@ -13519,11 +14298,11 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                   <span class="font-bold text-amber-900 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded text-[10px] inline-flex items-center gap-1">
                     <span>⏳ Pending Approval</span>
                   </span>
-                  <span class="text-[9px] font-semibold text-slate-500">Added by: ${e.added_by || 'Staff'}</span>
+                  <span class="text-[9px] font-semibold text-slate-500">Added by: ${escapeHtml(e.added_by || 'Staff')}</span>
                 </div>
               `;
             } else if (isSettled) {
-              statusBadge = `<div><span class="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-[10px]">PAID (${e.payment_method || 'Cash'})</span><div class="text-[10px] text-slate-400 mt-0.5">${e.settled_at || ''}</div></div>`;
+              statusBadge = `<div><span class="font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-[10px]">PAID (${escapeHtml(e.payment_method || 'Cash')})</span><div class="text-[10px] text-slate-400 mt-0.5">${escapeHtml(e.settled_at || '')}</div></div>`;
             } else if (isOverdue) {
               statusBadge = `
                 <div class="flex flex-col items-start gap-0.5">
@@ -13549,7 +14328,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                 actionCell = `<span class="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-semibold">Awaiting Admin</span>`;
               }
             } else if (isSettled) {
-              actionCell = `<span class="text-xs text-slate-400 italic">${e.notes || 'Paid'}</span>`;
+              actionCell = `<span class="text-xs text-slate-400 italic">${escapeHtml(e.notes || 'Paid')}</span>`;
             } else {
               actionCell = `
                 <button onclick="openSettleCustomerKhataModal(${e.id}, '${e.invoice_no}', ${e.amount}, ${c.id}, '${c.name.replace(/'/g, "\\'")}')" class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold px-2.5 py-1 rounded text-[10px] flex items-center gap-1 shadow-xs cursor-pointer">
@@ -13566,11 +14345,22 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                   ${e.date}
                   ${isOverdue ? `<div class="text-[10px] text-slate-400 font-sans">${ageDays} days ago</div>` : ''}
                 </td>
-                <td class="py-2.5 px-3 font-bold font-mono text-[#156D38]">${e.invoice_no}</td>
+                <td class="py-2.5 px-3 font-bold font-mono text-[#156D38]">${escapeHtml(e.invoice_no)}</td>
                 <td class="py-2.5 px-3">
-                  <div class="font-medium text-slate-800">${e.item_description}</div>
-                  ${e.notes ? `<div class="text-[10px] text-slate-400 italic">${e.notes}</div>` : ''}
-                  ${(!isPendingApproval && e.added_by && e.added_by.toLowerCase().includes('staff')) ? `<div class="text-[9px] font-semibold text-emerald-700 mt-0.5">✓ Added by Staff (Approved)</div>` : ''}
+                  <div class="font-medium text-slate-800">${escapeHtml(e.item_description)}</div>
+                  ${e.notes ? `<div class="text-[10px] text-slate-400 italic">${escapeHtml(e.notes)}</div>` : ''}
+                  <div class="text-[10px] font-semibold text-slate-700 mt-1 flex items-center gap-1.5 flex-wrap">
+                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 text-[10px] font-bold border border-slate-200 shadow-2xs">
+                      <i data-lucide="user" class="w-3 h-3 text-emerald-600"></i> Staff: <strong>${escapeHtml(e.added_by || 'Staff (Counter)')}</strong>
+                    </span>
+                    ${isAdmin ? `
+                      <button onclick="openReassignSingleBillModal(${e.id}, '${escapeHtml(e.invoice_no)}', '${escapeHtml(e.added_by || '')}')"
+                        class="text-[10px] text-indigo-600 hover:text-indigo-800 underline font-bold cursor-pointer ml-1" title="Change staff member for this bill">
+                        Change
+                      </button>
+                    ` : ''}
+                    ${e.approved_by ? `<span class="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200"><i data-lucide="check" class="w-2.5 h-2.5 text-emerald-600"></i> Approved by: ${escapeHtml(e.approved_by)}</span>` : ''}
+                  </div>
                 </td>
                 <td class="py-2.5 px-3 font-black text-rose-600 text-right">Rs. ${parseFloat(e.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td class="py-2.5 px-3">${statusBadge}</td>
@@ -13591,6 +14381,101 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       document.getElementById('customer-ledger-modal').classList.add('hidden');
       currentOpenLedgerCustomerId = null;
       returnToLedgerCustomerId = null;
+    }
+
+    async function reassignCustomerLedgerStaff() {
+      if (!currentOpenLedgerCustomerId) return;
+      const select = document.getElementById('ledger-reassign-staff-select');
+      const newStaff = select ? select.value : '';
+      if (!newStaff) {
+        alert("Barah-e-karam naya Staff muntakhab karein.");
+        return;
+      }
+
+      if (!confirm(`Kya aap waqai is customer ke khata aur tamam unsettled bills ki zimedari "${newStaff}" ko transfer karna chahte hain?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/customers/${currentOpenLedgerCustomerId}/reassign-staff`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            new_staff: newStaff,
+            reassign_unsettled_bills: true
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          alert(data.detail || data.message || "Khata reassign karne mein error aya.");
+          return;
+        }
+
+        alert(data.message || `Customer khata aur bills kamyabi se "${newStaff}" ko transfer ho gaye.`);
+        if (typeof loadCustomers === 'function') loadCustomers();
+        await openCustomerLedgerModal(currentOpenLedgerCustomerId);
+      } catch (err) {
+        console.error("Error reassigning customer staff:", err);
+        alert("Network error: Khata reassign nahi ho saka.");
+      }
+    }
+
+    function openReassignSingleBillModal(entryId, invoiceNo, currentStaff) {
+      const modal = document.getElementById('reassign-single-bill-modal');
+      const idInp = document.getElementById('reassign-bill-entry-id');
+      const invLabel = document.getElementById('reassign-bill-inv-label');
+      const currStaffLabel = document.getElementById('reassign-bill-curr-staff-label');
+      const select = document.getElementById('reassign-bill-new-staff-select');
+
+      if (idInp) idInp.value = entryId;
+      if (invLabel) invLabel.innerText = invoiceNo || `Entry #${entryId}`;
+      if (currStaffLabel) currStaffLabel.innerText = currentStaff || 'Staff (Counter)';
+
+      populateKhataStaffDropdowns();
+      if (select && currentStaff) {
+        select.value = currentStaff;
+      }
+
+      if (modal) modal.classList.remove('hidden');
+      scheduleIconsRender();
+    }
+
+    function closeReassignSingleBillModal() {
+      const modal = document.getElementById('reassign-single-bill-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function submitReassignSingleBill(e) {
+      if (e) e.preventDefault();
+      const entryId = document.getElementById('reassign-bill-entry-id')?.value;
+      const select = document.getElementById('reassign-bill-new-staff-select');
+      const newStaff = select ? select.value : '';
+
+      if (!entryId || !newStaff) {
+        alert("Barah-e-karam naya staff member select karein.");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/customer-khata/${entryId}/reassign-staff`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ new_staff: newStaff })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          alert(data.detail || data.message || "Bill staff reassign karne mein error aya.");
+          return;
+        }
+
+        closeReassignSingleBillModal();
+        if (currentOpenLedgerCustomerId) {
+          await openCustomerLedgerModal(currentOpenLedgerCustomerId);
+        }
+      } catch (err) {
+        console.error("Error reassigning single bill staff:", err);
+        alert("Network error: Bill staff reassign nahi ho saka.");
+      }
     }
 
     async function approveKhataEntry(entryId, customerId) {
@@ -13632,6 +14517,14 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       const invoiceNo = (document.getElementById('inline-ledger-invoice-no')?.value || '').trim();
       const items = document.getElementById('inline-ledger-items').value.trim();
       const amount = parseFloat(document.getElementById('inline-ledger-amount').value);
+      const staffSelect = document.getElementById('inline-ledger-staff');
+      const selectedStaff = (staffSelect ? staffSelect.value : '').trim();
+
+      if (!selectedStaff) {
+        alert("Barah-e-karam Authorized / Handled Staff Member select karein.");
+        if (staffSelect) staffSelect.focus();
+        return;
+      }
 
       if (!items || isNaN(amount) || amount <= 0) {
         alert("Please enter item description and a valid amount.");
@@ -13640,8 +14533,8 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
       try {
         const isStaffMode = currentPortalMode === 'STAFF';
-        const addedBy = isStaffMode ? 'Staff (Counter)' : 'Admin';
-        const approvalStatus = isStaffMode ? 'PENDING' : 'APPROVED';
+        const addedBy = selectedStaff;
+        const approvalStatus = (isStaffMode || selectedStaff !== 'Admin') ? 'PENDING' : 'APPROVED';
 
         const res = await fetch('/api/customer-khata', {
           method: 'POST',
@@ -13689,6 +14582,8 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
     function openSettleCustomerKhataModal(entryId, invoiceNo, amount, customerId, customerName) {
       returnToLedgerCustomerId = customerId;
       document.getElementById('customer-ledger-modal').classList.add('hidden');
+
+      populateKhataStaffDropdowns();
 
       const numAmt = parseFloat(amount) || 0;
       document.getElementById('settle-entry-id').value = entryId;
@@ -13756,8 +14651,16 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       const method = document.getElementById('settle-entry-method').value;
       const notes = document.getElementById('settle-entry-notes').value.trim();
 
+      const staffSelect = document.getElementById('settle-khata-staff-select');
+      const selectedStaff = (staffSelect ? staffSelect.value : '').trim();
+      if (!selectedStaff) {
+        alert("Barah-e-karam Authorized / Handled Staff Member select karein.");
+        if (staffSelect) staffSelect.focus();
+        return;
+      }
+
       const isStaffMode = currentPortalMode === 'STAFF';
-      const addedBy = isStaffMode ? 'Staff (Counter)' : 'Admin';
+      const addedBy = selectedStaff;
 
       try {
         const res = await fetch(`/api/customer-khata/${entryId}/settle`, {
@@ -13768,7 +14671,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
             settled_at: settleDate,
             payment_method: method,
             notes: notes,
-            is_staff: isStaffMode,
+            is_staff: isStaffMode || selectedStaff !== 'Admin',
             added_by: addedBy
           })
         });
@@ -16107,24 +17010,26 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       currentDeliveryStaffSubtab = tab;
       const btnDispatch = document.getElementById('delivery-subtab-btn-dispatch');
       const btnReturn = document.getElementById('delivery-subtab-btn-return');
+      const btnCompleted = document.getElementById('delivery-subtab-btn-completed');
       const subDispatch = document.getElementById('delivery-subtab-dispatch');
       const subReturn = document.getElementById('delivery-subtab-return');
+      const subCompleted = document.getElementById('delivery-subtab-completed');
 
-      if (btnDispatch && btnReturn) {
-        if (tab === 'dispatch') {
-          btnDispatch.className = "py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer bg-white text-emerald-900 shadow-xs border border-emerald-200";
-          btnReturn.className = "py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer text-slate-600 hover:text-slate-900 bg-transparent border-transparent";
-        } else {
-          btnReturn.className = "py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer bg-white text-amber-950 shadow-xs border border-amber-300";
-          btnDispatch.className = "py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer text-slate-600 hover:text-slate-900 bg-transparent border-transparent";
-        }
-      }
+      const activeBtnClass = "py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer bg-white text-emerald-900 shadow-xs border border-emerald-200";
+      const inactiveBtnClass = "py-1.5 px-4 rounded-lg font-bold text-xs flex items-center gap-2 transition-all cursor-pointer text-slate-600 hover:text-slate-900 bg-transparent border-transparent";
+
+      if (btnDispatch) btnDispatch.className = (tab === 'dispatch') ? activeBtnClass : inactiveBtnClass;
+      if (btnReturn) btnReturn.className = (tab === 'return') ? activeBtnClass : inactiveBtnClass;
+      if (btnCompleted) btnCompleted.className = (tab === 'completed') ? activeBtnClass : inactiveBtnClass;
 
       if (subDispatch) subDispatch.classList.toggle('hidden', tab !== 'dispatch');
       if (subReturn) subReturn.classList.toggle('hidden', tab !== 'return');
+      if (subCompleted) subCompleted.classList.toggle('hidden', tab !== 'completed');
 
-      if (tab === 'return') {
-        loadActiveDeliveriesForReturn();
+      if (tab === 'completed') {
+        loadStaffCompletedDeliveriesToday();
+      } else if (tab === 'return') {
+        if (typeof loadActiveDeliveriesForReturn === 'function') loadActiveDeliveriesForReturn(true);
       } else {
         const invInput = document.getElementById('deliv-invoice-no');
         if (invInput && !invInput.value) generateRandomInvoiceNo();
@@ -16235,6 +17140,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
         await refreshDeliveryStats();
         await loadAdminDeliveriesTable();
+        await loadPendingDeliveryBalances();
       }
       scheduleIconsRender();
     }
@@ -16324,13 +17230,14 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       }
 
       const combinedNotes = notes ? `${notes} [Method: ${payment_method}]` : `[Method: ${payment_method}]`;
+      const delivery_charges = parseFloat(document.getElementById('deliv-delivery-charges')?.value) || 0.0;
 
       const payload = {
         customer_name,
         customer_phone,
         delivery_address,
         bill_amount,
-        delivery_charges: 0.0,
+        delivery_charges,
         notes: combinedNotes,
         invoice_no,
         staff_id,
@@ -16376,6 +17283,8 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         document.getElementById('deliv-cust-phone').value = '';
         document.getElementById('deliv-cust-address').value = '';
         document.getElementById('deliv-bill-amount').value = '';
+        if (document.getElementById('deliv-delivery-charges')) document.getElementById('deliv-delivery-charges').value = '0';
+        updateDeliveryNetTotalMath();
         document.getElementById('deliv-notes').value = '';
         document.getElementById('deliv-rider-pin').value = '';
         if (is_new_rider) {
@@ -16663,8 +17572,9 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
         closeRiderReturnModal();
 
-        // Open Rider Return Confirmation Modal (Step 2: WhatsApp & Mark Delivered)
-        openReturnSuccessModal(data);
+        const d = data.delivery || {};
+        const netTotal = (parseFloat(d.bill_amount) || 0) + (parseFloat(d.delivery_charges) || 0);
+        openDeliveryReturnSettleModal(deliveryId, d.invoice_no || `DEL-#${deliveryId}`, netTotal);
 
       } catch (err) {
         console.error("Rider return error:", err);
@@ -17017,6 +17927,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         }).join('');
 
         scheduleIconsRender();
+        if (typeof loadPendingDeliveryBalances === 'function') loadPendingDeliveryBalances();
       } catch (err) {
         console.error("Error loading admin deliveries table:", err);
       }
@@ -17195,7 +18106,118 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       if (modal) modal.classList.add('hidden');
     }
 
+    // =========================================================================
+    // REMOTE LICENSE & KILL-SWITCH CLIENT CONTROLLER
+    // =========================================================================
+    async function checkLicenseStatus(silent = true) {
+      try {
+        const res = await fetch('/api/license/status');
+        if (!res.ok) return;
+        const data = await res.json();
+        const modal = document.getElementById('license-lock-modal');
+        if (!modal) return;
+        
+        if (data.blocked) {
+          document.getElementById('license-lock-msg').innerText = data.message || 'Software License is currently inactive or suspended.';
+          document.getElementById('license-lock-contact').innerText = data.developer_contact || '0316-6868169';
+          modal.classList.remove('hidden');
+          document.body.style.overflow = 'hidden';
+        } else {
+          modal.classList.add('hidden');
+          document.body.style.overflow = '';
+        }
+      } catch (e) {
+        // Offline / network failure: silent pass, fail-open
+      }
+    }
+
+    async function manualLicenseRefresh() {
+      const btn = document.getElementById('license-refresh-btn');
+      if (btn) {
+        btn.innerText = 'Verifying License...';
+        btn.disabled = true;
+      }
+      try {
+        const res = await fetch('/api/license/sync', { method: 'POST' });
+        const data = await res.json();
+        if (data.state && data.state.blocked) {
+          alert('License status is still BLOCKED in the cloud system.\nPlease contact developer to reactivate.');
+        } else {
+          alert('License verified successfully! System is active.');
+        }
+        await checkLicenseStatus();
+      } catch (e) {
+        alert('Unable to reach server. Please check internet connection.');
+      } finally {
+        if (btn) {
+          btn.innerText = 'Verify & Unlock System';
+          btn.disabled = false;
+        }
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkLicenseStatus();
+      setInterval(checkLicenseStatus, 30000); // Check every 30s
+    });
+
   </script>
+
+  <!-- ===================================================================== -->
+  <!-- REMOTE LICENSE LOCK OVERLAY MODAL (FAIL-OPEN / KILL-SWITCH) -->
+  <!-- ===================================================================== -->
+  <div id="license-lock-modal" class="fixed inset-0 z-[999999] bg-slate-950/95 backdrop-blur-2xl flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-rose-500/40 rounded-3xl p-8 max-w-lg w-full text-center shadow-2xl relative overflow-hidden">
+      <!-- Top Glowing accent -->
+      <div class="absolute -top-24 -left-24 w-48 h-48 bg-rose-500/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="w-20 h-20 bg-rose-500/10 border-2 border-rose-500/30 text-rose-400 rounded-3xl mx-auto flex items-center justify-center mb-6 shadow-inner">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+      </div>
+
+      <span class="inline-block px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 mb-3">
+        License Notice
+      </span>
+
+      <h2 class="text-2xl font-black text-white mb-2 tracking-tight">
+        Software System Suspended
+      </h2>
+
+      <p id="license-lock-msg" class="text-slate-300 text-sm mb-6 leading-relaxed bg-slate-950/60 p-4 rounded-2xl border border-slate-800 font-medium">
+        Software License Suspended. Please contact developer for renewal.
+      </p>
+
+      <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 mb-6 text-left flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Developer Contact</div>
+          <div id="license-lock-contact" class="text-sm font-bold text-white font-mono tracking-wider">
+            0316-6868169
+          </div>
+        </div>
+      </div>
+
+      <button id="license-refresh-btn" onclick="manualLicenseRefresh()" class="w-full py-3 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-2xl shadow-lg shadow-emerald-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center space-x-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+        </svg>
+        <span>Verify &amp; Unlock System</span>
+      </button>
+
+      <p class="text-xs text-slate-500 mt-4">
+        Once payment or license is updated by developer, click above or connect internet to resume automatically.
+      </p>
+    </div>
+  </div>
+
 </body>
 
 </html>

@@ -64,11 +64,18 @@ def test_leave_request_workflow():
     res = client.post(f"/api/admin/leave-requests/{req_id}/review", json={"action": "APPROVE", "admin_notes": "Granted"})
     assert res.status_code == 200
 
-    # 5. Check staff leave status updated
-    res = client.get(f"/api/staff/leave-requests?pin={pin}")
+    # 5. Check staff leave status updated with staff_id and quota verification
+    res = client.get(f"/api/staff/leave-requests?pin={pin}&staff_id={staff['id']}")
     assert res.status_code == 200
-    requests = res.json()["leave_requests"]
+    data = res.json()
+    assert data["staff"]["name"] == staff["name"]
+    assert "remaining_quota" in data["staff"]
+    requests = data["leave_requests"]
     assert any(r["id"] == req_id and r["status"] == "APPROVED" for r in requests)
+
+    # 6. Check mismatch between staff_id and wrong PIN returns 400
+    res_bad = client.get(f"/api/staff/leave-requests?pin=9999&staff_id={staff['id']}")
+    assert res_bad.status_code == 400
 
 def test_khata_reports_all_time():
     res1 = client.get("/api/customer-khata/reports/general-all-time")

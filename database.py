@@ -6,11 +6,18 @@ advance salary records, and month-end payroll sheets.
 
 import sqlite3
 import os
+import sys
 import uuid
 import re
 from datetime import datetime, date, timedelta
+from typing import Optional, List, Dict, Any
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "mumtaz_attendance.db")
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(__file__)
+
+DB_PATH = os.path.join(BASE_DIR, "mumtaz_attendance.db")
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH, timeout=30.0)
@@ -479,48 +486,16 @@ def init_db():
         ('Evening / Night Shift', '17:00', '01:00', 15, 240)
         """)
 
-    # Populate Sample Staff for Mumtaz Pharmacy if empty
-    cursor.execute("SELECT COUNT(*) FROM staff")
-    if cursor.fetchone()[0] == 0:
-        cursor.execute("""
-        INSERT INTO staff (name, phone, cnic, address, role, designation, monthly_salary, joining_date, shift_id, fingerprint_id) VALUES
-        ('Ali Raza', '0300-1234567', '35202-1234567-1', 'House 14, St 3, Model Town, Lahore', 'Senior Pharmacist', 'Senior Pharmacist', 45000, '2025-01-15', 1, 'FP_ALI_001'),
-        ('Bilal Ahmed', '0321-7654321', '35202-7654321-3', 'Plot 88, Block B, Faisal Town, Lahore', 'Counter Sales & Billing', 'Counter Sales & Billing', 32000, '2025-06-01', 1, 'FP_BILAL_002'),
-        ('Usman Tariq', '0333-9876543', '35202-9876543-5', 'Main Bazar, Kot Lakhpat, Lahore', 'Store Runner & Dispenser', 'Store Runner & Dispenser', 25000, '2025-11-20', 2, 'FP_USMAN_003')
-        """)
-    else:
-        # Ensure existing staff rows have populated designation and address if blank
-        cursor.execute("""
-            UPDATE staff SET designation = role WHERE designation IS NULL OR designation = ''
-        """)
-        cursor.execute("""
-            UPDATE staff SET joining_date = '2025-01-01' WHERE joining_date IS NULL OR joining_date = ''
-        """)
-        cursor.execute("""
-            UPDATE staff SET address = 'Lahore, Pakistan' WHERE address IS NULL OR address = ''
-        """)
-
-    # Populate Sample Regular Customers and Khata Ledger if empty
-    cursor.execute("SELECT COUNT(*) FROM customers")
-    if cursor.fetchone()[0] == 0:
-        cursor.execute("""
-        INSERT INTO customers (id, name, phone, address, credit_limit) VALUES
-        (1, 'Haji Abdul Rehman', '0300-1234567', 'House 22, Model Town, Lahore', 25000.0),
-        (2, 'Chaudhry Akram', '0321-7654321', 'Al-Madina Chowk, Faisal Town, Lahore', 20000.0),
-        (3, 'Malik Tariq', '0333-9876543', 'Plot 15, Kot Lakhpat, Lahore', 15000.0),
-        (4, 'Mian Shahid', '0345-1122334', 'Main Market, Peco Road, Lahore', 10000.0)
-        """)
-
-        cursor.execute("""
-        INSERT INTO customer_khata (customer_id, invoice_no, date, item_description, amount, is_settled, settled_at, payment_method, notes) VALUES
-        (1, 'INV-1001', '2026-09-02', 'Augmentin 625mg (2 packs), Panadol Extend', 2450.0, 1, '2026-09-05', 'Cash', 'Counter cash settlement'),
-        (1, 'INV-1045', '2026-09-08', 'Getryl 2mg (3 boxes), Lipiget 20mg', 3800.0, 0, '', '', 'Monthly chronic prescription'),
-        (2, 'INV-1032', '2026-09-06', 'Insulin Mixtard 30, Syringes 100u, Glucometer Strips', 5200.0, 0, '', '', 'Diabetic supplies for father'),
-        (2, 'INV-1067', '2026-09-10', 'Nexum 40mg, Concor 5mg', 2850.0, 0, '', '', 'Regular cardiac & stomach dose'),
-        (3, 'INV-1054', '2026-09-09', 'Surbex Z (2 bottles), CaC 1000 Plus (2 tubes)', 1650.0, 0, '', '', 'Vitamins & immunity boost'),
-        (4, 'INV-1018', '2026-09-04', 'Brufen 400mg, Flagyl 400mg, ORS 10 sachets', 1100.0, 1, '2026-09-07', 'EasyPaisa', 'Paid via EasyPaisa TID: 871923'),
-        (4, 'INV-1078', '2026-09-11', 'Panadol CF, Arinac Forte, Lofnac Gel', 1450.0, 0, '', '', 'Flu & muscle ache medicine')
-        """)
+    # Ensure existing staff rows have populated designation and address if blank
+    cursor.execute("""
+        UPDATE staff SET designation = role WHERE designation IS NULL OR designation = ''
+    """)
+    cursor.execute("""
+        UPDATE staff SET joining_date = '2025-01-01' WHERE joining_date IS NULL OR joining_date = ''
+    """)
+    cursor.execute("""
+        UPDATE staff SET address = 'Lahore, Pakistan' WHERE address IS NULL OR address = ''
+    """)
 
     conn.commit()
     conn.close()
@@ -1175,31 +1150,33 @@ def create_delivery(
     """Inserts a new delivery order. Dispatched with initial_status (default OUT_FOR_DELIVERY) and approval_status PENDING."""
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO deliveries (
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO deliveries (
+                staff_id, delivery_person_name, delivery_person_phone, is_guest_delivery,
+                customer_name, customer_phone, customer_address, invoice_no, bill_amount,
+                delivery_charges, payment_method, notes, status, approval_status, dispatch_pin_verified,
+                admin_wa_sent, customer_wa_sent, return_pin_verified, return_wa_sent,
+                dispatched_at, delivered_at
+            ) VALUES (
+                ?, ?, ?, ?,
+                ?, ?, ?, ?, ?,
+                ?, ?, ?, ?, 'PENDING', ?,
+                ?, ?, 0, 0,
+                ?, ''
+            )
+        """, (
             staff_id, delivery_person_name, delivery_person_phone, is_guest_delivery,
-            customer_name, customer_phone, customer_address, invoice_no, bill_amount,
-            delivery_charges, payment_method, notes, status, approval_status, dispatch_pin_verified,
-            admin_wa_sent, customer_wa_sent, return_pin_verified, return_wa_sent,
-            dispatched_at, delivered_at
-        ) VALUES (
-            ?, ?, ?, ?,
-            ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, 'PENDING', ?,
-            ?, ?, 0, 0,
-            ?, ''
-        )
-    """, (
-        staff_id, delivery_person_name, delivery_person_phone, is_guest_delivery,
-        customer_name, customer_phone, customer_address, invoice_no, float(bill_amount or 0.0),
-        float(delivery_charges or 0.0), payment_method, notes, initial_status, dispatch_pin_verified,
-        admin_wa_sent, customer_wa_sent,
-        now_str
-    ))
-    new_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
+            customer_name, customer_phone, customer_address, invoice_no, float(bill_amount or 0.0),
+            float(delivery_charges or 0.0), payment_method, notes, initial_status, dispatch_pin_verified,
+            admin_wa_sent, customer_wa_sent,
+            now_str
+        ))
+        new_id = cursor.lastrowid
+        conn.commit()
+    finally:
+        conn.close()
 
     log_activity(
         category="DELIVERY",
@@ -1391,12 +1368,18 @@ def get_deliveries_list(
     params = []
 
     if status and status.upper() != "ALL":
-        query += " AND d.status = ?"
-        params.append(status.upper())
+        if status.upper() == "RETURNED":
+            query += " AND (d.status = 'RETURNED' OR d.delivery_result = 'RETURNED')"
+        else:
+            query += " AND d.status = ?"
+            params.append(status.upper())
 
     if approval_status and approval_status.upper() != "ALL":
-        query += " AND d.approval_status = ?"
-        params.append(approval_status.upper())
+        if approval_status.upper() == "RETURNED":
+            query += " AND (d.status = 'RETURNED' OR d.delivery_result = 'RETURNED')"
+        else:
+            query += " AND d.approval_status = ?"
+            params.append(approval_status.upper())
 
     if date_str:
         query += " AND (date(d.created_at) = ? OR d.created_at LIKE ?)"
@@ -1525,22 +1508,142 @@ def create_leave_request(staff_id: int, staff_name: str, leave_date: str, leave_
     conn.close()
     return dict(row) if row else {}
 
-def get_leave_requests_by_staff_pin(pin: str) -> list:
+def get_leave_requests_by_staff_pin(pin: str, staff_id: Optional[int] = None) -> dict:
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT id, name FROM staff WHERE pin = ? AND is_active = 1", (str(pin).strip(),))
-    staff = cursor.fetchone()
-    if not staff:
-        conn.close()
-        return []
+    
+    if staff_id:
+        cursor.execute("""
+            SELECT id, name, coalesce(nullif(designation, ''), role) as designation, pin, allowed_leaves
+            FROM staff 
+            WHERE id = ? AND is_active = 1
+        """, (staff_id,))
+        staff = cursor.fetchone()
+        if not staff:
+            conn.close()
+            return {"error": "STAFF_NOT_FOUND", "detail": "Selected staff member nahi mila.", "leave_requests": []}
+        if staff["pin"] != str(pin).strip():
+            conn.close()
+            return {"error": "INVALID_PIN", "detail": "Ghalat 4-digit Secret PIN! Entered PIN is staff member ka nahi hai.", "leave_requests": []}
+    else:
+        cursor.execute("""
+            SELECT id, name, coalesce(nullif(designation, ''), role) as designation, pin, allowed_leaves
+            FROM staff 
+            WHERE pin = ? AND is_active = 1
+        """, (str(pin).strip(),))
+        staff = cursor.fetchone()
+        if not staff:
+            conn.close()
+            return {"error": "INVALID_PIN", "detail": "Ghalat 4-digit Secret PIN! Koi staff record nahi mila.", "leave_requests": []}
+            
+    # Calculate this month's leave quota consumption
+    today = date.today()
+    month_str = today.strftime("%Y-%m")
     cursor.execute("""
-        SELECT * FROM leave_requests 
-        WHERE staff_id = ? 
-        ORDER BY created_at DESC
+        SELECT COALESCE(SUM(CASE WHEN leave_type = 'HALF_DAY' THEN 0.5 ELSE 1.0 END), 0.0)
+        FROM leaves
+        WHERE staff_id = ? AND strftime('%Y-%m', date) = ?
+    """, (staff["id"], month_str))
+    taken_this_month = float(cursor.fetchone()[0] or 0.0)
+    allowed_quota = float(staff["allowed_leaves"] if staff["allowed_leaves"] is not None else 2.0)
+    remaining_quota = max(0.0, allowed_quota - taken_this_month)
+    
+    cursor.execute("""
+        SELECT lr.*, s.name as staff_name, coalesce(nullif(s.designation, ''), s.role) as designation
+        FROM leave_requests lr
+        JOIN staff s ON lr.staff_id = s.id
+        WHERE lr.staff_id = ? 
+        ORDER BY lr.created_at DESC
     """, (staff["id"],))
     rows = cursor.fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    
+    return {
+        "success": True,
+        "staff": {
+            "id": staff["id"],
+            "name": staff["name"],
+            "designation": staff["designation"] or "Staff",
+            "allowed_leaves": allowed_quota,
+            "taken_this_month": taken_this_month,
+            "remaining_quota": remaining_quota,
+            "month_name": today.strftime("%B %Y")
+        },
+        "leave_requests": [dict(r) for r in rows]
+    }
+
+def reassign_customer_staff(customer_id: int, new_staff: str, reassign_bills: bool = True) -> dict:
+    """Reassigns responsible staff member for a customer and optionally their active khata invoices."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, name, added_by FROM customers WHERE id = ?", (customer_id,))
+    cust = cursor.fetchone()
+    if not cust:
+        conn.close()
+        raise ValueError("Customer not found")
+        
+    old_staff = cust["added_by"] or "Unassigned"
+    cursor.execute("UPDATE customers SET added_by = ? WHERE id = ?", (new_staff, customer_id))
+    
+    bills_updated = 0
+    if reassign_bills:
+        cursor.execute("""
+            UPDATE customer_khata 
+            SET added_by = ? 
+            WHERE customer_id = ? AND is_settled = 0
+        """, (new_staff, customer_id))
+        bills_updated = cursor.rowcount
+        
+        # Also update any pending approval requests
+        cursor.execute("""
+            UPDATE staff_approval_requests
+            SET added_by = ?
+            WHERE customer_id = ? AND status = 'PENDING'
+        """, (new_staff, customer_id))
+
+    conn.commit()
+    conn.close()
+    return {
+        "success": True,
+        "customer_id": customer_id,
+        "customer_name": cust["name"],
+        "old_staff": old_staff,
+        "new_staff": new_staff,
+        "bills_updated": bills_updated,
+        "message": f"Customer '{cust['name']}' khata responsibility transferred from '{old_staff}' to '{new_staff}' ({bills_updated} pending bills updated)."
+    }
+
+def reassign_khata_bill_staff(entry_id: int, new_staff: str) -> dict:
+    """Reassigns staff member for a single khata bill invoice."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT k.*, c.name as customer_name FROM customer_khata k JOIN customers c ON k.customer_id = c.id WHERE k.id = ?", (entry_id,))
+    entry = cursor.fetchone()
+    if not entry:
+        conn.close()
+        raise ValueError("Khata invoice entry not found")
+        
+    old_staff = entry["added_by"] or "Unassigned"
+    cursor.execute("UPDATE customer_khata SET added_by = ? WHERE id = ?", (new_staff, entry_id))
+    
+    # Also update any pending approval request for this bill
+    cursor.execute("""
+        UPDATE staff_approval_requests
+        SET added_by = ?
+        WHERE request_type = 'CREDIT_PURCHASE' AND reference_id = ? AND status = 'PENDING'
+    """, (new_staff, entry_id))
+
+    conn.commit()
+    conn.close()
+    return {
+        "success": True,
+        "entry_id": entry_id,
+        "invoice_no": entry["invoice_no"],
+        "customer_name": entry["customer_name"],
+        "old_staff": old_staff,
+        "new_staff": new_staff,
+        "message": f"Invoice #{entry['invoice_no']} staff changed from '{old_staff}' to '{new_staff}'."
+    }
 
 def get_pending_leave_requests() -> list:
     conn = get_db_connection()
@@ -1558,47 +1661,48 @@ def get_pending_leave_requests() -> list:
 
 def review_leave_request(request_id: int, action: str, admin_notes: str = "", reviewed_by: str = "Admin") -> dict:
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM leave_requests WHERE id = ?", (request_id,))
-    req = cursor.fetchone()
-    if not req:
-        conn.close()
-        raise ValueError("Leave request not found")
-    
-    req_dict = dict(req)
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    new_status = "APPROVED" if action.upper() == "APPROVE" else "REJECTED"
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM leave_requests WHERE id = ?", (request_id,))
+        req = cursor.fetchone()
+        if not req:
+            raise ValueError("Leave request not found")
+        
+        req_dict = dict(req)
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        new_status = "APPROVED" if action.upper() == "APPROVE" else "REJECTED"
 
-    cursor.execute("""
-        UPDATE leave_requests
-        SET status = ?, admin_notes = ?, reviewed_by = ?, reviewed_at = ?
-        WHERE id = ?
-    """, (new_status, admin_notes, reviewed_by, now_str, request_id))
+        cursor.execute("""
+            UPDATE leave_requests
+            SET status = ?, admin_notes = ?, reviewed_by = ?, reviewed_at = ?
+            WHERE id = ?
+        """, (new_status, admin_notes, reviewed_by, now_str, request_id))
 
-    if new_status == "APPROVED":
-        cursor.execute("""
-            INSERT INTO leaves (staff_id, date, reason)
-            VALUES (?, ?, ?)
-        """, (req_dict["staff_id"], req_dict["leave_date"], f"[Online Request] {req_dict['reason']}"))
-        cursor.execute("""
-            SELECT id FROM attendance_logs WHERE staff_id = ? AND date = ?
-        """, (req_dict["staff_id"], req_dict["leave_date"]))
-        att_row = cursor.fetchone()
-        if att_row:
+        if new_status == "APPROVED":
             cursor.execute("""
-                UPDATE attendance_logs SET status = 'LEAVE' WHERE id = ?
-            """, (att_row["id"],))
-        else:
+                INSERT OR REPLACE INTO leaves (staff_id, date, reason)
+                VALUES (?, ?, ?)
+            """, (req_dict["staff_id"], req_dict["leave_date"], f"[Online Request] {req_dict['reason']}"))
             cursor.execute("""
-                INSERT INTO attendance_logs (staff_id, date, status)
-                VALUES (?, ?, 'LEAVE')
+                SELECT id FROM attendance_logs WHERE staff_id = ? AND date = ?
             """, (req_dict["staff_id"], req_dict["leave_date"]))
+            att_row = cursor.fetchone()
+            if att_row:
+                cursor.execute("""
+                    UPDATE attendance_logs SET status = 'LEAVE' WHERE id = ?
+                """, (att_row["id"],))
+            else:
+                cursor.execute("""
+                    INSERT INTO attendance_logs (staff_id, date, status)
+                    VALUES (?, ?, 'LEAVE')
+                """, (req_dict["staff_id"], req_dict["leave_date"]))
 
-    conn.commit()
-    cursor.execute("SELECT * FROM leave_requests WHERE id = ?", (request_id,))
-    updated = cursor.fetchone()
-    conn.close()
-    return dict(updated) if updated else {}
+        conn.commit()
+        cursor.execute("SELECT * FROM leave_requests WHERE id = ?", (request_id,))
+        updated = cursor.fetchone()
+        return dict(updated) if updated else {}
+    finally:
+        conn.close()
 
 if __name__ == "__main__":
     init_db()
