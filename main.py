@@ -479,6 +479,23 @@ def get_live_otps():
     """Returns active pending OTP requests for live Admin monitoring."""
     return get_active_otps()
 
+@app.delete("/api/attendance/active-otps/{otp_id}")
+@app.post("/api/attendance/active-otps/{otp_id}/delete")
+def delete_active_otp_endpoint(otp_id: int):
+    """Admin removes an active/pending OTP verification code."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM otp_verifications WHERE id = ?", (otp_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Verification code not found.")
+    cursor.execute("DELETE FROM otp_verifications WHERE id = ?", (otp_id,))
+    conn.commit()
+    conn.close()
+    return {"success": True, "message": "Verification code deleted successfully."}
+
+
 @app.get("/api/attendance/audit-log")
 def get_audit_log(date: Optional[str] = Query(None, description="Date in YYYY-MM-DD format")):
     """
@@ -972,6 +989,22 @@ def review_leave_request_endpoint(request_id: int, req: LeaveReviewRequest):
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/admin/leave-requests/{request_id}")
+@app.post("/api/admin/leave-requests/{request_id}/delete")
+def delete_leave_request_endpoint(request_id: int):
+    """Admin permanently deletes a leave request application."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM leave_requests WHERE id = ?", (request_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Leave request not found.")
+    cursor.execute("DELETE FROM leave_requests WHERE id = ?", (request_id,))
+    conn.commit()
+    conn.close()
+    return {"success": True, "message": "Leave request deleted successfully."}
 
 @app.get("/api/attendance/today")
 def get_today_attendance(target_date: Optional[str] = Query(None, alias="date")):
@@ -1571,6 +1604,32 @@ def clear_settled_advances():
     conn.close()
     return {"success": True, "deleted_count": count, "message": f"{count} settled staff khata records kamyabi se delete ho gaye."}
 
+@app.delete("/api/advances/{advance_id}")
+@app.post("/api/advances/{advance_id}/delete")
+def delete_advance_salary(advance_id: int):
+    """Admin permanently deletes an individual staff advance entry."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT a.*, s.name as staff_name FROM advance_salaries a JOIN staff s ON a.staff_id = s.id WHERE a.id = ?", (advance_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Advance record not found")
+    adv = dict(row)
+
+    cursor.execute("DELETE FROM advance_salaries WHERE id = ?", (advance_id,))
+    conn.commit()
+    conn.close()
+
+    log_activity(
+        category="STAFF_KHATA",
+        action_type="ADVANCE_DELETED",
+        title=f"Staff Advance Deleted: {adv['staff_name']}",
+        description=f"Admin deleted advance entry of Rs. {adv['amount']:,.2f} for {adv['staff_name']}",
+        staff_name="Admin"
+    )
+
+    return {"success": True, "advance_id": advance_id, "message": f"Advance of Rs. {adv['amount']:,.2f} deleted."}
 
 @app.post("/api/leaves")
 def approve_leave(data: LeaveCreate):
@@ -1993,6 +2052,35 @@ def update_customer(customer_id: int, data: CustomerUpdate):
     conn.close()
     return {"success": True, "message": f"Customer '{new_name}' updated successfully."}
 
+@app.delete("/api/customers/{customer_id}")
+@app.post("/api/customers/{customer_id}/delete")
+def delete_customer_endpoint(customer_id: int):
+    """Admin permanently deletes a customer and their ledger history."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM customers WHERE id = ?", (customer_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Customer not found")
+    cust = dict(row)
+
+    cursor.execute("DELETE FROM customer_khata WHERE customer_id = ?", (customer_id,))
+    cursor.execute("DELETE FROM staff_approval_requests WHERE customer_id = ?", (customer_id,))
+    cursor.execute("DELETE FROM customers WHERE id = ?", (customer_id,))
+    conn.commit()
+    conn.close()
+
+    log_activity(
+        category="CUSTOMER_KHATA",
+        action_type="CUSTOMER_DELETED",
+        title=f"Customer Deleted: {cust['name']}",
+        description=f"Admin deleted customer '{cust['name']}' and all associated ledger records.",
+        staff_name="Admin"
+    )
+
+    return {"success": True, "customer_id": customer_id, "message": f"Customer '{cust['name']}' and all ledger records deleted."}
+
 @app.put("/api/customers/{customer_id}/reassign-staff")
 def reassign_customer_staff_endpoint(customer_id: int, data: CustomerReassignStaff):
     """Admin transfers customer khata responsibility to another staff member."""
@@ -2207,6 +2295,64 @@ def approve_customer_khata(entry_id: int, data: Optional[Dict[str, Any]] = Body(
         "message": f"Invoice {entry['invoice_no']} approved successfully by Admin."
     }
 
+@app.delete("/api/customer-khata/{entry_id}")
+@app.post("/api/customer-khata/{entry_id}/delete")
+def delete_customer_khata_entry(entry_id: int):
+    """Admin permanently deletes an individual credit invoice/khata entry."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT k.*, c.name as customer_name 
+        FROM customer_khata k 
+        JOIN customers c ON k.customer_id = c.id 
+        WHERE k.id = ?
+    """, (entry_id,))
+    entry_row = cursor.fetchone()
+    if not entry_row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Khata entry not found")
+
+    entry = dict(entry_row)
+    customer_id = entry["customer_id"]
+    customer_name = entry["customer_name"]
+    inv_no = entry.get("invoice_no") or f"#{entry_id}"
+    amount = float(entry.get("amount") or 0.0)
+
+    # 1. Delete from customer_khata table
+    cursor.execute("DELETE FROM customer_khata WHERE id = ?", (entry_id,))
+
+    # 2. Clean up any related staff approval requests
+    cursor.execute("""
+        DELETE FROM staff_approval_requests 
+        WHERE reference_id = ? AND request_type IN ('CREDIT_PURCHASE', 'SETTLEMENT', 'KHATA_SETTLEMENT')
+    """, (entry_id,))
+
+    conn.commit()
+
+    # 3. Recalculate remaining customer balance
+    cursor.execute("SELECT SUM(amount) FROM customer_khata WHERE customer_id = ? AND is_settled = 0", (customer_id,))
+    new_balance = cursor.fetchone()[0] or 0.0
+    conn.close()
+
+    # 4. Log audit activity
+    log_activity(
+        category="CUSTOMER_KHATA",
+        action_type="CUSTOMER_KHATA_DELETED",
+        title=f"Khata Entry Deleted: #{inv_no}",
+        description=f"Admin deleted khata bill #{inv_no} (Rs. {amount:,.2f}) for '{customer_name}'.",
+        staff_name="Admin",
+        amount=amount,
+        date_str=date.today().isoformat()
+    )
+
+    return {
+        "success": True,
+        "id": entry_id,
+        "customer_id": customer_id,
+        "new_balance": new_balance,
+        "message": f"Khata bill #{inv_no} (Rs. {amount:,.2f}) successfully deleted."
+    }
+
 # --- Admin Unified Approval Center Endpoints ---
 
 @app.get("/api/admin/pending-requests")
@@ -2377,6 +2523,65 @@ def reject_staff_request(request_id: int):
     conn.close()
 
     return {"success": True, "request_id": request_id, "status": "REJECTED", "message": "Request rejected by Admin."}
+
+@app.delete("/api/admin/pending-requests/{request_id}")
+@app.post("/api/admin/pending-requests/{request_id}/delete")
+def delete_staff_request(request_id: int):
+    """Admin permanently deletes/cancels a staff request from queue."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM staff_approval_requests WHERE id = ?", (request_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Request not found")
+    req = dict(row)
+
+    # If it was a pending credit purchase, also delete the unapproved khata entry
+    if req["request_type"] == "CREDIT_PURCHASE" and req.get("reference_id"):
+        cursor.execute("DELETE FROM customer_khata WHERE id = ? AND approval_status = 'PENDING'", (req["reference_id"],))
+    elif req["request_type"] == "NEW_CUSTOMER" and req.get("reference_id"):
+        cursor.execute("DELETE FROM customers WHERE id = ? AND approval_status = 'PENDING'", (req["reference_id"],))
+
+    cursor.execute("DELETE FROM staff_approval_requests WHERE id = ?", (request_id,))
+    conn.commit()
+    conn.close()
+
+    log_activity(
+        category="CUSTOMER_KHATA",
+        action_type="STAFF_REQUEST_DELETED",
+        title=f"Staff Request Deleted: {req.get('customer_name') or 'Request #' + str(request_id)}",
+        description=f"Admin deleted pending {req.get('request_type')} request (Rs. {float(req.get('amount') or 0):,.2f})",
+        staff_name="Admin"
+    )
+
+    return {"success": True, "request_id": request_id, "message": "Request permanently deleted."}
+
+class BatchDeleteStaffRequests(BaseModel):
+    request_ids: Optional[List[int]] = None
+    delete_all: bool = False
+
+@app.post("/api/admin/pending-requests/delete-all")
+def batch_delete_staff_requests(data: BatchDeleteStaffRequests):
+    """Deletes multiple or all pending staff requests."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    if data.delete_all or not data.request_ids:
+        cursor.execute("SELECT id FROM staff_approval_requests WHERE status = 'PENDING'")
+        ids = [r[0] for r in cursor.fetchall()]
+    else:
+        ids = data.request_ids
+    conn.close()
+
+    deleted_count = 0
+    for req_id in ids:
+        try:
+            res = delete_staff_request(req_id)
+            if res.get("success"):
+                deleted_count += 1
+        except Exception:
+            pass
+    return {"success": True, "deleted_count": deleted_count, "message": f"{deleted_count} requests deleted."}
 
 @app.post("/api/admin/pending-requests/approve-all")
 def batch_approve_staff_requests(data: BatchApproveRequest):
@@ -3539,6 +3744,33 @@ def admin_reconcile_delivery_endpoint(delivery_id: int, data: DeliveryReconcileR
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.delete("/api/deliveries/{delivery_id}")
+@app.post("/api/deliveries/{delivery_id}/delete")
+def delete_delivery_endpoint(delivery_id: int):
+    """Admin permanently deletes a home delivery entry."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM deliveries WHERE id = ?", (delivery_id,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Delivery record not found")
+    deliv = dict(row)
+
+    cursor.execute("DELETE FROM deliveries WHERE id = ?", (delivery_id,))
+    conn.commit()
+    conn.close()
+
+    log_activity(
+        category="DELIVERY",
+        action_type="DELIVERY_DELETED",
+        title=f"Delivery Deleted: #{deliv.get('invoice_no')}",
+        description=f"Admin deleted delivery for '{deliv.get('customer_name')}' (Bill #{deliv.get('invoice_no')}, Rs. {float(deliv.get('bill_amount') or 0):,.2f})",
+        staff_name="Admin"
+    )
+
+    return {"success": True, "delivery_id": delivery_id, "message": f"Delivery #{deliv.get('invoice_no')} successfully deleted."}
 
 @app.put("/api/staff/{staff_id}/convert-rider")
 def convert_rider_endpoint(staff_id: int, data: StaffConvertRiderRequest):

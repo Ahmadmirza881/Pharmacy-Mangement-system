@@ -467,6 +467,78 @@ class TestCustomerKhataModule(unittest.TestCase):
         ledger_after = client.get(f'/api/customers/{cust_id}/ledger').json()
         self.assertEqual(ledger_after['ledger'][0]['added_by'], 'Ahmed Khan')
 
+    def test_delete_customer_khata_entry(self):
+        """Admin can permanently delete an individual customer khata entry and auto-recalculate balance."""
+        # 1. Create a customer
+        c_res = client.post('/api/customers', json={
+            'name': 'Testing Delete Bill Customer',
+            'phone': '03009999999',
+            'credit_limit': 10000.0,
+            'is_staff': False
+        })
+        cust_id = c_res.json()['id']
+
+        # 2. Add two bills (Rs. 1500 and Rs. 500)
+        b1 = client.post('/api/customer-khata', json={
+            'customer_id': cust_id,
+            'amount': 1500.0,
+            'item_description': 'Panadol, Disprin',
+            'is_staff': False
+        }).json()
+        b2 = client.post('/api/customer-khata', json={
+            'customer_id': cust_id,
+            'amount': 500.0,
+            'item_description': 'Accidental bill entered by staff',
+            'is_staff': False
+        }).json()
+
+        # Check balance is 2000
+        l1 = client.get(f'/api/customers/{cust_id}/ledger').json()
+        self.assertEqual(l1['summary']['current_balance'], 2000.0)
+        self.assertEqual(l1['summary']['total_entries'], 2)
+
+        # 3. Delete the accidental bill (b2)
+        del_res = client.delete(f'/api/customer-khata/{b2["id"]}')
+        self.assertEqual(del_res.status_code, 200)
+        del_data = del_res.json()
+        self.assertTrue(del_data['success'])
+        self.assertEqual(del_data['new_balance'], 1500.0)
+
+        # 4. Verify ledger now only has 1 bill and balance is 1500
+        l2 = client.get(f'/api/customers/{cust_id}/ledger').json()
+        self.assertEqual(l2['summary']['current_balance'], 1500.0)
+        self.assertEqual(l2['summary']['total_entries'], 1)
+        self.assertEqual(l2['ledger'][0]['id'], b1['id'])
+
+    def test_delete_customer_account(self):
+        """Admin can permanently delete a customer profile and all their ledger history."""
+        # 1. Create customer
+        c_res = client.post('/api/customers', json={
+            'name': 'Customer To Be Deleted Test',
+            'phone': '03008888888',
+            'credit_limit': 12000.0,
+            'is_staff': False
+        })
+        cust_id = c_res.json()['id']
+
+        # 2. Add a khata bill
+        client.post('/api/customer-khata', json={
+            'customer_id': cust_id,
+            'amount': 2500.0,
+            'item_description': 'Test bill before deletion',
+            'is_staff': False
+        })
+
+        # 3. Delete customer
+        del_res = client.delete(f'/api/customers/{cust_id}')
+        self.assertEqual(del_res.status_code, 200)
+        del_data = del_res.json()
+        self.assertTrue(del_data['success'])
+
+        # 4. Verify 404 on fetching ledger
+        l_res = client.get(f'/api/customers/{cust_id}/ledger')
+        self.assertEqual(l_res.status_code, 404)
+
     @classmethod
     def tearDownClass(cls):
         conn = database.get_db_connection()

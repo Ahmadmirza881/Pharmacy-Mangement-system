@@ -2259,12 +2259,6 @@
                           class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
                       </div>
                     </div>
-
-                    <!-- Live Math Summary -->
-                    <div class="col-span-full p-2.5 bg-emerald-50/80 border border-emerald-200 rounded-xl flex items-center justify-between text-xs font-bold text-emerald-900">
-                      <span class="flex items-center gap-1.5"><i data-lucide="calculator" class="w-4 h-4 text-emerald-600"></i> Net Total Payable:</span>
-                      <span id="deliv-net-total-display" class="text-xs sm:text-sm font-black text-emerald-800 font-mono">Rs. 0</span>
-                    </div>
                   </div>
 
                   <!-- Delivery Address -->
@@ -5139,7 +5133,7 @@
   <!-- ================================================================= -->
   <!-- MODAL: ADD / EDIT CUSTOMER -->
   <!-- ================================================================= -->
-  <div id="customer-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
+  <div id="customer-modal" class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200">
       <button onclick="closeCustomerModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
         <i data-lucide="x" class="w-6 h-6"></i>
@@ -5197,6 +5191,10 @@
           <button type="submit"
             class="flex-1 bg-[#156D38] hover:bg-[#0E4D27] active:scale-95 text-white font-bold py-2.5 rounded-lg text-xs flex items-center justify-center gap-2 shadow cursor-pointer">
             <i data-lucide="check" class="w-4 h-4"></i> Save Customer
+          </button>
+          <button type="button" id="btn-delete-customer-modal" onclick="deleteCustomerFromModal()"
+            class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold py-2.5 px-3 rounded-lg text-xs flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer hidden transition">
+            <i data-lucide="trash-2" class="w-4 h-4"></i> Delete
           </button>
           <button type="button" onclick="closeCustomerModal()"
             class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-lg text-xs cursor-pointer">
@@ -5367,6 +5365,11 @@
               title="Edit Customer Details (Naam, Phone, Address, Limit)"
               class="text-xs px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-bold border border-blue-200 flex items-center gap-1 cursor-pointer transition">
               <i data-lucide="pencil" class="w-3 h-3"></i> Edit Details
+            </button>
+            <button onclick="deleteCustomer(currentOpenLedgerCustomerId, document.getElementById('ledger-modal-name')?.innerText)"
+              title="Delete Customer & All Ledger Records"
+              class="text-xs px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 font-bold border border-rose-200 flex items-center gap-1 cursor-pointer transition">
+              <i data-lucide="trash-2" class="w-3 h-3"></i> Delete Customer
             </button>
           </div>
           <div class="flex items-center gap-2.5 mt-1">
@@ -7503,11 +7506,15 @@
               <div class="flex items-center justify-end gap-2 pt-1">
                 <button onclick="reviewStaffLeave(${r.id}, 'REJECT')" class="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold text-xs rounded-xl cursor-pointer">Decline (Red)</button>
                 <button onclick="reviewStaffLeave(${r.id}, 'APPROVE')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-2xs cursor-pointer">Approve (Green)</button>
+                <button onclick="deleteStaffLeaveRequest(${r.id})" title="Delete Leave Request" class="p-1.5 bg-white hover:bg-rose-600 hover:text-white text-rose-600 rounded-xl border border-rose-200 transition-colors shadow-2xs cursor-pointer flex items-center justify-center">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
               </div>
             </div>
           `;
         });
         container.innerHTML = html;
+        if (window.lucide) lucide.createIcons();
       } catch(e) {
         container.innerHTML = '<p class="text-xs text-rose-500">Failed to load pending leave requests.</p>';
       }
@@ -7535,6 +7542,28 @@
         if (typeof loadLeaves === 'function') loadLeaves();
       } catch(e) {
         console.error("Review leave error", e);
+      }
+    }
+
+    async function deleteStaffLeaveRequest(reqId) {
+      if (!reqId) return;
+      if (!confirm("Kya aap waqai is leave request ko delete karna chahte hain?")) return;
+      try {
+        let res = await fetch(`/api/admin/leave-requests/${reqId}`, { method: 'DELETE' });
+        if (res.status === 405 || !res.ok) {
+          res = await fetch(`/api/admin/leave-requests/${reqId}/delete`, { method: 'POST' });
+        }
+        if (res.ok) {
+          openAdminPendingLeavesModal();
+          checkAdminPendingLeavesBadge();
+          if (typeof loadLeaves === 'function') loadLeaves();
+        } else {
+          const err = await res.json();
+          alert(err.detail || "Leave request delete karne mein masla aya.");
+        }
+      } catch(err) {
+        console.error("Delete leave error", err);
+        alert("Leave request delete karne mein masla aya: " + err.message);
       }
     }
 
@@ -10162,14 +10191,39 @@
                 Code: <strong class="text-indigo-900 text-xs bg-indigo-50 px-1.5 py-0.5 rounded">${o.otp_code}</strong> • Expires: ${o.expires_at}
               </div>
             </div>
-            <button onclick="adminOneClickApprove(${o.staff_id}, '${o.otp_code}')" class="px-3 py-1.5 bg-[#156D38] hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-xs transition cursor-pointer">
-              Approve Now
-            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="adminOneClickApprove(${o.staff_id}, '${o.otp_code}')" class="px-3 py-1.5 bg-[#156D38] hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow-xs transition cursor-pointer">
+                Approve Now
+              </button>
+              <button onclick="deleteActiveOtp(${o.id})" title="Delete verification code" class="p-1.5 bg-white hover:bg-rose-600 hover:text-white text-rose-600 rounded-lg border border-rose-200 transition-colors shadow-2xs cursor-pointer flex items-center justify-center">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
           </div>
         `).join('');
         scheduleIconsRender();
       } catch (err) {
         console.error("Failed to load active OTPs", err);
+      }
+    }
+
+    async function deleteActiveOtp(otpId) {
+      if (!otpId) return;
+      if (!confirm("Kya aap waqai is verification code ko delete karna chahte hain?")) return;
+      try {
+        let res = await fetch(`/api/attendance/active-otps/${otpId}`, { method: 'DELETE' });
+        if (res.status === 405 || !res.ok) {
+          res = await fetch(`/api/attendance/active-otps/${otpId}/delete`, { method: 'POST' });
+        }
+        if (res.ok) {
+          loadActiveOtps();
+        } else {
+          const err = await res.json();
+          alert(err.detail || "Code delete karne mein masla aya.");
+        }
+      } catch(err) {
+        console.error("Delete active OTP error", err);
+        alert("Delete karne mein masla aya: " + err.message);
       }
     }
 
@@ -11824,9 +11878,14 @@
               </div>
             `;
             actionCell = `
-              <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-400" title="Cleared">
-                <i data-lucide="check" class="w-3.5 h-3.5 text-slate-400"></i>
-              </span>
+              <div class="inline-flex items-center gap-1.5 justify-center">
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-100 text-slate-400" title="Cleared">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-slate-400"></i>
+                </span>
+                <button onclick="deleteAdvanceEntry(${a.id})" class="p-1.5 bg-white hover:bg-rose-600 hover:text-white text-rose-600 rounded-lg border border-rose-200 transition-colors shadow-2xs cursor-pointer flex items-center justify-center" title="Delete record">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
             `;
           } else {
             statusCell = `
@@ -11838,11 +11897,16 @@
               </div>
             `;
             actionCell = `
-              <button onclick="openSettleAdvanceModal(${a.id})"
-                      class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg shadow-xs transition flex items-center gap-1 mx-auto cursor-pointer"
-                      title="Clear Advance / Record Payment">
-                <i data-lucide="check" class="w-3.5 h-3.5"></i> Clear
-              </button>
+              <div class="inline-flex items-center gap-1.5 justify-center">
+                <button onclick="openSettleAdvanceModal(${a.id})"
+                        class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold text-xs px-2.5 py-1.5 rounded-lg shadow-xs transition flex items-center gap-1 cursor-pointer"
+                        title="Clear Advance / Record Payment">
+                  <i data-lucide="check" class="w-3.5 h-3.5"></i> Clear
+                </button>
+                <button onclick="deleteAdvanceEntry(${a.id})" class="p-1.5 bg-white hover:bg-rose-600 hover:text-white text-rose-600 rounded-lg border border-rose-200 transition-colors shadow-2xs cursor-pointer flex items-center justify-center" title="Delete record">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
             `;
           }
 
@@ -11901,6 +11965,26 @@
       }
 
       lucide.createIcons();
+    }
+
+    async function deleteAdvanceEntry(advanceId) {
+      if (!advanceId) return;
+      if (!confirm("Kya aap waqai is staff khata / advance record ko delete karna chahte hain?")) return;
+      try {
+        let res = await fetch(`/api/advances/${advanceId}`, { method: 'DELETE' });
+        if (res.status === 405 || !res.ok) {
+          res = await fetch(`/api/advances/${advanceId}/delete`, { method: 'POST' });
+        }
+        if (res.ok) {
+          if (typeof loadAdvances === 'function') loadAdvances();
+        } else {
+          const err = await res.json();
+          alert(err.detail || "Staff advance delete karne mein masla aya.");
+        }
+      } catch (err) {
+        console.error("Delete advance error", err);
+        alert("Staff advance delete karne mein masla aya: " + err.message);
+      }
     }
 
     let currentSettleAdvanceTotal = 0;
@@ -13164,6 +13248,9 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                 <button onclick="event.stopPropagation(); ${hasBalance ? `quickSettleCustomerMaster(${c.id})` : `openCustomerLedgerModal(${c.id})`}" title="${hasBalance ? 'Receive Payment / Settle Balance' : 'View Credit Ledger'}" class="p-1.5 rounded-lg ${hasBalance ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'} transition-colors cursor-pointer">
                   <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i>
                 </button>
+                <button onclick="event.stopPropagation(); deleteCustomer(${c.id}, '${escapeHtml((c.name || '').replace(/'/g, "\\'"))}')" title="Delete Customer & Ledger History" class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-colors cursor-pointer shadow-2xs">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
               </div>
             </td>
           </tr>
@@ -13272,6 +13359,9 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                 </button>
                 <button onclick="event.stopPropagation(); openCustomerLedgerModal(${c.id})" title="View Complete Credit Ledger" class="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition cursor-pointer">
                   <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+                </button>
+                <button onclick="event.stopPropagation(); deleteCustomer(${c.id}, '${escapeHtml((c.name || '').replace(/'/g, "\\'"))}')" title="Delete Customer & Ledger History" class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition cursor-pointer">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
             </td>
@@ -13474,9 +13564,12 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                   <i data-lucide="check" class="w-3.5 h-3.5"></i>
                   <span>Approve</span>
                 </button>
-                <button onclick="rejectStaffRequest(${r.id})" class="px-2.5 py-1 rounded-lg bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-bold flex items-center gap-1 shadow-2xs transition active:scale-95 cursor-pointer" title="Reject Request">
+                <button onclick="rejectStaffRequest(${r.id})" class="px-2.5 py-1 rounded-lg bg-white hover:bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-bold flex items-center gap-1 shadow-2xs transition active:scale-95 cursor-pointer" title="Reject Request">
                   <i data-lucide="x" class="w-3.5 h-3.5"></i>
                   <span>Reject</span>
+                </button>
+                <button onclick="deleteStaffRequest(${r.id})" class="p-1.5 rounded-lg bg-white hover:bg-rose-600 hover:text-white text-rose-600 border border-rose-200 shadow-2xs transition active:scale-95 cursor-pointer flex items-center justify-center" title="Delete this request permanently">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
             </td>
@@ -13569,6 +13662,42 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       }
     }
 
+    async function deleteStaffRequest(reqId) {
+      if (!confirm("⚠️ KYA AAP YEH PENDING REQUEST DELETE KARNA CHAHTE HAIN?\n\nYeh request approval queue se mukammal taur par remove ho jayegi.")) return;
+      try {
+        let res = await fetch(`/api/admin/pending-requests/${reqId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.status === 405) {
+          res = await fetch(`/api/admin/pending-requests/${reqId}/delete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        if (res.status === 405) {
+          alert("Server restart karna zaroori hai! Black terminal window me Ctrl+C karke START_SYSTEM.bat dobara chalayein.");
+          return;
+        }
+        const data = await res.json();
+        if (data.success) {
+          selectedPendingRequestIds.delete(reqId);
+          await loadPendingStaffRequests();
+          await loadCustomers();
+          await loadCustomerKpis();
+          if (currentOpenLedgerCustomerId) {
+            await openCustomerLedgerModal(currentOpenLedgerCustomerId);
+          }
+          alert(data.message || "Request successfully deleted.");
+        } else {
+          alert(data.detail || data.message || "Delete failed.");
+        }
+      } catch (err) {
+        console.error("Delete request error", err);
+        alert("Server error during deletion.");
+      }
+    }
+
     async function approveSelectedStaffRequests() {
       if (selectedPendingRequestIds.size === 0) return;
       const ids = Array.from(selectedPendingRequestIds);
@@ -13633,6 +13762,12 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
     // Customer Form Modal (Create / Edit)
     function openCustomerModal(customerId = null) {
+      if (typeof currentOpenLedgerCustomerId !== 'undefined' && currentOpenLedgerCustomerId) {
+        returnToLedgerCustomerId = currentOpenLedgerCustomerId;
+        const ledgerModal = document.getElementById('customer-ledger-modal');
+        if (ledgerModal) ledgerModal.classList.add('hidden');
+      }
+
       const modal = document.getElementById('customer-modal');
       const title = document.getElementById('customer-modal-title');
       const formId = document.getElementById('customer-form-id');
@@ -13644,6 +13779,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
       populateKhataStaffDropdowns();
 
+      const delBtn = document.getElementById('btn-delete-customer-modal');
       if (customerId) {
         const c = allCustomers.find(x => x.id === customerId);
         if (!c) return;
@@ -13654,6 +13790,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         addrInp.value = c.address || '';
         limitInp.value = c.credit_limit || 15000;
         if (staffSelect) staffSelect.value = c.added_by || 'Admin';
+        if (delBtn) delBtn.classList.remove('hidden');
       } else {
         title.innerText = 'Register Credit Customer';
         formId.value = '';
@@ -13662,6 +13799,7 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         addrInp.value = '';
         limitInp.value = 15000;
         if (staffSelect) staffSelect.value = currentPortalMode === 'STAFF' ? 'Staff' : 'Admin';
+        if (delBtn) delBtn.classList.add('hidden');
       }
 
       modal.classList.remove('hidden');
@@ -13669,6 +13807,11 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
 
     function closeCustomerModal() {
       document.getElementById('customer-modal').classList.add('hidden');
+      if (returnToLedgerCustomerId) {
+        const cid = returnToLedgerCustomerId;
+        returnToLedgerCustomerId = null;
+        openCustomerLedgerModal(cid);
+      }
     }
 
     async function submitCustomerForm(e) {
@@ -13703,17 +13846,16 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
         });
         const data = await res.json();
         if (data.success) {
+          const reOpenLedgerId = returnToLedgerCustomerId || (currentOpenLedgerCustomerId && (currentOpenLedgerCustomerId == id) ? id : null);
+          returnToLedgerCustomerId = null;
           closeCustomerModal();
           await loadCustomers();
           await loadCustomerKpis();
           if (currentPortalMode === 'ADMIN') {
             await loadPendingStaffRequests();
           }
-          if (currentOpenLedgerCustomerId && currentOpenLedgerCustomerId == id) {
-            await openCustomerLedgerModal(id);
-          }
-          if (currentOpenLedgerCustomerId && parseInt(currentOpenLedgerCustomerId) === parseInt(id)) {
-            await openCustomerLedgerModal(parseInt(id));
+          if (reOpenLedgerId) {
+            await openCustomerLedgerModal(reOpenLedgerId);
           }
           if (isStaffMode && !id) {
             alert(data.message || "Customer registration request submitted for Admin approval! (Pending)");
@@ -13726,6 +13868,56 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       } catch (err) {
         console.error("Error submitting customer", err);
         alert("Server connection error.");
+      }
+    }
+
+    async function deleteCustomerFromModal() {
+      const id = document.getElementById('customer-form-id')?.value;
+      const name = document.getElementById('customer-form-name')?.value || '';
+      if (id) {
+        await deleteCustomer(parseInt(id), name);
+      }
+    }
+
+    async function deleteCustomer(customerId, customerName) {
+      if (!customerId) return;
+      const custId = parseInt(customerId);
+      const nameStr = customerName || 'is customer';
+      
+      if (!confirm(`⚠️ KYA AAP WAQAI IS CUSTOMER KO DELETE KARNA CHAHTE HAIN?\n\nCustomer: "${nameStr}"\n\nIs customer ka profile aur tamam khata/ledger history (unpaid & paid bills) mukammal taur par delete ho jayenge.`)) {
+        return;
+      }
+
+      try {
+        let res = await fetch(`/api/customers/${custId}`, { method: 'DELETE' });
+        if (!res.ok) {
+          res = await fetch(`/api/customers/${custId}/delete`, { method: 'POST' });
+        }
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          alert(data.detail || data.message || "Customer delete karne mein error aya.");
+          return;
+        }
+
+        alert(data.message || `Customer '${nameStr}' aur onka khata delete ho gaya.`);
+        
+        if (typeof currentOpenLedgerCustomerId !== 'undefined' && (currentOpenLedgerCustomerId == custId)) {
+          currentOpenLedgerCustomerId = null;
+          const ledgerModal = document.getElementById('customer-ledger-modal');
+          if (ledgerModal) ledgerModal.classList.add('hidden');
+        }
+        returnToLedgerCustomerId = null;
+        document.getElementById('customer-modal').classList.add('hidden');
+
+        if (typeof loadCustomers === 'function') {
+          await loadCustomers();
+        }
+        if (typeof loadCustomerKpis === 'function') {
+          await loadCustomerKpis();
+        }
+      } catch (err) {
+        console.error("Error deleting customer:", err);
+        alert("Network error: Customer delete nahi ho saka.");
       }
     }
 
@@ -14302,23 +14494,42 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
             }
 
             let actionCell = '';
+            const deleteBtn = isAdmin ? `
+              <button onclick="deleteKhataEntry(${e.id}, ${c.id}, '${escapeHtml(e.invoice_no || '#' + e.id)}', ${e.amount})" 
+                class="text-rose-600 hover:text-white hover:bg-rose-600 active:scale-90 p-1 rounded-md transition-all cursor-pointer inline-flex items-center justify-center border border-rose-200 hover:border-rose-600 shadow-2xs" 
+                title="Delete this entry (Admin Only)">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            ` : '';
+
             if (isPendingApproval) {
               if (isAdmin) {
                 actionCell = `
-                  <button onclick="approveKhataEntry(${e.id}, ${c.id})" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold px-2 py-1 rounded text-[10px] flex items-center gap-1 shadow-xs cursor-pointer" title="Admin Approve Entry">
-                    <i data-lucide="check-check" class="w-3 h-3"></i> Approve
-                  </button>
+                  <div class="flex items-center justify-center gap-1.5">
+                    <button onclick="approveKhataEntry(${e.id}, ${c.id})" class="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold px-2 py-1 rounded text-[10px] flex items-center gap-1 shadow-xs cursor-pointer" title="Admin Approve Entry">
+                      <i data-lucide="check-check" class="w-3 h-3"></i> Approve
+                    </button>
+                    ${deleteBtn}
+                  </div>
                 `;
               } else {
                 actionCell = `<span class="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded font-semibold">Awaiting Admin</span>`;
               }
             } else if (isSettled) {
-              actionCell = `<span class="text-xs text-slate-400 italic">${escapeHtml(e.notes || 'Paid')}</span>`;
+              actionCell = `
+                <div class="flex items-center justify-center gap-1.5">
+                  <span class="text-xs text-slate-400 italic">${escapeHtml(e.notes || 'Paid')}</span>
+                  ${deleteBtn}
+                </div>
+              `;
             } else {
               actionCell = `
-                <button onclick="openSettleCustomerKhataModal(${e.id}, '${e.invoice_no}', ${e.amount}, ${c.id}, '${c.name.replace(/'/g, "\\'")}')" class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold px-2.5 py-1 rounded text-[10px] flex items-center gap-1 shadow-xs cursor-pointer">
-                  <i data-lucide="check" class="w-3 h-3"></i> Clear
-                </button>
+                <div class="flex items-center justify-center gap-1.5">
+                  <button onclick="openSettleCustomerKhataModal(${e.id}, '${e.invoice_no}', ${e.amount}, ${c.id}, '${c.name.replace(/'/g, "\\'")}')" class="bg-[#156D38] hover:bg-emerald-800 active:scale-95 text-white font-bold px-2.5 py-1 rounded text-[10px] flex items-center gap-1 shadow-xs cursor-pointer">
+                    <i data-lucide="check" class="w-3 h-3"></i> Clear
+                  </button>
+                  ${deleteBtn}
+                </div>
               `;
             }
 
@@ -14482,6 +14693,53 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       } catch (err) {
         console.error("Approval error", err);
         alert("Failed to approve entry.");
+      }
+    }
+
+    async function deleteKhataEntry(entryId, customerId, invoiceNo, amount) {
+      if (currentPortalMode !== 'ADMIN') {
+        alert("Sirf Admin hi khata entry delete kar sakta hai.");
+        return;
+      }
+      const formattedAmt = parseFloat(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
+      const confirmMsg = `⚠️ KYA AAP YEH KHATA ENTRY DELETE KARNA CHAHTE HAIN?\n\n` +
+        `Bill / Invoice: ${invoiceNo}\n` +
+        `Raqam: Rs. ${formattedAmt}\n\n` +
+        `Yeh entry mukammal taur par ledger se remove ho jayegi aur customer ka balance automatically adjust ho jayega.`;
+      
+      if (!confirm(confirmMsg)) {
+        return;
+      }
+
+      try {
+        let res = await fetch(`/api/customer-khata/${entryId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.status === 405) {
+          res = await fetch(`/api/customer-khata/${entryId}/delete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        if (res.status === 405) {
+          alert("Server restart karna zaroori hai! Server PC par START_SYSTEM.bat band karke dobara run karein taake Delete feature activate ho sake.");
+          return;
+        }
+        const data = await res.json();
+        if (data.success) {
+          await openCustomerLedgerModal(customerId);
+          if (typeof loadCustomers === 'function') loadCustomers();
+          if (typeof loadCustomerKpis === 'function') loadCustomerKpis();
+          if (typeof loadTodayActivities === 'function') loadTodayActivities();
+          if (typeof loadPendingStaffRequests === 'function' && currentPortalMode === 'ADMIN') loadPendingStaffRequests();
+          alert(data.message || "Khata entry kamyabi se delete ho gayi.");
+        } else {
+          alert(data.detail || data.message || "Entry delete karne mein error aya.");
+        }
+      } catch (err) {
+        console.error("Delete khata entry error:", err);
+        alert("Network error: Entry delete nahi ho saki.");
       }
     }
 
@@ -17836,6 +18094,11 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                   class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer ml-1">
                   <i data-lucide="eye" class="w-3.5 h-3.5"></i>
                 </button>
+                <button type="button" onclick="deleteDelivery(${d.id}, '${escapeHtml(invNo)}', ${d.bill_amount || d.total_amount || 0})"
+                  title="Delete this delivery permanently"
+                  class="p-1.5 rounded-lg text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 transition-colors cursor-pointer ml-1">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
               </div>
             `;
           } else {
@@ -17853,6 +18116,11 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
                   title="View Full Delivery Dossier"
                   class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer ml-1">
                   <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                </button>
+                <button type="button" onclick="deleteDelivery(${d.id}, '${escapeHtml(invNo)}', ${d.bill_amount || d.total_amount || 0})"
+                  title="Delete this delivery permanently"
+                  class="p-1.5 rounded-lg text-rose-600 hover:text-white hover:bg-rose-600 border border-rose-200 transition-colors cursor-pointer ml-1">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
             `;
@@ -18025,6 +18293,37 @@ Please visit the pharmacy at your earliest convenience to clear your balance. Th
       } catch (err) {
         console.error("Reopen delivery error:", err);
         alert("Server error occurred while reopening delivery.");
+      }
+    }
+
+    async function deleteDelivery(deliveryId, invoiceNo, amount) {
+      if (!confirm(`⚠️ KYA AAP YEH DELIVERY RECORD DELETE KARNA CHAHTE HAIN?\n\nInvoice: ${invoiceNo}\nRaqam: Rs. ${parseFloat(amount || 0).toLocaleString()}\n\nYeh delivery system se mukammal taur par remove ho jayegi.`)) return;
+      try {
+        let res = await fetch(`/api/deliveries/${deliveryId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (res.status === 405) {
+          res = await fetch(`/api/deliveries/${deliveryId}/delete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+        }
+        if (res.status === 405) {
+          alert("Server restart karna zaroori hai! Server PC par START_SYSTEM.bat band karke dobara run karein.");
+          return;
+        }
+        const data = await res.json();
+        if (data.success) {
+          await loadAdminDeliveriesTable();
+          if (typeof refreshDeliveryStats === 'function') await refreshDeliveryStats();
+          alert(data.message || "Delivery record successfully deleted.");
+        } else {
+          alert(data.detail || data.message || "Delete failed.");
+        }
+      } catch (err) {
+        console.error("Delete delivery error:", err);
+        alert("Server error during deletion.");
       }
     }
 

@@ -75,16 +75,14 @@ class WhatsAppService:
 
     def build_in_otp_message(self, staff_name: str, designation: str, time_str: str, reveal_link: str = "", otp_code: str = "") -> str:
         """Creates formal WhatsApp message template for Admin Check-IN authorization via secure link."""
+        otp_block = f"🔑 *Instant OTP Code:* *{otp_code}*\n" if otp_code else ""
         if reveal_link:
             link_block = (
-                f"👉 *GET OTP & APPROVE (Tap Secure Link):*\n"
+                f"👉 *Secure Verification Link:*\n"
                 f"{reveal_link}\n\n"
-                f"🛡️ _Link khol kar apna Admin Password darj karein taake OTP unlock ho._\n"
             )
-            otp_block = ""
         else:
             link_block = ""
-            otp_block = f"🔑 *Instant OTP Code:* *{otp_code}*\n" if otp_code else ""
 
         return (
             f"🔔 *MUMTAZ PHARMACY — STAFF CHECK-IN REQUEST*\n"
@@ -92,24 +90,22 @@ class WhatsAppService:
             f"👤 Staff: *{staff_name}* ({designation or 'Staff'})\n"
             f"⏰ Request Time: *{time_str}*\n"
             f"📍 Action: *Duty Check-IN*\n\n"
-            f"{link_block}"
             f"{otp_block}"
-            f"⏱️ _Yeh link 5 minute ke liye valid hai._\n"
+            f"{link_block}"
+            f"⏱️ _Yeh OTP 5 minute ke liye valid hai._\n"
             f"━━━━━━━━━━━━━━━━━━━━"
         )
 
     def build_out_otp_message(self, staff_name: str, designation: str, time_str: str, reveal_link: str = "", otp_code: str = "") -> str:
         """Creates formal WhatsApp message template for Admin Check-OUT authorization via secure link."""
+        otp_block = f"🔑 *Instant OTP Code:* *{otp_code}*\n" if otp_code else ""
         if reveal_link:
             link_block = (
-                f"👉 *GET OTP & APPROVE (Tap Secure Link):*\n"
+                f"👉 *Secure Verification Link:*\n"
                 f"{reveal_link}\n\n"
-                f"🛡️ _Link khol kar apna Admin Password darj karein taake OTP unlock ho._\n"
             )
-            otp_block = ""
         else:
             link_block = ""
-            otp_block = f"🔑 *Instant OTP Code:* *{otp_code}*\n" if otp_code else ""
 
         return (
             f"🔔 *MUMTAZ PHARMACY — STAFF CHECK-OUT REQUEST*\n"
@@ -117,9 +113,9 @@ class WhatsAppService:
             f"👤 Staff: *{staff_name}* ({designation or 'Staff'})\n"
             f"⏰ Request Time: *{time_str}*\n"
             f"📍 Action: *Duty Check-OUT*\n\n"
-            f"{link_block}"
             f"{otp_block}"
-            f"⏱️ _Yeh link 5 minute ke liye valid hai._\n"
+            f"{link_block}"
+            f"⏱️ _Yeh OTP 5 minute ke liye valid hai._\n"
             f"━━━━━━━━━━━━━━━━━━━━"
         )
 
